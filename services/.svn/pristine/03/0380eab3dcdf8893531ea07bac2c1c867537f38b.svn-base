@@ -1,0 +1,546 @@
+package com.hfepay.scancode.api.webank.service.impl;
+
+import java.io.ByteArrayInputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.dom4j.DocumentException;
+import org.dom4j.io.SAXReader;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+import org.w3c.dom.Document;
+import org.w3c.dom.Element;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.ValueFilter;
+import com.hfepay.cache.jedis.RedisKey;
+import com.hfepay.cache.jedis.impl.RedisSharedCache;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.scancode.api.service.config.HfepayConfig;
+import com.hfepay.scancode.api.webank.commons.ConfigConstants;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankGoodsDetailVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantAccountsVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantInfoBaseVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantInfoVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantRateVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankPreCreateTradeVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankRefundVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankWeChatMerchantInfoVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankWeChatNaoInfoVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankWeChatQueryInfoVo;
+import com.hfepay.scancode.api.webank.httputil.HttpGetRequest;
+import com.hfepay.scancode.api.webank.httputil.HttpPostRequest;
+import com.hfepay.scancode.api.webank.service.WeBankMerchantBusinessService;
+import com.hfepay.scancode.api.webank.sign.Signature;
+import com.hfepay.scancode.api.webank.xmlutil.XmlUtils;
+
+import net.sf.json.JSONObject;
+
+@Service
+public class WeBankMerchantBusinessServiceImpl implements WeBankMerchantBusinessService{
+
+	Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired
+	private RedisSharedCache redisSharedCache;
+	
+	@Autowired
+	private ConfigConstants configConstants;
+	
+	/**
+	 * 获取access_token,由于有效期只有两个小时，同时一些API的tocken依赖于该tocken，因此在此处将所有的需要借助于
+	 * access_token的其他APItocken也一并获取，保持数据和tocken一致
+	 * @return
+	 */
+	public String getWeBankAccessToken(){
+		String access_token = "";
+		String redisKeyStr = HfepayConfig.ACCESS_TOKEN;  
+		try{
+			RedisKey redisKey = new RedisKey(redisKeyStr, redisKeyStr);
+			access_token = redisSharedCache.get(redisKey);
+			if(Strings.isNotBlank(access_token)){
+				logger.info("从缓存中获取access_token成功,access_token:"+access_token);
+				return access_token;
+			}else{
+				String url = configConstants.getAccess_token_url();
+				String urlParam = "?app_id="+configConstants.getApp_id()+"&secret="+configConstants.getSecret()
+				+"&grant_type="+configConstants.getGrant_type()+"&version="+configConstants.getVersion();
+				url = url+urlParam;
+				HttpGetRequest httpGetRequest = new HttpGetRequest();
+				String response = httpGetRequest.httpGet(url,configConstants.getClient_cet(),configConstants.getTrust_cet(),
+						configConstants.getKey_store_password(),configConstants.getKey_store_trust_password());
+				Map<String, String> result = JSON.parseObject(response, Map.class);
+				//将access_token保存至缓存中，有效时间7200秒（两小时）
+				access_token = result.get("access_token");
+				if(Strings.isEmpty(access_token)){
+					throw new RuntimeException("access_token is null......");
+				}
+				//将access_token保存至缓存中
+				redisSharedCache.set(redisKey, access_token,HfepayConfig.ACCESS_TOKEN_TIME);
+			}
+		}catch(Exception e){
+			logger.error(e.toString());
+			logger.error("获取access_token异常",e);
+			return null;
+		}
+		logger.info("获取access_token成功:"+access_token);
+		return access_token;
+	}
+	
+	/**
+	 * 获取ticket
+	 * @return
+	 */
+	public String getWeBankTicket(){
+		String access_token = "";
+		try {
+			access_token = getWeBankAccessToken();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		//根据tocken获取ticket  不需要放入redis
+		String ticket = "";
+		try {
+			String ticketUrl = configConstants.getTicket_url();
+			String ticketUrlParam = "?app_id="+configConstants.getApp_id()+"&access_token="+access_token+"&type=SIGN"+"&version="+configConstants.getVersion();
+			ticketUrl = ticketUrl+ticketUrlParam;
+			HttpGetRequest httpGetRequest = new HttpGetRequest();
+			String ticketResponse = httpGetRequest.httpGet(ticketUrl,configConstants.getClient_cet(),configConstants.getTrust_cet(),
+					configConstants.getKey_store_password(),configConstants.getKey_store_trust_password());
+			JSONObject ticketJson = JSONObject.fromObject(ticketResponse);
+			List<JSONObject> ticketList = (List<JSONObject>) ticketJson.get("tickets");
+			JSONObject json = (JSONObject) ticketList.get(0);
+			ticket = (String) json.get("value");
+			
+			logger.info("获取ticket成功,ticket:"+ticket);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		return ticket;
+	}
+
+	private static ValueFilter filter = new ValueFilter() {
+        @Override
+        public Object process(Object obj, String s, Object v) {
+            if (v == null || "".equals(v))
+                return null;
+            return v;
+        }
+    };
+	/**
+	 * 商户入网
+	 */
+	@Override
+	public String merchantJoin(WeBankMerchantInfoBaseVo baseVo,WeBankMerchantInfoVo infoVo,WeBankMerchantAccountsVo accountsVo,List<WeBankMerchantRateVo> rateList) {
+		JSONObject json = new JSONObject();
+		//商户基本信息
+		json.putAll(baseVo.toMap());
+		logger.info("商户基本信息："+ JSON.toJSONString(baseVo,filter));
+		// 商户详细信息
+		json.put("merchantInfo", JSON.toJSONString(infoVo,filter));
+		logger.info("商户详细信息："+JSON.toJSONString(infoVo,filter));
+		// 商户账户信息
+		json.put("merchantAccount", JSON.toJSONString(accountsVo,filter));
+		logger.info("商户账户信息："+JSON.toJSONString(accountsVo,filter));
+		// 商户费率信息
+		json.put("merchantRateList", JSON.toJSONString(rateList,filter));
+		logger.info("商户费率信息："+JSON.toJSONString(rateList,filter));
+		String response = invokeWeBank(json,configConstants.getMerchant_join_url());
+		return response;
+	}
+	
+	/**
+	 * 支付宝下单
+	 * @return
+	 */
+	@Override
+	public String preCreateTrade(WeBankPreCreateTradeVo tradeVo,List<WeBankGoodsDetailVo> goodsList){
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(tradeVo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(tradeVo,filter));
+		// 商品详细信息
+		json.put("goodsDetail", JSON.toJSONString(goodsList,filter));
+		logger.info("商品详细信息："+JSON.toJSONString(goodsList,filter));
+		
+		String response = invokeWeBank(json,configConstants.getPrecreate_trade_url());
+		return response;
+	}
+
+	/**
+	 * 查询订单
+	 * @return
+	 */
+	@Override
+	public String queryTrade(WeBankRefundVo vo) {
+		
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(vo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(vo,filter));
+		String response = invokeWeBank(json,configConstants.getQuery_trade_url());
+		return response;
+	}
+
+	/**
+	 * 退款
+	 * @return
+	 */
+	@Override
+	public String refund(WeBankRefundVo vo) {
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(vo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(vo,filter));
+		String response = invokeWeBank(json,configConstants.getRefund_url());
+		return response;
+	}
+
+	/**
+	 * 退款查询
+	 * @return
+	 */
+	@Override
+	public String queryRefund(WeBankRefundVo vo) {
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(vo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(vo,filter));
+		
+		String response = invokeWeBank(json,configConstants.getQuery_refund_url());
+		return response;
+	}
+
+	/**
+	 * 支付宝条码支付
+	 * @return
+	 */
+	@Override
+	public String scanPay(WeBankPreCreateTradeVo tradeVo,List<WeBankGoodsDetailVo> goodsList) {
+		
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(tradeVo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(tradeVo,filter));
+		// 商品详细信息
+		json.put("goodsDetail", JSON.toJSONString(goodsList,filter));
+		logger.info("商品详细信息："+JSON.toJSONString(goodsList,filter));
+		String response = invokeWeBank(json,configConstants.getScan_pay_url());
+		return response;
+	}
+
+	/**
+	 * 冲正 撤销
+	 * @return
+	 */
+	@Override
+	public String cancel(WeBankRefundVo vo) {
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(vo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(vo,filter));
+		String response = invokeWeBank(json,configConstants.getCancel_url());
+		return response;
+	}
+
+	private String invokeWeBank(JSONObject json,String urlStr) {
+		// 获取ticket
+		String ticket = getWeBankTicket();
+		String nonce = Strings.getUUID();
+		ArrayList<String> values = new ArrayList<String>();
+		values.add(configConstants.getApp_id());// app_id
+		values.add(nonce);// 32位随机串
+		values.add(configConstants.getVersion());// 版本号
+		values.add(ticket);// ticket
+		values.add(json.toString());// 接口参数 json类型
+		String signstr = Signature.sign(values);// 签名
+
+		String urlParam = "?app_id=" + configConstants.getApp_id() + "&nonce=" + nonce + "&version="+ configConstants.getVersion() + "&sign=" + signstr.toUpperCase();
+		urlStr = urlStr + urlParam;
+		// httpPost请求
+		HttpPostRequest httpPostRequest = new HttpPostRequest();
+		String response = httpPostRequest.httpPost(urlStr, json.toString(),configConstants.getClient_cet(),configConstants.getTrust_cet(),
+				configConstants.getKey_store_password(),configConstants.getKey_store_trust_password());
+		return response;
+	}
+
+	/**
+	 * 微信扫码 商户入网
+	 * @return
+	 */
+	@Override
+	public String weChatMerchantJoin(WeBankWeChatMerchantInfoVo infoVo) {
+		String reqXml = null;
+		try {
+			//定义Document接口
+			Document doc = XmlUtils.createNewXmlObj();
+			//创建报文根
+			Element root = doc.createElement("xml");
+			doc.appendChild(root);
+			
+			//流水号 必填
+			Element serialNo = doc.createElement("serialNo");
+			serialNo.appendChild(doc.createTextNode(infoVo.getSerialNo()));
+			root.appendChild(serialNo);
+			//商户名称 必填
+			Element merchantName = doc.createElement("merchantName");
+			merchantName.appendChild(doc.createTextNode(infoVo.getMerchantName()));
+			root.appendChild(merchantName);
+			//商户简称 必填
+			Element merchantAlis = doc.createElement("merchantAlis");
+			merchantAlis.appendChild(doc.createTextNode(infoVo.getMerchantAlis()));
+			root.appendChild(merchantAlis);
+			//地区 必填
+			Element merchantArea = doc.createElement("merchantArea");
+			merchantArea.appendChild(doc.createTextNode(infoVo.getMerchantArea()));
+			root.appendChild(merchantArea);
+			//开户行 必填
+			Element bankName = doc.createElement("bankName");
+			bankName.appendChild(doc.createTextNode(infoVo.getBankName()));
+			root.appendChild(bankName);
+			//开户行号 必填
+			Element revactBankNo = doc.createElement("revactBankNo");
+			revactBankNo.appendChild(doc.createTextNode(infoVo.getRevactBankNo()));
+			root.appendChild(revactBankNo);
+			
+			//户名 必填
+			Element bankAccountName = doc.createElement("bankAccoutName");
+			bankAccountName.appendChild(doc.createTextNode(infoVo.getBankAccoutName()));
+			root.appendChild(bankAccountName);
+			//银行账户 必填
+			Element bankAccout = doc.createElement("bankAccout");
+			bankAccout.appendChild(doc.createTextNode(infoVo.getBankAccout()));
+			root.appendChild(bankAccout);
+			//代理机构 必填
+			Element agency = doc.createElement("agency");
+			agency.appendChild(doc.createTextNode(infoVo.getAgency()));
+			root.appendChild(agency);
+			//客服电话 必填
+			Element servicePhone = doc.createElement("servicePhone");
+			servicePhone.appendChild(doc.createTextNode(infoVo.getServicePhone()));
+			root.appendChild(servicePhone);
+			//经营类目 必填
+			Element business = doc.createElement("business");
+			business.appendChild(doc.createTextNode(infoVo.getBusiness()));
+			root.appendChild(business);
+			//商户性质 必填
+			Element merchantNature = doc.createElement("merchantNature");
+			merchantNature.appendChild(doc.createTextNode(infoVo.getMerchantNature()));
+			root.appendChild(merchantNature);
+			//商户扣率 必填
+			Element wxCostRate = doc.createElement("wxCostRate");
+			wxCostRate.appendChild(doc.createTextNode(infoVo.getWxCostRate()));
+			root.appendChild(wxCostRate);
+			//账号性质 必填
+			Element companyFlag = doc.createElement("companyFlag");
+			companyFlag.appendChild(doc.createTextNode(infoVo.getCompanyFlag()));
+			root.appendChild(companyFlag);
+			//根据参数生成xml报文
+			reqXml = XmlUtils.xmlStringByObj(doc);
+			//将生成的报文添加到stringbuffer中。
+			StringBuffer hbreq = new StringBuffer();
+			reqXml = reqXml.replace("</xml>", "").trim();
+			hbreq.append(reqXml);
+			hbreq.append("</xml>");
+			
+			SAXReader saxReader = new SAXReader();
+			org.dom4j.Document document = null;
+			try {
+				document = saxReader.read(new ByteArrayInputStream(hbreq.toString().getBytes("UTF-8")));
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			} catch (DocumentException e) {
+				e.printStackTrace();
+			}
+			org.dom4j.Element node = document.getRootElement();
+			JSONObject reqjson = new JSONObject();
+			reqjson = XmlUtils.parseXMLTOJSON(node, new JSONObject());
+			System.out.println("json格式:"+reqjson);
+			//签名
+			String signstr = Signature.md5Sign(reqjson, "IPW20161228WZTESTGOOD");
+			String req = reqXml + "<sign>" + signstr
+					+ "</sign>" + "</xml>";
+			logger.info("##########XML请求报文！",req);
+			// httpPost请求
+			HttpPostRequest httpPostRequest = new HttpPostRequest();
+			String response = httpPostRequest.httpPost(configConstants.getWechat_merchant_join_url(), req, configConstants.getClient_cet(),
+					configConstants.getTrust_cet(), configConstants.getKey_store_password(),
+					configConstants.getKey_store_trust_password());
+			return response;
+		} catch (Exception e) {
+			logger.info("##########创建XML报文错误~！",e);
+			try {
+				throw new Exception("#####创建XML报文错误~！",e);
+			} catch (Exception e1) {
+				e1.printStackTrace();
+			}
+		}
+		return null;
+	}
+	
+	/**
+	 * 微信扫码支付   商户信息查询
+	 * @return
+	 */
+	@Override
+	public String weChatSelectMerchantInfo(WeBankWeChatMerchantInfoVo infoVo) {
+		JSONObject json = new JSONObject();
+		//商户信息
+		json.putAll(infoVo.toMap());
+		logger.info("商户信息："+ JSON.toJSONString(infoVo,filter));
+
+		// 签名
+		String signstr = Signature.md5Sign(json, "IPW20161228WZTESTGOOD");
+		json.put("sign", signstr);
+		// httpPost请求
+		HttpPostRequest httpPostRequest = new HttpPostRequest();
+		String response = httpPostRequest.httpPost(configConstants.getWechat_select_merchant_info_url(), json.toString(), configConstants.getClient_cet(),
+				configConstants.getTrust_cet(), configConstants.getKey_store_password(),
+				configConstants.getKey_store_trust_password());
+		return response;
+	}
+	/**
+	 * 微信扫码支付  商户信息修改
+	 * @return
+	 */
+	@Override
+	public String weChatUpdateMerchantInfo(WeBankWeChatMerchantInfoVo infoVo) {
+		JSONObject json = new JSONObject();
+		//商户信息
+		json.putAll(infoVo.toMap());
+		logger.info("商户信息："+ JSON.toJSONString(infoVo,filter));
+		// 签名
+		String signstr = Signature.md5Sign(json, "IPW20161228WZTESTGOOD");
+		json.put("sign", signstr);
+		// httpPost请求
+		HttpPostRequest httpPostRequest = new HttpPostRequest();
+		String response = httpPostRequest.httpPost(configConstants.getWechat_update_merchant_info_url(),
+				json.toString(), configConstants.getClient_cet(), configConstants.getTrust_cet(),
+				configConstants.getKey_store_password(), configConstants.getKey_store_trust_password());
+		return response;
+	}
+	
+	/**
+	 * 微信扫码支付  下单
+	 * @return
+	 */
+	@Override
+	public String weChatNao(WeBankWeChatNaoInfoVo naoInfoVo) {
+		JSONObject json = new JSONObject();
+		//
+		json.putAll(naoInfoVo.toMap());
+		logger.info("订单信息："+ JSON.toJSONString(naoInfoVo,filter));
+		
+		String response = invokeWeBankWeChat(json,configConstants.getWechat_nao_url());
+		return response;
+	}
+	
+	/**
+	 * 微信扫码支付  查询订单
+	 * @return
+	 */
+	@Override
+	public String weChatNgos(WeBankWeChatQueryInfoVo queryInfoVo) {
+		JSONObject json = new JSONObject();
+		//
+		json.putAll(queryInfoVo.toMap());
+		logger.info("订单信息："+ JSON.toJSONString(queryInfoVo,filter));
+		
+		String response = invokeWeBankWeChat(json,configConstants.getWechat_ngos_url());
+		return response;
+	}
+	
+	/**
+	 * 微信扫码支付  刷卡支付
+	 * @return
+	 */
+	@Override
+	public String weChatMao(WeBankWeChatNaoInfoVo naoInfoVo) {
+		JSONObject json = new JSONObject();
+		//
+		json.putAll(naoInfoVo.toMap());
+		logger.info("订单信息："+ JSON.toJSONString(naoInfoVo,filter));
+		
+		String response = invokeWeBankWeChat(json,configConstants.getWechat_mao_url());
+		return response;
+	}
+	/**
+	 * 微信扫码支付  查询刷卡支付订单
+	 * @return
+	 */
+	@Override
+	public String weChatMgos(WeBankWeChatQueryInfoVo queryInfoVo) {
+		JSONObject json = new JSONObject();
+		//
+		json.putAll(queryInfoVo.toMap());
+		logger.info("订单信息："+ JSON.toJSONString(queryInfoVo,filter));
+		
+		String response = invokeWeBankWeChat(json,configConstants.getWechat_mgos_url());
+		return response;
+	}
+	
+	
+	/**
+	 * 微信扫码支付  冲正撤销
+	 * @return
+	 */
+	@Override
+	public String weChatRo(WeBankWeChatQueryInfoVo queryInfoVo) {
+		JSONObject json = new JSONObject();
+		//
+		json.putAll(queryInfoVo.toMap());
+		logger.info("订单信息："+ JSON.toJSONString(queryInfoVo,filter));
+		
+		String response = invokeWeBankWeChat(json,configConstants.getWechat_ro_url());
+		return response;
+	}
+	
+	/**
+	 * 微信扫码支付  退款
+	 * @return
+	 */
+	@Override
+	public String weChatNro(WeBankWeChatQueryInfoVo queryInfoVo) {
+		JSONObject json = new JSONObject();
+		//
+		json.putAll(queryInfoVo.toMap());
+		logger.info("订单信息："+ JSON.toJSONString(queryInfoVo,filter));
+		String response = invokeWeBankWeChat(json,configConstants.getWechat_nro_url());
+		return response;
+	}
+	
+	/**
+	 * 微信扫码支付  退款查询
+	 * @return
+	 */
+	@Override
+	public String weChatNros(WeBankWeChatQueryInfoVo queryInfoVo) {
+		JSONObject json = new JSONObject();
+		//
+		json.putAll(queryInfoVo.toMap());
+		logger.info("订单信息："+ JSON.toJSONString(queryInfoVo,filter));
+		String response = invokeWeBankWeChat(json,configConstants.getWechat_nros_url());
+		return response;
+	}
+
+	private String invokeWeBankWeChat(JSONObject json,String url) {
+		//签名
+		String signstr = Signature.md5Sign(json, "IPW20161228WZMTHFCSYHLXGJZXCS");
+		json.put("sign", signstr);
+		// httpPost请求
+		HttpPostRequest httpPostRequest = new HttpPostRequest();
+		String response = httpPostRequest.httpPost(url, json.toString(), configConstants.getClient_cet(),
+				configConstants.getTrust_cet(), configConstants.getKey_store_password(),
+				configConstants.getKey_store_trust_password());
+		return response;
+	}
+
+}

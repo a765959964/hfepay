@@ -1,0 +1,26 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2017
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.ProfitDetail;
+import com.hfepay.scancode.dao.ProfitDetailDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+import java.util.List;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="profitDetailDAO")
+@Generated("2017-01-11 14:21:58")
+public class ProfitDetailDAOImpl extends MybatisEntityDAO<ProfitDetail, String> implements ProfitDetailDAO {
+
+	@Override
+	public void insertBatch(List<ProfitDetail> listDetail) {
+		// TODO Auto-generated method stub
+		this.getSqlSession().insert(sqlId("insertBatch"),listDetail);
+	}
+}

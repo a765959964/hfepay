@@ -1,0 +1,322 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.service.operator.impl;
+
+import java.util.Date;
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.criteria.Order;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.ChannelBaseCondition;
+import com.hfepay.scancode.dao.ChannelBaseDAO;
+import com.hfepay.scancode.entity.ChannelBase;
+import com.hfepay.scancode.service.operator.ChannelBaseService;
+import com.hfepay.scancode.service.utils.QRCodeUtil;
+
+@Service("channelBaseService")
+public class ChannelBaseServiceImpl implements ChannelBaseService {
+	
+	@Autowired
+    private ChannelBaseDAO channelBaseDAO;
+    
+    /**
+	 * @Title: findPagingResult
+	 * @Description: 列表(分页)
+	 * @author: Ricky
+	 * @param channelBaseCondition
+	 * @return: PagingResult<ChannelBase>
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+    @Override
+	public PagingResult<ChannelBase> findPagingResult(ChannelBaseCondition channelBaseCondition){
+		CriteriaBuilder cb = Cnd.builder(ChannelBase.class);
+		if(!Strings.isEmpty(channelBaseCondition.getId())){
+			cb.andEQ("id", channelBaseCondition.getId());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getChannelNo())){
+			cb.andEQ("channelNo", channelBaseCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getChannelName())){
+			cb.andLike("channelName", channelBaseCondition.getChannelName());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getChannelType())){
+			cb.andEQ("channelType", channelBaseCondition.getChannelType());
+		}
+		if(null != channelBaseCondition.getQrTotal()){
+			cb.andEQ("qrTotal", channelBaseCondition.getQrTotal());
+		}
+		if(null != channelBaseCondition.getUseTotal()){
+			cb.andEQ("useTotal", channelBaseCondition.getUseTotal());
+		}
+		if(null != channelBaseCondition.getLessTotal()){
+			cb.andEQ("lessTotal", channelBaseCondition.getLessTotal());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getStatus())){
+			cb.andEQ("status", channelBaseCondition.getStatus());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", channelBaseCondition.getRecordStatus());
+		}
+		if(null != channelBaseCondition.getCreateTime()){
+			cb.andEQ("createTime", channelBaseCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(channelBaseCondition.getOperator())){
+			cb.andEQ("operator", channelBaseCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(channelBaseCondition.getRemark())){
+			cb.andLike("remark", channelBaseCondition.getRemark());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getTemp1())){
+			cb.andEQ("temp1", channelBaseCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getTemp2())){
+			cb.andEQ("temp2", channelBaseCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getTemp3())){
+			cb.andEQ("temp3", channelBaseCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getTemp4())){
+			cb.andEQ("temp4", channelBaseCondition.getTemp4());
+		}
+		cb.orderBy("createTime", Order.DESC);
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(channelBaseCondition.getFirst()), Long.valueOf(channelBaseCondition.getLast()));
+		return channelBaseDAO.findPagingResult(buildCriteria);
+	}
+	
+	/**
+	 * @Title: findAll
+	 * @Description: 列表
+	 * @author: Ricky
+	 * @param channelBaseCondition
+	 * @return: List<ChannelBase>
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public List<ChannelBase> findAll(ChannelBaseCondition channelBaseCondition){
+		CriteriaBuilder cb = Cnd.builder(ChannelBase.class);
+		if(!Strings.isEmpty(channelBaseCondition.getId())){
+			cb.andEQ("id", channelBaseCondition.getId());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getChannelNo())){
+			cb.andEQ("channelNo", channelBaseCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getChannelName())){
+			cb.andEQ("channelName", channelBaseCondition.getChannelName());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getChannelType())){
+			cb.andEQ("channelType", channelBaseCondition.getChannelType());
+		}
+		if(null != channelBaseCondition.getQrTotal()){
+			cb.andEQ("qrTotal", channelBaseCondition.getQrTotal());
+		}
+		if(null != channelBaseCondition.getUseTotal()){
+			cb.andEQ("useTotal", channelBaseCondition.getUseTotal());
+		}
+		if(null != channelBaseCondition.getLessTotal()){
+			cb.andEQ("lessTotal", channelBaseCondition.getLessTotal());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getStatus())){
+			cb.andEQ("status", channelBaseCondition.getStatus());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", channelBaseCondition.getRecordStatus());
+		}
+		if(null != channelBaseCondition.getCreateTime()){
+			cb.andEQ("createTime", channelBaseCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(channelBaseCondition.getOperator())){
+			cb.andEQ("operator", channelBaseCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(channelBaseCondition.getRemark())){
+			cb.andLike("remark", channelBaseCondition.getRemark());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getTemp1())){
+			cb.andEQ("temp1", channelBaseCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getTemp2())){
+			cb.andEQ("temp2", channelBaseCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getTemp3())){
+			cb.andEQ("temp3", channelBaseCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(channelBaseCondition.getTemp4())){
+			cb.andEQ("temp4", channelBaseCondition.getTemp4());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return channelBaseDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * @Title: findById
+	 * @Description: 主键查找
+	 * @author: Ricky
+	 * @param id
+	 * @return: ChannelBase
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public ChannelBase findById(String id){
+		return channelBaseDAO.get(id);
+	}
+	
+	/**
+	 * @Title: insert
+	 * @Description: 新增
+	 * @author: Ricky
+	 * @param channelBaseCondition
+	 * @return: long
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public long insert(ChannelBaseCondition channelBaseCondition){
+		ChannelBase channelBase = new ChannelBase();
+		BeanUtils.copyProperties(channelBaseCondition, channelBase);
+		return channelBaseDAO.insert(channelBase);
+	}
+
+	/**
+	 * @Title: deleteById
+	 * @Description: 删除
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public long deleteById(String id){
+		return channelBaseDAO.deleteById(id);
+	}
+	
+	/**
+	 * @Title: deleteByCriteria
+	 * @Description: 条件删除
+	 * @author: Ricky
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public long deleteByCriteria(Criteria criteria){
+		return channelBaseDAO.deleteByCriteria(criteria);
+	}
+	
+	/**
+	 * @Title: countByCriteria
+	 * @Description: 行数汇总
+	 * @author: Ricky
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public long countByCriteria(Criteria criteria){
+		return channelBaseDAO.countByCriteria(criteria);
+	}
+	
+	/**
+	 * @Title: update
+	 * @Description: 更新
+	 * @author: Ricky
+	 * @param channelBaseCondition
+	 * @return: long
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public long update(ChannelBaseCondition channelBaseCondition){
+		ChannelBase channelBase = new ChannelBase();
+		BeanUtils.copyProperties(channelBaseCondition, channelBase);
+		channelBase.setUpdateTime(new Date());
+		return channelBaseDAO.update(channelBase);
+	}
+	
+	/**
+	 * @Title: updateByCriteria
+	 * @Description: 条件更新
+	 * @author: Ricky
+	 * @param channelBaseCondition
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public long updateByCriteria(ChannelBaseCondition channelBaseCondition){
+		ChannelBase channelBase = new ChannelBase();
+		channelBase.setId(channelBaseCondition.getId());
+		channelBase.setUseTotal(channelBaseCondition.getUseTotal());
+		channelBase.setLessTotal(channelBaseCondition.getLessTotal());
+		CriteriaBuilder cb = Cnd.builder(ChannelBase.class);
+		if(!Strings.isEmpty(channelBaseCondition.getId())){
+			cb.andEQ("id", channelBaseCondition.getId());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return channelBaseDAO.updateByCriteria(channelBase,buildCriteria);
+	}
+	
+	/**
+	 * @Title: updateStatus
+	 * @Description: 状态更新
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public long updateStatus(String id,String status){
+		return channelBaseDAO.updateStatus(id,status);
+	}	
+	
+	/**
+	 * @Title: findByChannelNo
+	 * @Description: 渠道编码查找
+	 * @author: Ricky
+	 * @param channelNo
+	 * @return: ChannelBase
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public ChannelBase findByChannelNo(String channelNo){
+		ChannelBaseCondition channelBaseCondition = new ChannelBaseCondition();			
+		channelBaseCondition.setChannelNo(channelNo);			
+		List<ChannelBase> list = this.findAll(channelBaseCondition);
+		if(list.size() == 1){
+			ChannelBase entity = list.get(0);
+			return entity;
+		}
+		return null;
+	}
+	
+	/**
+	 * 生成二维码(内嵌LOGO)
+	 * 
+	 * @param content
+	 *            内容
+	 * @param imgPath
+	 *            LOGO地址
+	 * @param destPath
+	 *            存放目录
+	 * @param needCompress
+	 *            是否压缩LOGO
+	 * @throws Exception
+	 */
+	public void encode(String content, String imgPath, String destPath,
+			boolean needCompress,String qrName) throws Exception{
+		QRCodeUtil.encode(content, imgPath, destPath,
+				needCompress,qrName);
+	}
+}
+

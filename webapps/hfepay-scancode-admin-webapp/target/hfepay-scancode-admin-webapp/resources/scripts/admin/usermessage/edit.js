@@ -1,0 +1,1 @@
+$(function(){Metronic.init();Layout.init();QuickSidebar.init();Demo.init();var a=UE.getEditor("editorDetail");$(".date-picker").datepicker({rtl:Metronic.isRTL(),orientation:"left",autoclose:true});$("#cancle").click(function(){history.go(-1)});$("#editorDetail").html($("#content").val())});

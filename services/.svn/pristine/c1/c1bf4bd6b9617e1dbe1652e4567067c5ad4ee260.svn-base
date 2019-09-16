@@ -1,0 +1,24 @@
+package com.hfepay.scancode.service.contants;
+
+/**
+ * 配置编码抬头类型
+ * @author panq
+ *
+ */
+public class ConfigPreCode {
+	
+	/**
+	 * 商户编码抬头
+	 */
+	public static String MERCHANT_PRE_CODE = "MER";
+	
+	/**
+	 * 商户门店抬头
+	 */
+	public static String STORE_PRE_CODE = "STORE";
+	
+	/**
+	 * 商户二维码抬头
+	 */
+	public static String QRCODE_PRE_CODE = "CODE";
+}

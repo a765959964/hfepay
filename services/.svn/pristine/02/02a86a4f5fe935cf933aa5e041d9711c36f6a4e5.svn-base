@@ -1,0 +1,36 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao;
+
+import com.hfepay.scancode.bo.ProfitBo;
+import com.hfepay.scancode.entity.ChannelPayway;
+import com.hfepay.commons.dao.EntityDAO;
+
+import java.util.List;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+@Generated("2016-10-18 15:28:16")
+public interface ChannelPaywayDAO extends EntityDAO<ChannelPayway, String> {
+
+	/**
+	 * @Title: updateStatus
+	 * @Description: 状态更新
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2016-10-18 15:28:16
+	 */
+	long updateStatus(String id,String status);
+
+	/**
+	 * 渠道费率差
+	 * @Title: getChannelRateDiff
+	 * @author: husain
+	 * @return
+	 * @return: List<ProfitBo>
+	 */
+	List<ProfitBo> getChannelRateDiff();	
+}

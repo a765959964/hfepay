@@ -1,0 +1,18 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2017
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.Province;
+import com.hfepay.scancode.dao.ProvinceDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="provinceDAO")
+@Generated("2017-01-22 14:03:17")
+public class ProvinceDAOImpl extends MybatisEntityDAO<Province, Integer> implements ProvinceDAO {
+}

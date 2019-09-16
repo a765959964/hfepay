@@ -1,0 +1,67 @@
+package com.hfepay.scancode.controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.MerchantInfoCondition;
+import com.hfepay.scancode.condition.SysResourceCondition;
+import com.hfepay.scancode.entity.MerchantInfo;
+import com.hfepay.scancode.entity.SysResource;
+import com.hfepay.scancode.service.operator.MerchantInfoService;
+import com.hfepay.scancode.service.operator.PageService;
+
+
+@Controller
+@RequestMapping("/adminManage/index")
+public class AdminController {
+	
+	public static final Logger log = LoggerFactory.getLogger(AdminController.class);
+	
+	@Autowired
+	private PageService pageService;
+	
+	@Autowired
+	private MerchantInfoService merchantInfoService;
+	
+	@RequestMapping
+	public String toSignin(HttpServletRequest request,String returnUrl) {
+		MerchantInfoCondition merchantInfoCondition = new MerchantInfoCondition();
+		merchantInfoCondition.setStatus("1");
+		List<MerchantInfo> merchantList =  merchantInfoService.findAll(merchantInfoCondition);
+		request.getSession().setAttribute("merchantList",merchantList.size());
+		return "admin/index";
+	}
+	@RequestMapping("/dashbord1")
+	public String toDash1(HttpServletRequest request,String returnUrl) {
+		return "admin/index_2";
+	}
+	@RequestMapping("/dashbord2")
+	public String toDash2(HttpServletRequest request,String returnUrl) {
+		return "admin/index_3";
+	}
+	
+	@RequestMapping("/page")
+	public String toPage(HttpServletRequest request,String returnUrl) {
+		return "admin/table_advanced";
+	}
+	@RequestMapping("/showPages")
+	public String showPages(HttpServletRequest request,SysResourceCondition condition){
+		PagingResult<SysResource> list = pageService.findAllMenu(condition);
+        request.setAttribute("pageData",list.getResult());
+		return "admin/tableContent"; 
+	}
+	
+	@RequestMapping("/page/viewDetail")
+	public String viewDetail(HttpServletRequest request){
+		return "admin/viewDetail"; 
+	}
+	
+}

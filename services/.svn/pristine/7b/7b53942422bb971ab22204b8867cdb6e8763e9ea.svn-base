@@ -1,0 +1,107 @@
+package signature;
+
+
+import org.apache.log4j.Logger;
+
+public class SignatureUtils {
+	
+	protected static Logger log = Logger.getLogger(SignatureUtils.class);
+	
+	/** 
+     * 除去数组中的空值和签名参数
+     * @param sArray 签名参数组
+     * @return 去掉空值与签名参数后的新签名参数组
+     *//*
+    public static Map<String, String> paraFilter(Map<String, String> sArray) {
+
+        Map<String, String> result = new HashMap<String, String>();
+
+        if (sArray == null || sArray.size() <= 0) {
+            return result;
+        }
+
+        for (String key : sArray.keySet()) {
+            String value = sArray.get(key);
+            if (value == null || value.equals("") || key.equalsIgnoreCase("sign")
+                || key.equalsIgnoreCase("sign_type")) {
+                continue;
+            }
+            result.put(key, value);
+        }
+
+        return result;
+    }
+	
+    *//**
+     * 排序签名属性 生成连接
+     * @param params
+     * @return
+     *//*
+    public static String createLinkString(Map<String, String> map) {
+    	
+    	Map<String, String> params =  paraFilter(map);
+    	
+        List<String> keys = new ArrayList<String>(params.keySet());
+        Collections.sort(keys);
+        String prestr = "";
+        for (int i = 0; i < keys.size(); i++) {
+            String key = keys.get(i);
+            String value = params.get(key);
+
+            if (i == keys.size() - 1) {//拼接时，不包括最后一个&字符
+                prestr = prestr + key + "=" + value;
+            } else {
+                prestr = prestr + key + "=" + value + "&";
+            }
+        }
+        return prestr;
+    }
+    
+    *//**
+     * 签名数据
+     * @param map
+     * @return
+     *//*
+	public static String signature(Map<String,String> map) {
+		try {
+			Map<String, String> paramsMap = SignatureUtils.paraFilter(map);
+			String strSgin = SignatureUtils.createLinkString(paramsMap);
+			String resultSign = Cipher3DES.encrypt(strSgin, HfepayConfig.key, "12345678");  
+			String sign = CipherRSA.sign(resultSign.getBytes(),HfepayConfig.key_private);
+			return sign;
+		}catch(Exception e) {
+			log.error("签名失败!");
+			e.printStackTrace();
+		}
+		return null;
+	}
+	
+	
+	*//**
+     * 验签
+     * @param map
+     * @return
+     *//*
+	public static Boolean verifySignature(Map<String,String> paramsMap,String sgin) {
+		
+		try {
+			String paramsSgin = SignatureUtils.createLinkString(paramsMap);
+			String resultSign = Cipher3DES.encrypt(paramsSgin, HfepayConfig.key, "12345678");
+			
+			Boolean bool = CipherRSA.verify(resultSign.getBytes(), HfepayConfig.public_key, sgin);
+			
+			return bool;
+			
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}  
+		
+		return false;
+		
+		
+		
+		
+	}
+*/
+}

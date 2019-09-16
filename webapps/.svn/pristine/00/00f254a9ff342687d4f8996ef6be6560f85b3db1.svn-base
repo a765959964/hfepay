@@ -1,0 +1,110 @@
+$(function(){
+	reset();
+	//注册按钮
+	$("#next").click(function(){
+		var realName=$("#realName").val();
+		var merchantName=$("#merchantName").val();
+		var idCard=$("#idCard").val();
+		//var email=$("#email").val();
+		
+		var frontImg = $("#idfrontimg").val();
+		var backImg = $("#idbackimg").val();
+		var handImg =$("#idhandimg").val();
+		
+		
+		if(!realName || realName==""){
+			showDiv("请填写真实姓名");
+			return;
+		}
+		
+		if(!merchantName || merchantName==""){
+			showDiv("商户名称不能为空");
+			return;		
+		}
+		if(!/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(idCard)){
+			showDiv("身份证不能格式有误");
+			return;
+		}
+		/*if(!email || email==""){
+			showDiv("邮箱不能为空");
+			return;
+		}*/
+		
+		if(!frontImg || frontImg==""){
+			showDiv("请上传身份证正面照");
+			return;		
+		}
+		if(!backImg || backImg==""){
+			showDiv("请上传身份证反面照");
+			return;
+		}
+		if(!handImg || handImg==""){
+			showDiv("请上传手持身份证照片");
+			return;
+		}
+		
+		var dataJson = {"name":realName,"idcardImg1":frontImg,"idcardImg2":backImg,"idcardImg3":handImg,
+				"merchantName":merchantName,
+				"idCard":idCard/*,
+				"email":email*/
+		};
+		//注册
+		$.ajax({
+				url:basePath+"/scancode/apply/step1",
+				data:dataJson,
+				type:"POST",
+				success:function(json)
+				{
+					json = JSON.parse(json);
+					var executeStatus = json.errorCode; 
+					if(executeStatus == "0"){
+						location.href=basePath+"/scancode/apply2";
+					}
+					else{
+						showDiv(json.errorMsg);
+						return;
+					}
+				}
+			});
+	});
+	
+	
+	$("#realName").on("blur",function(){
+		var value = $(this).val();
+		if(value==""){
+			showDiv("请输入正确的姓名");
+		}else{
+			reset();
+		}
+	});
+	$("#idCard").on("blur",function(){
+		var value = $(this).val();
+		if(!/(^\d{15}$)|(^\d{18}$)|(^\d{17}(\d|X|x)$)/.test(value)){
+			showDiv("请输入正确的身份证号码");
+		}
+		else{
+			reset();
+		}
+	});
+	
+		
+	/*$("#email").on("blur",function(){
+		var value = $(this).val();
+		if(!/^([a-zA-Z0-9_\.\-])+\@(([a-zA-Z0-9\-])+\.)+([a-zA-Z0-9]{2,4})+$/.test(value)){
+			showDiv("请输入正确的邮箱");
+		}else{
+			reset();
+		}
+	});*/
+	
+	function reset(){
+		$("#errorDiv").hide();
+		$("#errorMsg").text("");
+	}
+	
+	function showDiv(msg){
+		$("#errorDiv").show();
+		$("#errorMsg").text(msg);
+	}
+	
+});

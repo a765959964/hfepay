@@ -1,0 +1,1 @@
+$(function(){$("#form").find("#return").click(function(){history.go(-1)});dataOpr()});function toPage(b){var d=$("#baseUrl").text().trim();var c=$("#form").serialize();var a=window.location.href.replace(window.location.search,"");location.href=a+"?pageNo="+b};

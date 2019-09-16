@@ -1,0 +1,135 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.service;
+
+import java.util.List;
+
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.ChannelInfoCondition;
+import com.hfepay.scancode.entity.ChannelInfo;
+
+public interface ChannelInfoService {
+	
+	/**
+	 * 列表(分页)
+	 * @param channelInfoCondition 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	public PagingResult<ChannelInfo> findPagingResult(ChannelInfoCondition channelInfoCondition);
+	
+	/**
+	 * 列表
+	 * @param channelInfo 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	public List<ChannelInfo> findAll(ChannelInfoCondition channelInfoCondition);
+	
+	/**
+	 * 主键查找
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	ChannelInfo findById(String id);
+	
+	/**
+	 * 新增
+	 * @param channelInfoCondition
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	long insert(ChannelInfoCondition channelInfoCondition);
+
+	/**
+	 * 删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	long deleteById(String id);
+	
+	/**
+	 * 条件删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	long deleteByCriteria(Criteria criteria);
+	
+	/**
+	 * 行数汇总
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	long countByCriteria(Criteria criteria);
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	long update(ChannelInfoCondition channelInfoCondition);
+	
+	/**
+	 * 条件更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	long updateByCriteria(ChannelInfoCondition channelInfoCondition,Criteria criteria);
+	
+	/**
+	 * 状态更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	long updateStatus(String id,String status);	
+	
+	
+	/**
+	 * 根据code查询渠道信息
+	 * @param code
+	 * @return
+	 */
+	public ChannelInfo findByCode(String code);
+	
+	/**
+	 * 从redis中取出当前渠道信息
+	 * @param code
+	 * @return
+	 */
+	public Object getChannelInfoToRedisByCode(String code)throws Exception;
+	
+	/**
+	 * 往redis中存入渠道信息
+	 * @param code
+	 * @return
+	 */
+	public Object saveChannelInfoToRedisByCode(String code)throws Exception;
+	
+	/**
+	 * 根据备案域名查询渠道信息
+	 * @param code
+	 * @return
+	 */
+	public ChannelInfo findByDomainName(String domainName);
+	
+	/**
+	 * 根据编号查询渠道信息
+	 * @param code
+	 * @return
+	 */
+	public ChannelInfo findByNumber(String number);
+}
+

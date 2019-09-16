@@ -1,0 +1,214 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.entity;
+
+import java.math.BigDecimal;
+import java.util.Date;
+
+import com.hfepay.commons.base.annotation.Generated;
+import com.hfepay.commons.entity.IdEntity;
+import com.hfepay.commons.entity.annotations.SelectColumnMapping;
+import com.hfepay.commons.entity.annotations.SelectColumnMappings;
+
+@SelectColumnMappings({
+	@SelectColumnMapping(property = "id", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "id"),
+	@SelectColumnMapping(property = "withdrawalsNo", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "withdrawals_no"),
+	@SelectColumnMapping(property = "channelNo", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "channel_no"),
+	@SelectColumnMapping(property = "organNo", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "organ_no"),
+	@SelectColumnMapping(property = "isChannel", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "is_channel"),
+	@SelectColumnMapping(property = "balance", type = BigDecimal.class, table = "t_organ_withdrawals", tableAlias = "A", column = "balance"),
+	@SelectColumnMapping(property = "actualAmount", type = BigDecimal.class, table = "t_organ_withdrawals", tableAlias = "A", column = "actual_amount"),
+	@SelectColumnMapping(property = "status", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "status"),
+	@SelectColumnMapping(property = "bankCode", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "bank_code"),
+	@SelectColumnMapping(property = "bankName", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "bank_name"),
+	@SelectColumnMapping(property = "bankCard", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "bank_card"),
+	@SelectColumnMapping(property = "idCard", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "id_card"),
+	@SelectColumnMapping(property = "name", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "name"),
+	@SelectColumnMapping(property = "mobile", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "mobile"),
+	@SelectColumnMapping(property = "accountType", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "account_type"),
+	@SelectColumnMapping(property = "createTime", type = Date.class, table = "t_organ_withdrawals", tableAlias = "A", column = "create_time"),
+	@SelectColumnMapping(property = "updateTime", type = Date.class, table = "t_organ_withdrawals", tableAlias = "A", column = "update_time"),
+	@SelectColumnMapping(property = "operator", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "operator"),
+	@SelectColumnMapping(property = "remark", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "remark"),
+	@SelectColumnMapping(property = "temp1", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "temp_1"),
+	@SelectColumnMapping(property = "temp2", type = java.lang.String.class, table = "t_organ_withdrawals", tableAlias = "A", column = "temp_2")
+})
+
+@Generated("2016-12-21 10:49:29")
+public class OrganWithdrawals implements IdEntity<String> {
+	
+	private static final long serialVersionUID = 5454155825314635342L;
+	
+	private String id;//主键ID
+	private String withdrawalsNo;//提现流水号
+	private String channelNo;//渠道编号
+	private String organNo;//申请机构编号
+	private String isChannel;//是否是渠道1是0否
+	private BigDecimal balance;//申请提现金额
+	private BigDecimal actualAmount;//实际到账金额
+	private String status;//是否有效：1：申请中，2：审核通过，3：审核拒绝（渠道审核）
+	private String bankCode;//银行开户行代码
+	private String bankName;//开户行银行名称（支行）
+	private String bankCard;//银行卡号码
+	private String idCard;//身份证号码
+	private String name;//姓名
+	private String mobile;//手机号码
+	private String accountType;//账户类型，0：对私，1：对公
+	private Date createTime;//申请时间
+	private Date updateTime;//修改时间
+	private String operator;//操作人账号
+	private String remark;//备注
+	private String temp1;//备用字段
+	private String temp2;//备用字段
+	
+	public void setId(String value) {
+		this.id = value;
+	}
+	
+	public String getId() {
+		return this.id;
+	}
+	public void setWithdrawalsNo(String value) {
+		this.withdrawalsNo = value;
+	}
+	
+	public String getWithdrawalsNo() {
+		return this.withdrawalsNo;
+	}
+	public void setChannelNo(String value) {
+		this.channelNo = value;
+	}
+	
+	public String getChannelNo() {
+		return this.channelNo;
+	}
+	public void setOrganNo(String value) {
+		this.organNo = value;
+	}
+	
+	public String getOrganNo() {
+		return this.organNo;
+	}
+	public void setIsChannel(String value) {
+		this.isChannel = value;
+	}
+	
+	public String getIsChannel() {
+		return this.isChannel;
+	}
+	public void setBalance(BigDecimal value) {
+		this.balance = value;
+	}
+	
+	public BigDecimal getBalance() {
+		return this.balance;
+	}
+	public void setActualAmount(BigDecimal value) {
+		this.actualAmount = value;
+	}
+	
+	public BigDecimal getActualAmount() {
+		return this.actualAmount;
+	}
+	public void setStatus(String value) {
+		this.status = value;
+	}
+	
+	public String getStatus() {
+		return this.status;
+	}
+	public void setBankCode(String value) {
+		this.bankCode = value;
+	}
+	
+	public String getBankCode() {
+		return this.bankCode;
+	}
+	public void setBankName(String value) {
+		this.bankName = value;
+	}
+	
+	public String getBankName() {
+		return this.bankName;
+	}
+	public void setBankCard(String value) {
+		this.bankCard = value;
+	}
+	
+	public String getBankCard() {
+		return this.bankCard;
+	}
+	public void setIdCard(String value) {
+		this.idCard = value;
+	}
+	
+	public String getIdCard() {
+		return this.idCard;
+	}
+	public void setName(String value) {
+		this.name = value;
+	}
+	
+	public String getName() {
+		return this.name;
+	}
+	public void setMobile(String value) {
+		this.mobile = value;
+	}
+	
+	public String getMobile() {
+		return this.mobile;
+	}
+	public void setAccountType(String value) {
+		this.accountType = value;
+	}
+	
+	public String getAccountType() {
+		return this.accountType;
+	}
+	public void setCreateTime(Date value) {
+		this.createTime = value;
+	}
+	
+	public Date getCreateTime() {
+		return this.createTime;
+	}
+	public void setUpdateTime(Date value) {
+		this.updateTime = value;
+	}
+	
+	public Date getUpdateTime() {
+		return this.updateTime;
+	}
+	public void setOperator(String value) {
+		this.operator = value;
+	}
+	
+	public String getOperator() {
+		return this.operator;
+	}
+	public void setRemark(String value) {
+		this.remark = value;
+	}
+	
+	public String getRemark() {
+		return this.remark;
+	}
+	public void setTemp1(String value) {
+		this.temp1 = value;
+	}
+	
+	public String getTemp1() {
+		return this.temp1;
+	}
+	public void setTemp2(String value) {
+		this.temp2 = value;
+	}
+	
+	public String getTemp2() {
+		return this.temp2;
+	}
+}
+

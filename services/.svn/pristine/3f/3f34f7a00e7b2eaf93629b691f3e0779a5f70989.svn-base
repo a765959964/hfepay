@@ -1,0 +1,42 @@
+package com.hfepay.scancode.service.payway.impl;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alibaba.dubbo.config.annotation.Service;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.scancode.dao.PlatformQrcodeDAO;
+import com.hfepay.scancode.entity.PlatformQrcode;
+import com.hfepay.scancode.service.payway.ScanCodeService;
+
+/**
+ * 平台网关处理
+ * @author Administrator
+ *
+ */
+@Service
+public class ScanCodeServiceImpl implements ScanCodeService {
+
+	public static final Logger log = LoggerFactory.getLogger(ScanCodeServiceImpl.class);
+	
+	@Autowired
+	private PlatformQrcodeDAO platformQrcodeDAO;
+	
+	/**
+	 * 根据二维码ID 获取对应实体
+	 * @param qrCode
+	 * @return PlatformQrcode
+	 */
+	@Override
+	public PlatformQrcode findByQrCode(String qrCode) {
+		log.info("#########qrCode["+qrCode+"]#########");
+		CriteriaBuilder cb = Cnd.builder(PlatformQrcode.class);
+		cb.andEQ("qrCode", qrCode);
+		Criteria criteria = cb.buildCriteria();
+		return platformQrcodeDAO.findOneByCriteria(criteria);
+	}
+
+}

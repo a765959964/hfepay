@@ -1,0 +1,294 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.service.operator.impl;
+
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.criteria.Order;
+import com.hfepay.commons.utils.PagingResult;
+
+import com.hfepay.scancode.dao.MerchantCashierDAO;
+import com.hfepay.scancode.entity.ChannelAdmin;
+import com.hfepay.scancode.entity.MerchantCashier;
+import com.hfepay.scancode.service.operator.MerchantCashierService;
+import com.hfepay.scancode.condition.MerchantCashierCondition;
+
+@Service("merchantCashierService")
+public class MerchantCashierServiceImpl implements MerchantCashierService {
+	
+	@Autowired
+    private MerchantCashierDAO merchantCashierDAO;
+    
+    /**
+	 * 列表(分页)
+	 * @param merchantCashierCondition 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-11-08 09:54:30
+	 */
+    @Override
+	public PagingResult<MerchantCashier> findPagingResult(MerchantCashierCondition merchantCashierCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantCashier.class);
+		if(!Strings.isEmpty(merchantCashierCondition.getId())){
+			cb.andEQ("id", merchantCashierCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getCashierNo())){
+			cb.andEQ("cashierNo", merchantCashierCondition.getCashierNo());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getStoreNo())){
+			cb.andEQ("storeNo", merchantCashierCondition.getStoreNo());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantCashierCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantCashierCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getUserName())){
+			cb.andEQ("userName", merchantCashierCondition.getUserName());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getIdCard())){
+			cb.andEQ("idCard", merchantCashierCondition.getIdCard());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getMobile())){
+			cb.andEQ("mobile", merchantCashierCondition.getMobile());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getIsCashier())){
+			cb.andEQ("isCashier", merchantCashierCondition.getIsCashier());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getStatus())){
+			cb.andEQ("status", merchantCashierCondition.getStatus());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantCashierCondition.getRecordStatus());
+		}
+		if(null != merchantCashierCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantCashierCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantCashierCondition.getOperator())){
+			cb.andEQ("operator", merchantCashierCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantCashierCondition.getRemark())){
+			cb.andLike("remark", merchantCashierCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getTemp1())){
+			cb.andEQ("temp1", merchantCashierCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getTemp2())){
+			cb.andEQ("temp2", merchantCashierCondition.getTemp2());
+		}
+		if(merchantCashierCondition.getChannelAdmin() != null){
+			ChannelAdmin admin = merchantCashierCondition.getChannelAdmin();
+			channelFilter(cb, admin);
+		}
+		cb.orderBy("createTime", Order.DESC);
+		//排序
+		if(!Strings.isEmpty(merchantCashierCondition.getOrderBy())){
+			if(merchantCashierCondition.getOrderBy().indexOf(",")>0){
+				String[] orderBys = merchantCashierCondition.getOrderBy().split(",");
+				String[] orders = merchantCashierCondition.getOrder().split(",");
+				for(int i=0; i<orderBys.length && i<orders.length; i++){
+					cb.orderBy(orderBys[i], Order.valueOf(orders[i]));
+				}
+			}else{
+				cb.orderBy(merchantCashierCondition.getOrderBy(), Order.valueOf(merchantCashierCondition.getOrder()));
+			}
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(merchantCashierCondition.getFirst()), Long.valueOf(merchantCashierCondition.getLast()));
+		return merchantCashierDAO.findPagingResult(buildCriteria);
+	}
+	
+	/**
+	 * 列表
+	 * @param merchantCashier 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-11-08 09:54:30
+	 */
+	@Override
+	public List<MerchantCashier> findAll(MerchantCashierCondition merchantCashierCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantCashier.class);
+		if(!Strings.isEmpty(merchantCashierCondition.getId())){
+			cb.andEQ("id", merchantCashierCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getCashierNo())){
+			cb.andEQ("cashierNo", merchantCashierCondition.getCashierNo());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getStoreNo())){
+			cb.andEQ("storeNo", merchantCashierCondition.getStoreNo());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantCashierCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantCashierCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getUserName())){
+			cb.andEQ("userName", merchantCashierCondition.getUserName());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getIdCard())){
+			cb.andEQ("idCard", merchantCashierCondition.getIdCard());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getMobile())){
+			cb.andEQ("mobile", merchantCashierCondition.getMobile());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getIsCashier())){
+			cb.andEQ("isCashier", merchantCashierCondition.getIsCashier());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getStatus())){
+			cb.andEQ("status", merchantCashierCondition.getStatus());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantCashierCondition.getRecordStatus());
+		}
+		if(null != merchantCashierCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantCashierCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantCashierCondition.getOperator())){
+			cb.andEQ("operator", merchantCashierCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantCashierCondition.getRemark())){
+			cb.andLike("remark", merchantCashierCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getTemp1())){
+			cb.andEQ("temp1", merchantCashierCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantCashierCondition.getTemp2())){
+			cb.andEQ("temp2", merchantCashierCondition.getTemp2());
+		}
+		if(merchantCashierCondition.getChannelAdmin() != null){
+			ChannelAdmin admin = merchantCashierCondition.getChannelAdmin();
+			channelFilter(cb, admin);
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return merchantCashierDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 主键查找
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-11-08 09:54:30
+	 */
+	@Override
+	public MerchantCashier findById(String id){
+		return merchantCashierDAO.get(id);
+	}
+	
+	/**
+	 * 新增
+	 * @param merchantCashierCondition
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-11-08 09:54:30
+	 */
+	@Override
+	public long insert(MerchantCashierCondition merchantCashierCondition){
+		MerchantCashier merchantCashier = new MerchantCashier();
+		BeanUtils.copyProperties(merchantCashierCondition, merchantCashier);
+		return merchantCashierDAO.insert(merchantCashier);
+	}
+
+	/**
+	 * 删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-11-08 09:54:30
+	 */
+	@Override
+	public long deleteById(String id){
+		return merchantCashierDAO.deleteById(id);
+	}
+	
+	/**
+	 * 条件删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-11-08 09:54:30
+	 */
+	@Override
+	public long deleteByCriteria(Criteria criteria){
+		return merchantCashierDAO.deleteByCriteria(criteria);
+	}
+	
+	/**
+	 * 行数汇总
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-11-08 09:54:30
+	 */
+	@Override
+	public long countByCriteria(Criteria criteria){
+		return merchantCashierDAO.countByCriteria(criteria);
+	}
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-11-08 09:54:30
+	 */
+	@Override
+	public long update(MerchantCashierCondition merchantCashierCondition){
+		MerchantCashier merchantCashier = new MerchantCashier();
+		BeanUtils.copyProperties(merchantCashierCondition, merchantCashier);
+		return merchantCashierDAO.update(merchantCashier);
+	}
+	
+	/**
+	 * 条件更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-11-08 09:54:30
+	 */
+	@Override
+	public long updateByCriteria(MerchantCashierCondition merchantCashierCondition,Criteria criteria){
+		MerchantCashier merchantCashier = new MerchantCashier();
+		BeanUtils.copyProperties(merchantCashierCondition, merchantCashier);
+		return merchantCashierDAO.updateByCriteria(merchantCashier,criteria);
+	}
+	
+	/**
+	 * 状态更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-11-08 09:54:30
+	 */
+	@Override
+	public long updateStatus(String id,String status){
+		return merchantCashierDAO.updateStatus(id,status);
+	}	
+	
+	private void channelFilter(CriteriaBuilder cb, ChannelAdmin admin) {
+		switch (admin.getIdentityFlag()) {
+		case "1":
+			cb.addParam("type", admin.getIdentityFlag());
+			cb.addParam("valueNo", admin.getChannelCode());
+			break;
+		case "2":
+			cb.addParam("type", admin.getIdentityFlag());
+			cb.addParam("valueNo", admin.getAgentNo());
+			break;
+		case "3":
+			cb.andEQ("merchantNo", admin.getMerchantNo());
+			break;
+		default:
+			break;
+		}
+	}
+}
+

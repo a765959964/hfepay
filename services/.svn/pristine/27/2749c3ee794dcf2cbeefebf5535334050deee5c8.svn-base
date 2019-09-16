@@ -1,0 +1,113 @@
+package com.hfepay.scancode.bo;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+public class PayBackBo implements Serializable{
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -727988262969125969L;
+	
+	private String orderNo;
+	private String userOrderNo;
+	private String channelNo;
+	private String merchantNo;
+	private String merchantName;
+	private String payType;
+	private BigDecimal orderAmt;
+	private String orderTitle;
+	private String orderDesc;
+	private String beginTime;
+	private String endTime;
+	private String status;
+	private String errorMsg;
+	
+	public String getOrderNo() {
+		return orderNo;
+	}
+	public void setOrderNo(String orderNo) {
+		this.orderNo = orderNo;
+	}
+	public String getUserOrderNo() {
+		return userOrderNo;
+	}
+	public void setUserOrderNo(String userOrderNo) {
+		this.userOrderNo = userOrderNo;
+	}
+	public String getChannelNo() {
+		return channelNo;
+	}
+	public void setChannelNo(String channelNo) {
+		this.channelNo = channelNo;
+	}
+	public String getMerchantNo() {
+		return merchantNo;
+	}
+	public void setMerchantNo(String merchantNo) {
+		this.merchantNo = merchantNo;
+	}
+	public String getMerchantName() {
+		return merchantName;
+	}
+	public void setMerchantName(String merchantName) {
+		this.merchantName = merchantName;
+	}
+	public String getPayType() {
+		return payType;
+	}
+	public void setPayType(String payType) {
+		this.payType = payType;
+	}
+	public BigDecimal getOrderAmt() {
+		return orderAmt;
+	}
+	public void setOrderAmt(BigDecimal orderAmt) {
+		this.orderAmt = orderAmt;
+	}
+	public String getOrderTitle() {
+		return orderTitle;
+	}
+	public void setOrderTitle(String orderTitle) {
+		this.orderTitle = orderTitle;
+	}
+	public String getOrderDesc() {
+		return orderDesc;
+	}
+	public void setOrderDesc(String orderDesc) {
+		this.orderDesc = orderDesc;
+	}
+	public String getBeginTime() {
+		return beginTime;
+	}
+	public void setBeginTime(String beginTime) {
+		this.beginTime = beginTime;
+	}
+	public String getEndTime() {
+		return endTime;
+	}
+	public void setEndTime(String endTime) {
+		this.endTime = endTime;
+	}
+	public String getStatus() {
+		return status;
+	}
+	public void setStatus(String status) {
+		this.status = status;
+	}
+	public String getErrorMsg() {
+		return errorMsg;
+	}
+	public void setErrorMsg(String errorMsg) {
+		this.errorMsg = errorMsg;
+	}
+	
+	@Override
+	public String toString() {
+		return "PayBackBo [orderNo=" + orderNo + ", userOrderNo=" + userOrderNo + ", channelNo=" + channelNo
+				+ ", merchantNo=" + merchantNo + ", merchantName=" + merchantName + ", payType=" + payType
+				+ ", orderAmt=" + orderAmt + ", orderTitle=" + orderTitle + ", orderDesc=" + orderDesc + ", beginTime="
+				+ beginTime + ", endTime=" + endTime + ", status=" + status + ", errorMsg=" + errorMsg + "]";
+	}
+
+}

@@ -1,0 +1,231 @@
+package com.hfepay.scancode.controller;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.hfepay.common.web.controller.BaseController;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.pay.service.PayCallBackOperatorService;
+import com.hfepay.pay.service.PayScanCodeService;
+import com.hfepay.pay.utils.IpUtil.GetCityByIpUtil;
+import com.hfepay.pay.utils.IpUtil.LocationInfo;
+import com.hfepay.scancode.commons.ScanCodeGetWayErrorCode;
+import com.hfepay.scancode.commons.bo.AdviertismentBo;
+import com.hfepay.scancode.commons.condition.OrderPaymentCondition;
+import com.hfepay.scancode.commons.contants.AdviertismentType;
+import com.hfepay.scancode.commons.contants.QrStatus;
+import com.hfepay.scancode.commons.contants.UseStatus;
+import com.hfepay.scancode.commons.entity.AdviertisementInfo;
+import com.hfepay.scancode.commons.entity.AgentBase;
+import com.hfepay.scancode.commons.entity.MerchantInfo;
+import com.hfepay.scancode.commons.entity.MerchantQrcode;
+import com.hfepay.scancode.commons.entity.OrderPayment;
+import com.hfepay.scancode.commons.entity.PlatformQrcode;
+
+import net.sf.json.JSONObject;
+
+/**
+ * @ClassName: ScanCodeOperatorController
+ * @Description: 扫码的之后的动作：未被注册：注册，已被注册：付款
+ * @author: husain
+ * @date: 2016年10月24日 下午3:02:13
+ */
+@Controller
+@RequestMapping
+public class ScanCodeOperatorController extends BaseController{
+	private Logger logger = LoggerFactory.getLogger(getClass());
+	@Autowired
+	private PayScanCodeService payScanCodeService;
+	@Autowired
+	private PayCallBackOperatorService payCallBackOperatorService;
+	
+	/***二维码扫描，判断是否可以支付，不能支付的话直接跳转到h5执行注册完善资料等操作**/
+	@RequestMapping("/scan/operate")
+	public String apply2(ModelMap model,HttpServletRequest request,HttpServletResponse response){
+		logger.info("in operate........................");
+		String browerType = request.getHeader("User-Agent").toLowerCase();
+		//else if(browerType.toLowerCase().indexOf("alipayclient")!=-1){//支付宝
+		String qrCode = request.getParameter("qrCode");
+		if(Strings.isEmpty(qrCode)){//参数为空
+			request.setAttribute("error", "二维码不存在");
+			return "scancode/scan_error";
+		}
+		
+		PlatformQrcode code = payCallBackOperatorService.findByQrcode(qrCode);
+		if(null==code||null==code.getUseStatus()){//码不存在
+			logger.info("##########qrCode["+qrCode+"]非平台二维码##########");
+			//判定商户子码是否存在
+			MerchantQrcode merchantQrcode = payScanCodeService.findByMerchantQrCode(qrCode);
+			if (null == merchantQrcode) {
+				logger.info("##########qrCode["+qrCode+"]非商户二维码##########");
+				request.setAttribute("error", "二维码不存在或状态有问题");
+				return "scancode/scan_error";
+			}else {
+				request.setAttribute("qrCode", qrCode);
+				MerchantInfo info = payCallBackOperatorService.findByMerchantNo(merchantQrcode.getMerchantNo());
+				
+				if("3".equals(info.getStatus())){//审核通过支付
+					request.setAttribute("name", info.getMerchantName());
+					if(browerType.toLowerCase().indexOf("micromessenger")!= -1){//判断浏览器类型
+						logger.info("#######browerType:WXZF#######");
+						request.setAttribute("browerType", "WXZF");
+					}
+					request.setAttribute("merchantNo", info.getMerchantNo());
+					return "scancode/payment";
+				}
+				else if("5".equals(info.getStatus())){
+					request.setAttribute("error", "商户已被停用");
+					return "scancode/scan_error";
+				}
+				else{//审核不过，检查是注册流程未完成的用户还是其他用户，其他用户不能支付，未审核完成的用户到个人中心
+					JSONObject paramsInfoJson = payCallBackOperatorService.getParamsInfoByDomain(info.getChannelNo());
+					logger.info("==========渠道域名参数paramsInfoJson：" + paramsInfoJson);
+					String redirecUrl = paramsInfoJson.getString("authUnpass");
+					return "redirect:"+redirecUrl+"?qrCode="+qrCode+"&organNo="+code.getAgentNo();
+				}
+			}
+			
+		}else{
+			if (code.getQrStatus().equals(QrStatus.QR_2.getCode())) {
+				request.setAttribute("error", "该二维码已失效");
+				return "scancode/scan_error";
+			}
+			
+			//使用状态是否为1
+			String status = code.getUseStatus();
+			logger.info("in operate........................status="+status);
+			if(status.equals(UseStatus.UNUSE.value())){//未使用相当于注册操作
+				if(browerType.toLowerCase().indexOf("micromessenger")==-1){//注册只能微信浏览器进入
+					request.setAttribute("error", "新用户入驻必须使用微信扫描二维码.");
+					return "scancode/scan_error";
+				}
+				JSONObject paramsInfoJson = payCallBackOperatorService.getParamsInfoByDomain(code.getChannelNo());
+				logger.info("==========渠道域名参数paramsInfoJson：" + paramsInfoJson);
+				String redirecUrl = paramsInfoJson.getString("authNew");
+				return "redirect:"+redirecUrl+"?qrCode="+qrCode+"&organNo="+code.getAgentNo();
+			}else if(status.equals(UseStatus.USED.value())){//支付页面
+				request.setAttribute("qrCode", qrCode);
+				MerchantInfo info = payCallBackOperatorService.findByMerchantNo(code.getMerchantNo());
+				if("3".equals(info.getStatus())){//审核通过支付
+					request.setAttribute("name", info.getMerchantName());
+					if(browerType.toLowerCase().indexOf("micromessenger")!= -1){//判断浏览器类型
+						logger.info("#######browerType:WXZF#######");
+						request.setAttribute("browerType", "WXZF");
+					}
+					request.setAttribute("merchantNo", info.getMerchantNo());
+					return "scancode/payment";
+				}
+				else if("5".equals(info.getStatus())){
+					request.setAttribute("error", "商户已被停用");
+					return "scancode/scan_error";
+				}
+				else{//审核不过，检查是注册流程未完成的用户还是其他用户，其他用户不能支付，未审核完成的用户到个人中心
+					JSONObject paramsInfoJson = payCallBackOperatorService.getParamsInfoByDomain(info.getChannelNo());
+					logger.info("==========渠道域名参数paramsInfoJson：" + paramsInfoJson);
+					String redirecUrl = paramsInfoJson.getString("authUnpass");
+					return "redirect:"+redirecUrl+"?qrCode="+qrCode+"&organNo="+code.getAgentNo();
+				}
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * 商户收银活动优惠
+	 * @param request
+	 * @param response
+	 * @return returnInfo
+	 */
+	@RequestMapping("/scan/merchantcashingActive")
+	@ResponseBody
+	public Map<String,BigDecimal> merchantcashingActive(HttpServletRequest request,OrderPayment pay){
+		Map<String,BigDecimal> map = payCallBackOperatorService.calculateCheapCash(pay.getMerchantNo(), pay.getOrderAmt());
+		if(map==null||map.isEmpty()){
+			return null;
+		}
+		return map;
+	}
+	
+	@RequestMapping("/scan/paymentResult")
+	public String paymentpage(ModelMap model,HttpServletRequest request){
+		Map<String,String> returnInfo = new HashMap<String,String>();
+		List<AdviertisementInfo> list = null;
+		
+		String tradeNo = request.getParameter("tradeNo");
+		logger.info("########tradeNo:"+tradeNo+"########");
+		
+		returnInfo.put("returnCode",ScanCodeGetWayErrorCode.SYSTEM_000000.getCode());
+		returnInfo.put("returnDesc",ScanCodeGetWayErrorCode.SYSTEM_000000.getDesc());
+		
+		OrderPaymentCondition orderPaymentCondition = new OrderPaymentCondition();
+		orderPaymentCondition.setTradeNo(tradeNo);
+		List<OrderPayment> orderList = payCallBackOperatorService.findAll(orderPaymentCondition);
+		
+		try {
+			//获取广告信息
+			LocationInfo locationInfo = GetCityByIpUtil.getCityInfoByIP(orderList.get(0).getTemp1());
+			if (null != locationInfo) {
+				logger.info("########locationInfo:"+locationInfo+",state:"+locationInfo.state+",city:"+locationInfo.city+"########");
+				AdviertismentBo adviertismentBo = new AdviertismentBo();
+				adviertismentBo.setAdviertPosition(AdviertismentType.PAY_BANNEL.getCode());
+				adviertismentBo.setMerchantNo(orderList.get(0).getMerchantNo());
+				adviertismentBo.setPname(locationInfo.state);
+				
+				adviertismentBo.setCity(locationInfo.city);
+				list = payCallBackOperatorService.getAdviertisInfoByUser(adviertismentBo);
+			}
+			if (null != list && list.size() > 0) {			
+				request.setAttribute("adviertisementImg",list.get(0).getImgUrl());
+				request.setAttribute("adviertisementUrl",list.get(0).getAdviertLink());
+			}else {
+				request.setAttribute("adviertisementImg","");
+				request.setAttribute("adviertisementUrl","");
+			}
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+				
+		model.addAttribute("returnInfo", returnInfo);
+		return "scancode/paymentResult";
+	}
+	
+	@RequestMapping("/agentScan/operate")
+	public String paymentpage(ModelMap model,HttpServletRequest request,HttpServletResponse response){
+		String agentNo = request.getParameter("agentNo");
+		logger.info("###########代理商推广注册agentNo["+agentNo+"]###########");
+		
+		String browerType = request.getHeader("User-Agent").toLowerCase();
+		if(browerType.toLowerCase().indexOf("micromessenger")==-1){//注册只能微信浏览器进入
+			request.setAttribute("error", "必须使用微信扫描二维码");
+			logger.error("###########代理商推广注册agentNo["+agentNo+"],新用户入驻必须使用微信扫描二维码###########");
+			return "scancode/wechat/scan_error";
+		}
+		//判定代理商是否存在
+		AgentBase agentBase = payCallBackOperatorService.findByAgentNo(agentNo);
+		if (null == agentBase) {
+			request.setAttribute("error", "代理商不存在");
+			logger.error("###########代理商推广注册agentNo["+agentNo+"],代理商不存在###########");
+			return "scancode/wechat/scan_error";
+		}
+				
+		JSONObject paramsInfoJson = payCallBackOperatorService.getParamsInfoByDomain(agentBase.getChannelNo());
+		logger.info("==========渠道域名参数paramsInfoJson：" + paramsInfoJson);
+		String redirecUrl = paramsInfoJson.getString("hfepayAgentQrPath");
+		return "redirect:"+redirecUrl+"?agentNo="+agentNo;
+	}
+}

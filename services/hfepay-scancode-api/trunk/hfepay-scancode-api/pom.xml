@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+	<groupId>com.hfepay.commons</groupId>
+	<artifactId>hfepay-commons-parent</artifactId>
+	<version>1.0.0</version>
+  </parent>
+  <groupId>com.hfepay.scancode.api</groupId>
+  <artifactId>hfepay-scancode-api</artifactId>
+  <version>1.0.0</version>
+  <packaging>pom</packaging>
+
+  <name>parent</name>
+  <url>http://maven.apache.org</url>
+
+  <properties>
+    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+  </properties>
+
+  <modules>
+    <module>hfepay-scancode-api-dao</module>
+    <module>hfepay-scancode-api-dao-impl</module>
+    <module>hfepay-scancode-api-entity</module>
+    <module>hfepay-scancode-api-service</module>
+    <module>hfepay-scancode-api-service-impl</module>
+  </modules>
+  
+    	<repositories>
+		<repository>
+			<id>local nexus</id>
+			<name>local nexus</name>
+			<url>http://127.0.0.1:8081/nexus/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled> 
+			</releases>
+			<snapshots>
+			<enabled>true</enabled>
+			<updatePolicy>always</updatePolicy>
+			</snapshots>
+		</repository>
+		<repository>
+			<id>nexus</id>
+			<name>local private nexus</name>
+			<url>http://maven.oschina.net/content/groups/public/</url>
+			<releases>
+				<enabled>true</enabled> 
+			</releases>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+	
+	<distributionManagement>
+		<repository>
+			<id>nexus-releases</id>
+			<name>Nexus Release Repository</name>
+			<url>http://127.0.0.1:8081/nexus/content/repositories/releases/</url>
+		</repository> 
+		<snapshotRepository>
+			<id>nexus-snapshots</id>
+			<name>Nexus Snapshot Repository</name>
+			<url>http://127.0.0.1:8081/nexus/content/repositories/snapshots/</url>
+		</snapshotRepository>
+	</distributionManagement>
+  
+</project>

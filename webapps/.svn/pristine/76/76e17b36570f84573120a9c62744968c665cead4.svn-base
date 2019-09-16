@@ -1,0 +1,34 @@
+package com.hfepay.scancode.commons;
+
+import java.io.Serializable;
+
+public class WechatImgLoadConfig implements Serializable{
+
+	/**
+	 * @fieldName: serialVersionUID
+	 * @fieldType: long
+	 * @Description: TODO
+	 */
+	private static final long serialVersionUID = -8177539725490925333L;
+
+	private String apply1Url;//新用户授权回调地址
+
+	private String apply2Url;//授权地址
+
+	public String getApply1Url() {
+		return apply1Url;
+	}
+
+	public void setApply1Url(String apply1Url) {
+		this.apply1Url = apply1Url;
+	}
+
+	public String getApply2Url() {
+		return apply2Url;
+	}
+
+	public void setApply2Url(String apply2Url) {
+		this.apply2Url = apply2Url;
+	}
+	
+}

@@ -1,0 +1,20 @@
+{
+  "name": "hfepay",
+  "version": "1.0.0",
+  "description": "华付信息支付导航-API接口文档",
+  "title": "hfepay-gateway api",
+  "url" : "http://172.168.8.200:8091/hfepay",
+  "sampleUrl": "http://172.168.8.200:8091/hfepay",
+  "header": {
+    "title": "header",
+    "filename": "header.md"
+  },
+  "footer": {
+    "title": "footer",
+    "filename": "footer.md"
+  },
+  "template": {
+  	"withCompare": true,
+  	"withGenerator": true
+  }
+}

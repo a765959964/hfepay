@@ -1,0 +1,5 @@
+package com.hfepay.scancode.api.entity.merchant;
+
+public class MerchantAppPaywayVo {
+
+}

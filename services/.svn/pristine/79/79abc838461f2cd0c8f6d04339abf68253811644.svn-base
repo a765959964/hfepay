@@ -1,0 +1,87 @@
+package com.hfepay.scancode.bo;
+
+import java.io.Serializable;
+import java.math.BigDecimal;
+
+public class OrderBo implements Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3272711893306194253L;
+	
+	private String qrCode;//二维码编号
+	private String channelNo;//渠道编号
+	private String agentNo;//代理商编号
+	private String merchantNo;//商户编号
+	private String payCode;
+	private BigDecimal price;
+	private String authCode;//条码支付授权码
+	private String scene;//支付类别：声波，红外线
+	private String cashier;//收银员
+	public String getQrCode() {
+		return qrCode;
+	}
+	public void setQrCode(String qrCode) {
+		this.qrCode = qrCode;
+	}
+	public String getChannelNo() {
+		return channelNo;
+	}
+	public void setChannelNo(String channelNo) {
+		this.channelNo = channelNo;
+	}
+	public String getAgentNo() {
+		return agentNo;
+	}
+	public void setAgentNo(String agentNo) {
+		this.agentNo = agentNo;
+	}
+	public String getMerchantNo() {
+		return merchantNo;
+	}
+	public void setMerchantNo(String merchantNo) {
+		this.merchantNo = merchantNo;
+	}
+	
+	public String getPayCode() {
+		return payCode;
+	}
+	public void setPayCode(String payCode) {
+		this.payCode = payCode;
+	}
+	public BigDecimal getPrice() {
+		return price;
+	}
+	public void setPrice(BigDecimal price) {
+		this.price = price;
+	}
+	public String getAuthCode() {
+		return authCode;
+	}
+	public void setAuthCode(String authCode) {
+		this.authCode = authCode;
+	}
+	public String getScene() {
+		return scene;
+	}
+	public void setScene(String scene) {
+		this.scene = scene;
+	}
+	
+	public String getCashier() {
+		return cashier;
+	}
+	public void setCashier(String cashier) {
+		this.cashier = cashier;
+	}
+	@Override
+	public String toString() {
+		return "OrderBo [qrCode=" + qrCode + ", channelNo=" + channelNo + ", agentNo=" + agentNo + ", merchantNo="
+				+ merchantNo + ", payCode=" + payCode + ", price=" + price +", cashier=" + cashier+ ", authCode=" + authCode + ", scene="
+				+ scene + "]";
+	}
+	
+	
+	
+}

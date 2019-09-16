@@ -1,0 +1,95 @@
+package com.hfepay.scancode.controller;
+
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.hfepay.common.web.controller.BaseController;
+import com.hfepay.commons.base.lang.HttpRequestClient;
+import com.hfepay.scancode.commons.Constants;
+
+import net.sf.json.JSONObject;
+
+/** 
+ * @author lemon
+ * @Date 2016年10月7日 下午5:29:03 
+ */
+@Controller
+@RequestMapping("/user/auth")
+public class WeChantAuthController extends BaseController{
+	
+	private Logger logger = LoggerFactory.getLogger(getClass());
+	
+	/**
+	* @Description 微信公众号授权
+	* @param
+	* @author husain 
+	* @Date 2016年10月7日 下午5:32:59
+	 */
+	@RequestMapping("/{tradeNo}")
+    public void index(HttpServletRequest request, @PathVariable String tradeNo, HttpServletResponse response){
+		try {
+			String backUrl = URLEncoder.encode("http://wx.hfepay.cn/hfepay-scancode-gateway-webapp/user/auth/callback", "UTF-8");
+			String backgo="https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECTURL&response_type=code&scope=snsapi_userinfo&state=ORDERID#wechat_redirect";
+			backgo = backgo.replace("REDIRECTURL", backUrl);
+			backgo = backgo.replace("APPID", Constants.APPID);
+			backgo = backgo.replace("ORDERID", tradeNo);
+			response.sendRedirect(backgo);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }
+	
+	/**
+	* @Description 微信授权回调
+	* @param
+	* @author husain 
+	* @Date 2016年10月7日 下午7:32:56
+	 */
+	@RequestMapping(value = "/callback")
+	public String callback(HttpServletRequest request){
+		String tradeNo = request.getParameter("state");
+		String code = request.getParameter("code");
+		logger.debug("==========code:"+code+",orderId:"+tradeNo+"==========");
+		Map<String, String> sParaTemp = new HashMap<String, String>();
+		sParaTemp.put("appid", Constants.APPID);
+		sParaTemp.put("secret", Constants.SECRET);
+		sParaTemp.put("code", code);
+		sParaTemp.put("grant_type", "authorization_code");
+		try {
+			String resultJson =HttpRequestClient.invoke_http(Constants.WX_GATEWAY_NEW, generatNameValuePair(sParaTemp), "utf-8");
+			JSONObject result= JSONObject.fromObject(resultJson);
+			logger.debug("微信获取openId返回json："+resultJson);
+			logger.debug(resultJson);
+			String openId = result.getString("openid");
+			System.out.println(openId);
+			return "redirect:pay/index?tradeNo="+tradeNo+"&openId="+openId;
+		} catch (Exception e) {
+			logger.error("获取openId异常", e);
+			return "redirect:pay/index?tradeNo="+tradeNo;
+		}
+	}
+	
+	private static List<NameValuePair> generatNameValuePair(Map<String, String> properties) {
+        List<NameValuePair> list = new ArrayList<NameValuePair>();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+        	NameValuePair nameValuePair = new BasicNameValuePair(entry.getKey(),entry.getValue());
+        	list.add(nameValuePair);
+        }
+        return list;
+    }
+	
+}

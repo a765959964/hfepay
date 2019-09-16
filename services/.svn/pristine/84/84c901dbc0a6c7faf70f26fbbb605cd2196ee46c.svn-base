@@ -1,0 +1,5 @@
+com\hfepay\epay\api\service\IGatewayPaymentService.class
+com\hfepay\epay\api\service\IWechatPayService.class
+com\hfepay\epay\api\service\MerchantBusinessService.class
+com\hfepay\epay\api\service\IRefundPaymentService.class
+com\hfepay\epay\api\service\IAliPayService.class

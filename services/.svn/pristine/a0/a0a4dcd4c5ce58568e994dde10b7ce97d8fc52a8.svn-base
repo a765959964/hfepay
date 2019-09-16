@@ -1,0 +1,15 @@
+com\hfepay\epay\api\entity\order\OrderForm.class
+com\hfepay\epay\api\entity\order\PaymentForm.class
+com\hfepay\epay\api\entity\vo\MerchantRateVo.class
+com\hfepay\epay\api\entity\vo\ParamsMessage.class
+com\hfepay\epay\api\entity\vo\MerchantAccountsVo.class
+com\hfepay\epay\api\entity\vo\MerchantSettledVo.class
+com\hfepay\epay\api\entity\order\OrderResVO.class
+com\hfepay\epay\api\entity\merchant\MerchantAppPaywayVo.class
+com\hfepay\epay\api\entity\order\OrderRefundResVO.class
+com\hfepay\epay\api\entity\vo\HeaderMessage.class
+com\hfepay\epay\api\entity\refund\OrderRefundForm.class
+com\hfepay\epay\api\entity\pay\QueryPayForm.class
+com\hfepay\epay\api\entity\vo\Message.class
+com\hfepay\epay\api\entity\merchant\MerChantAppVo.class
+com\hfepay\epay\api\entity\pay\QrcodePayForm.class

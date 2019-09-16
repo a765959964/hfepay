@@ -1,0 +1,32 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<%
+   String path =  request.getContextPath();
+   request.setAttribute("path", path);
+%>
+<html lang="zh-cmn-Hans">
+<head>
+<title>关于我们</title>
+<meta charset="UTF-8">
+<meta http-equive="Cache-Control" content="no-cache"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/weui.min.css">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/jquery-weui.min.css">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/style.css">
+</head>
+<body>
+
+<div class="about">
+	<p>深圳市华付信息技术有限公司是行业领先的一站式金融大数据解决方案运营商，公司由金融界资深人士和前华为公司资深高管合伙成立，系中国产学研投融资联盟理事会员单位，注册资本为5000万元。 华付数据主要从事金融鉴权数据服务、基础源数据服务和大数据集成分析等业务。为迎合互联网由“虚”向“实”转变及大数据需求爆发式增长的趋势，公司正全力打造一站式金融大数据运营平台，给银行、支付、保险、P2P、电商、APP等各类机构提供如银行卡实名认证、身份证实名验证、税务查询、个人征信、企业工商信息验证、固定资产查询、手机信息查询、学历查询、航空信息查询及反欺诈黑名单等大数据服务，并对大数据进行挖掘、分析、可视化及监控，以满足金融机构及各行业客户的定制化需求。</p>
+	<p>公司严格按照上市公司标准打造，实行富有竞争力的薪酬体系和全员持股制度，我们热切期望业界各种优秀人才加入，共创公司美好的未来。</p>
+</div>
+
+<script src="${path}/resources/scripts/jquery-2.1.4.js" type="text/javascript" charset="utf-8"></script>
+<script src="${path}/resources/scripts/fastclick.js" type="text/javascript" charset="utf-8"></script>
+<script src="${path}/resources/scripts/jquery-weui.min.js" type="text/javascript" charset="utf-8"></script>
+
+	  
+</body></html>

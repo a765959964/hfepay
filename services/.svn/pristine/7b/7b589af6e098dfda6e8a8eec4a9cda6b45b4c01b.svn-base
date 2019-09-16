@@ -1,0 +1,108 @@
+package com.hfepay.epay.api.service;
+
+import com.hfepay.commons.exception.ServicesException;
+import com.tencent.protocol.js_pay_protocol.AppJSPayReqData;
+import com.tencent.protocol.js_pay_protocol.UnifiedOrderJSPayReqData;
+import com.tencent.protocol.js_pay_protocol.UnifiedOrderJSPayResData;
+import com.tencent.protocol.pay_protocol.AppPayReqData;
+import com.tencent.protocol.pay_protocol.UnifiedOrderPayReqData;
+import com.tencent.protocol.pay_protocol.UnifiedOrderPayResData;
+
+/**
+ * ProjectName： gateway-pay<br>
+ * ClassName： IWechatPayService<br>
+ * Description 阿里支付接口 <br>
+ * @author parry.xie
+ * @createTime 2016年5月19日
+ * @version 1.0.0
+ */
+public interface IWechatPayService{
+
+    
+    /**
+     * </p>统一下单</p>
+     * @return
+     * @author parry.xie
+     * @date 2016年5月19日
+     */
+	UnifiedOrderPayResData unifiedOrder(UnifiedOrderPayReqData unifiedOrderPayReqData)throws ServicesException;
+    
+	
+	 /**
+     * </p>公众号统一下单接口</p>
+     * @return
+     * @author parry.xie
+     * @date 2016年5月19日
+     */
+	UnifiedOrderJSPayResData unifiedJSAPIOrder(UnifiedOrderJSPayReqData unifiedOrderJSPayReqData,String key)throws ServicesException;
+    
+	
+    /**
+     * </p>生成WX app支付Map</p>
+     * @param prepayId
+     * @return
+     * @throws ServiceException
+     */
+    AppPayReqData generateAppPayParam(UnifiedOrderPayResData unifiedOrderPayResData,String payNo) throws ServicesException;
+    
+    
+    /**
+     * </p>生成WX app支付Map</p>
+     * @param prepayId
+     * @return
+     * @throws ServiceException
+     */
+    AppJSPayReqData generateAppPayParam(UnifiedOrderJSPayResData unifiedOrderJSPayResData,String payNo,String key,String appid) throws ServicesException;
+    
+    
+    /**
+     * </p>微信APP支付接口</p>
+     * @param payNo
+     * @param payFee
+     * @param body
+     * @param subject
+     * @param trade_type
+     * @return
+     */
+    AppPayReqData wxAppPayHandleFunction(String payNo,String payFee, String body, String subject,String trade_type);
+    
+    
+    /**
+     * </p>微信JSAPI支付接口</p>
+     * @param openid 
+     * @param payNo
+     * @param payFee
+     * @param body
+     * @param subject
+     * @param trade_type
+     * @return
+     */
+    AppJSPayReqData wxJSApiPayHandleFunction(String appid,String mch_id,String openid,String payNo,String payFee, String body, String subject,String trade_type,String key);
+    
+    
+    
+    /**
+	 * 单笔交易支付状态查询
+	 * @param payNo
+	 * @param transId
+	 * @return false 未支付，true 已支付
+	 */
+	public Boolean singleTransactionQueryHandelFunction(String appid,String mchid,String key,String payNo,String transId) throws ServicesException;
+	
+    /**
+	 * 处理微信回调通知
+	 * @param noitfyPayResDataParam
+	 * @return 
+	 *//*
+	public String handleCallBackOrderHandelFunction(String resultxml) throws ServiceException;
+	*/
+	
+/*	*//**
+	 * 处理微信退款发送请求
+	 * @param noitfyPayResDataParam
+	 * @return 
+	 *//*
+	public void refundOrder(RefundReqData refundReqData);
+    */
+	
+}

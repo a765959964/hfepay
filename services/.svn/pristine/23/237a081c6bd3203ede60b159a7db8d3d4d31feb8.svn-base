@@ -1,0 +1,111 @@
+package com.hfepay.scancode.api.service.impl;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSON;
+import com.hfepay.scancode.api.condition.MerchantJoinCondition;
+import com.hfepay.scancode.api.condition.MerchantPayCondition;
+import com.hfepay.scancode.api.config.HfepayConfig;
+import com.hfepay.scancode.api.entity.vo.MerchantAccountsVo;
+import com.hfepay.scancode.api.entity.vo.MerchantPayInfoVo;
+import com.hfepay.scancode.api.entity.vo.MerchantSettledVo;
+import com.hfepay.scancode.api.httpClient.HttpHandle;
+import com.hfepay.scancode.api.service.MerchantBusinessService;
+
+@Service
+public class MerchantBusinessServiceImpl implements MerchantBusinessService{
+
+	@Override
+	public Map<String, String> merchantJoin(MerchantJoinCondition merchantJoinCondition) {
+		
+		// 设置商户基本信息
+		Map<String, Object> body = new HashMap<String, Object>();
+		MerchantSettledVo merchantSettledVo = new MerchantSettledVo();
+		merchantSettledVo.setMerchantNo(merchantJoinCondition.getMerchantNo());
+		merchantSettledVo.setMerchantName(merchantJoinCondition.getMerchantName());
+		merchantSettledVo.setShortName(merchantJoinCondition.getShortName());
+		merchantSettledVo.setAddress(merchantJoinCondition.getAddress());
+		merchantSettledVo.setSerPhone(merchantJoinCondition.getSerPhone());
+		merchantSettledVo.setCategory(merchantJoinCondition.getCategory());
+		merchantSettledVo.setIdCard(merchantJoinCondition.getIdCard());
+		merchantSettledVo.setName(merchantJoinCondition.getName());
+		merchantSettledVo.setMerchantLicense(merchantJoinCondition.getMerchantLicense());
+		merchantSettledVo.setPhone(merchantJoinCondition.getPhone());
+		merchantSettledVo.setMobile(merchantJoinCondition.getMobile());
+		merchantSettledVo.setEmail(merchantJoinCondition.getEmail());
+		merchantSettledVo.setRemark(merchantJoinCondition.getRemark());
+		body.put("info", merchantSettledVo.toMap());
+		// 添加商户账号信息
+		MerchantAccountsVo merchantAccountsVo = new MerchantAccountsVo();
+		merchantAccountsVo.setBankCard(merchantJoinCondition.getBankCard());
+		merchantAccountsVo.setBankCode(merchantJoinCondition.getBankCode());
+		merchantAccountsVo.setBankName(merchantJoinCondition.getBankName());
+		merchantAccountsVo.setAccountName(merchantJoinCondition.getAccountName());
+		merchantAccountsVo.setIsRealAccount(merchantJoinCondition.getIsRealAccount());
+		
+		body.put("account", merchantAccountsVo.toMap());
+//		List<Map<String, String>> listRate = new ArrayList<Map<String, String>>();
+//		// 添加通道费率信息 HFEPAY001支付宝 ,HFEPAY001微信
+//		MerchantRateVo merchantRateVo = new MerchantRateVo();
+//		merchantRateVo.setPayCode("HFEPAY002");
+//		merchantRateVo.setRateAmt("1");
+//		merchantRateVo.setT0Rate("0.006");
+//		merchantRateVo.setT1Rate("0.004");
+//		listRate.add(merchantRateVo.toMap());
+		body.put("payType", merchantJoinCondition.getPaywayList());
+		System.out.println(body.toString());
+		Map<String, String> response = null;
+		try {
+			response = HttpHandle.requestHandle(HfepayConfig.join_service_method,
+					HfepayConfig.join_service_id, body);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		System.out.println(JSON.toJSONString(response));
+		return response;
+	}
+	
+	public static void main(String[] args) {
+		Map m = new HashMap();
+		MerchantBusinessServiceImpl merchantBusinessServiceImpl = new MerchantBusinessServiceImpl();
+		//merchantBusinessServiceImpl.merchantJoin(m);
+	}
+
+	@Override
+	public Map<String,String> merchantOrder(MerchantPayCondition merchantPayCondition) throws Exception {
+		
+		Map<String, Object> body = new HashMap<String, Object>();
+		MerchantPayInfoVo payInfoVo = new MerchantPayInfoVo();
+		payInfoVo.setMerchantNo(merchantPayCondition.getMerchantNo());
+		payInfoVo.setUserOrderNo(merchantPayCondition.getUserOrderNo());
+		payInfoVo.setPayCode(merchantPayCondition.getPayCode());
+		payInfoVo.setOrderAmt(merchantPayCondition.getOrderAmt());
+		payInfoVo.setReturnType(merchantPayCondition.getReturnType());
+		payInfoVo.setAppId(merchantPayCondition.getAppId());
+		payInfoVo.setOpenId(merchantPayCondition.getOpenId());
+		payInfoVo.setOrderTitle(merchantPayCondition.getOrderTitle());
+		payInfoVo.setOrderDesc(merchantPayCondition.getOrderDesc());
+		payInfoVo.setOpertorId(merchantPayCondition.getOpertorId());
+		payInfoVo.setStoreId(merchantPayCondition.getStoreId());
+		payInfoVo.setTerminalId(merchantPayCondition.getTerminalId());
+		payInfoVo.setLimitPay(merchantPayCondition.getLimitPay());
+		payInfoVo.setRemark(merchantPayCondition.getRemark());
+		payInfoVo.setIp(merchantPayCondition.getIp());
+		payInfoVo.setAppNo(merchantPayCondition.getAppNo());
+		payInfoVo.setNotifyUrl(merchantPayCondition.getNotifyUrl());
+		payInfoVo.setReturnUrl(merchantPayCondition.getReturnUrl());
+		
+		body.putAll(payInfoVo.toMap());
+		Map<String,String> response = HttpHandle.requestHandle(HfepayConfig.trade_service_method, HfepayConfig.trade_service_id, body);
+		String bodyStr = response.get("body");
+		System.out.println(bodyStr);
+		Map<String,String> resValue = JSON.parseObject(bodyStr, Map.class);
+		System.out.println(resValue.get("orderNo"));
+		System.out.println(resValue.get("payUrl"));
+		return resValue;
+		
+	}
+}

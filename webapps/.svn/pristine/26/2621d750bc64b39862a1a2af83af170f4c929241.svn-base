@@ -1,0 +1,35 @@
+package com.hfepay.scancode.commons;
+
+import java.io.Serializable;
+
+public class WechatConfig implements Serializable{
+
+	/**
+	 * @fieldName: serialVersionUID
+	 * @fieldType: long
+	 * @Description: TODO
+	 */
+	private static final long serialVersionUID = -8177539725490925333L;
+
+	private String backUrl;//授权回调地址
+
+	private String backgo;//授权地址
+
+	public String getBackUrl() {
+		return backUrl;
+	}
+
+	public void setBackUrl(String backUrl) {
+		this.backUrl = backUrl;
+	}
+
+	public String getBackgo() {
+		return backgo;
+	}
+
+	public void setBackgo(String backgo) {
+		this.backgo = backgo;
+	}
+
+	
+}

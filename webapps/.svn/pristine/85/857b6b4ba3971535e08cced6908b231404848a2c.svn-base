@@ -1,0 +1,127 @@
+package com.hfepay.notify.controller;
+
+import java.io.UnsupportedEncodingException;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Map.Entry;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.hfepay.notify.util.NotifyConstants;
+import com.hfepay.order.bo.OrderPayCallBackBo;
+import com.hfepay.order.service.OrderPayCallBackService;
+import com.unionpay.acp.sdk.AcpService;
+import com.unionpay.acp.sdk.SDKConstants;
+
+@Controller
+@RequestMapping("/notify")
+public class UnionPayController {
+	
+	Logger logger = LoggerFactory.getLogger(UnionPayController.class);
+	
+	@Autowired
+	private OrderPayCallBackService orderPayCallBackService;
+	
+	@RequestMapping("/unionPayNotify")
+	@ResponseBody
+	public String getUnionPayNotifyInfo(HttpServletRequest request, HttpServletResponse response) {
+		try {
+			request.setCharacterEncoding("ISO-8859-1");
+		} catch (UnsupportedEncodingException e2) {
+			e2.printStackTrace();
+		}
+		String encoding = request.getParameter(SDKConstants.param_encoding);
+		// 获取请求参数中所有的信息
+		logger.info("----开始处理请求参数----");
+		Map<String, String> reqParam = getAllRequestParam(request);
+
+		Map<String, String> valideData = null;
+		if (null != reqParam && !reqParam.isEmpty()) {
+			Iterator<Entry<String, String>> it = reqParam.entrySet().iterator();
+			valideData = new HashMap<String, String>(reqParam.size());
+			while (it.hasNext()) {
+				Entry<String, String> e = it.next();
+				String key = (String) e.getKey();
+				String value = (String) e.getValue();
+				try {
+					value = new String(value.getBytes("ISO-8859-1"), encoding);
+					//测试代码
+					//value = new String(value.getBytes("ISO-8859-1"), "utf-8");
+				} catch (UnsupportedEncodingException e1) {
+					e1.printStackTrace();
+				}
+				valideData.put(key, value);
+			}
+		}
+		logger.info("----请求参数处理结束----");
+//		if(valideData.get("respCode").equals("00")){
+//			OrderPayCallBackBo order = new OrderPayCallBackBo();
+//			order.setTradeId(valideData.get("orderId"));
+//			order.setTradeStatus(valideData.get("respCode"));
+//			order.setTranAmt(valideData.get("txnAmt"));
+//			orderPayCallBackService.callbackPay(order);
+//			return "SUCCESS";
+//		}else{
+//			return "FAIL";
+//		}
+		 //验证签名
+		logger.info("----开始验证签名-----");
+		if (!AcpService.validate(valideData, encoding)) {
+			logger.info("----验证签名成功-----");
+			logger.info("----获取回调参数-----");
+			OrderPayCallBackBo order = new OrderPayCallBackBo();
+			order.setTradeId(valideData.get("orderId"));
+			order.setTranAmt(valideData.get("txnAmt"));
+			logger.info("回调参数列表：tradeId="+order.getTradeId()+ "&&total_fee="+order.getTranAmt()
+			+"  &&tradeStatus="+order.getTradeStatus());
+			if(valideData.get("respCode").equals("00")){
+				order.setTradeStatus(NotifyConstants.RETURN_SUCCESS);
+				orderPayCallBackService.callbackPay(order);
+				logger.info("----回调成功-----");
+				return NotifyConstants.NOTIFY_SUCCESS;
+			}else{
+				order.setTradeStatus(NotifyConstants.RETURN_FAIL);
+				orderPayCallBackService.callbackPay(order);
+				logger.info("----回调失败-----");
+				return NotifyConstants.NOTIFY_FAIL;
+			}
+		} else {
+			logger.info("----验证签名失败-----");
+			return NotifyConstants.NOTIFY_FAIL;
+		}
+
+	}
+	/**
+	 * 获取请求参数中所有的信息
+	 * 
+	 * @param request
+	 * @return
+	 */
+	public static Map<String, String> getAllRequestParam(final HttpServletRequest request) {
+		Map<String, String> res = new HashMap<String, String>();
+		Enumeration<?> temp = request.getParameterNames();
+		if (null != temp) {
+			while (temp.hasMoreElements()) {
+				String en = (String) temp.nextElement();
+				String value = request.getParameter(en);
+				res.put(en, value);
+				//在报文上送时，如果字段的值为空，则不上送<下面的处理为在获取所有参数数据时，判断若值为空，则删除这个字段>
+				if (null == res.get(en) || "".equals(res.get(en))) {
+					res.remove(en);
+				}
+			}
+		}
+		return res;
+	}
+
+}

@@ -1,0 +1,96 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<%
+   String path =  request.getContextPath();
+   request.setAttribute("path", path);
+%>
+<html lang="zh-cmn-Hans">
+<head>
+<title>流水查询</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/weui.min.css">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/jquery-weui.min.css">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/style.css">
+</head>
+<body ontouchstart style="position:relative">
+
+<div class="rztitle"><p class="rzrq">2016年10月</p><p class="rzjr">入账：&yen; 10000.00</p></div>
+
+<div id="list" class="weui_cells weui_cells_access" style="margin-top:40px">
+	<div class="weui_cell" href="basic">
+		<div class="weui_cell_bd weui_cell_primary">
+			<p>微信支付收钱</p><p class="billData">交易成功</p><p class="billData">10月20日&nbsp;19:50</p>
+		</div>
+		<div class="weui_cell_ft">&yen; 100.00</div>
+	</div>
+	<div class="weui_cell" href="basic">
+		<div class="weui_cell_bd weui_cell_primary">
+			<p>微信支付收钱</p><p class="billData">交易成功</p><p class="billData">10月20日&nbsp;19:50</p>
+		</div>
+		<div class="weui_cell_ft">&yen; 100.00</div>
+	</div>
+	<div class="weui_cell" href="basic">
+		<div class="weui_cell_bd weui_cell_primary">
+			<p>支付宝支付收钱</p><p class="billData">交易成功</p><p class="billData">10月20日&nbsp;19:50</p>
+		</div>
+		<div class="weui_cell_ft">&yen; 100.00</div>
+	</div>
+	<div class="weui_cell" href="basic">
+		<div class="weui_cell_bd weui_cell_primary">
+			<p>支付宝支付收钱</p><p class="billData">交易成功</p><p class="billData">10月20日&nbsp;19:50</p>
+		</div>
+		<div class="weui_cell_ft">&yen; 100.00</div>
+	</div>
+	<div class="weui_cell" href="basic">
+		<div class="weui_cell_bd weui_cell_primary">
+			<p>QQ支付收钱</p><p class="billData">交易成功</p><p class="billData">10月20日&nbsp;19:50</p>
+		</div>
+		<div class="weui_cell_ft">&yen; 100.00</div>
+	</div>
+	<div class="weui_cell" href="basic">
+		<div class="weui_cell_bd weui_cell_primary">
+			<p>QQ支付收钱</p><p class="billData">交易成功</p><p class="billData">10月20日&nbsp;19:50</p>
+		</div>
+		<div class="weui_cell_ft">&yen; 100.00</div>
+	</div>
+	<div class="weui_cell" href="basic">
+		<div class="weui_cell_bd weui_cell_primary">
+			<p>百度钱包支付收钱</p><p class="billData">交易成功</p><p class="billData">10月20日&nbsp;19:50</p>
+		</div>
+		<div class="weui_cell_ft">&yen; 100.00</div>
+	</div>
+	<div class="weui_cell" href="basic">
+		<div class="weui_cell_bd weui_cell_primary">
+			<p>百度钱包支付收钱</p><p class="billData">交易成功</p><p class="billData">10月20日&nbsp;19:50</p>
+		</div>
+		<div class="weui_cell_ft">&yen; 100.00</div>
+	</div>
+	
+</div>
+
+<div class="weui-infinite-scroll">
+	<div class="infinite-preloader"></div>
+	正在加载
+</div>
+	
+<script src="${path}/resources/scripts/jquery-2.1.4.js" type="text/javascript" charset="utf-8"></script>
+<script src="${path}/resources/scripts/fastclick.js" type="text/javascript" charset="utf-8"></script>
+<script src="${path}/resources/scripts/jquery-weui.min.js" type="text/javascript" charset="utf-8"></script>
+
+<script>
+	var loading = false;
+	$(document.body).infinite().on("infinite", function() {
+	if(loading) return;
+	loading = true;
+	setTimeout(function() {
+	  $("#list").append("<div class=\"weui_cell\" href=\"basic\"><div class=\"weui_cell_bd weui_cell_primary\"><p>微信支付收钱</p><p class=\"billData\">交易成功</p><p class=\"billData\">10月20日&nbsp;19:50</p></div><div class=\"weui_cell_ft\">&yen; 100.00</div></div>");
+	  loading = false;
+	}, 2000);
+	});
+</script>
+	
+</body></html>

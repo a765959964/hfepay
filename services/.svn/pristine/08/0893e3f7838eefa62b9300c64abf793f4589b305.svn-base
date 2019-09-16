@@ -1,0 +1,18 @@
+package com.hfepay.scancode.service.payway;
+
+import com.hfepay.scancode.entity.PlatformQrcode;
+
+/**
+ * 平台网关处理
+ * @author Administrator
+ *
+ */
+public interface ScanCodeService {
+	/**
+	 * 根据二维码ID 获取对应实体
+	 * @param qrCode
+	 * @return PlatformQrcode
+	 */
+	PlatformQrcode findByQrCode(String qrCode);
+	
+}

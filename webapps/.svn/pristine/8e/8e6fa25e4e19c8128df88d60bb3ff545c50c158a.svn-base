@@ -1,0 +1,70 @@
+package com.hfepay.notify.util;
+
+/**
+ *  支付状态参数配置
+ * @author zhangyu
+ * @date 2016年5月25日
+ * @version1.0.0
+ */
+public class NotifyConstants {
+	
+	
+	/**
+	 * 交易成功
+	 */
+	public static final String AIL_TRADE_SUCCESS="TRADE_SUCCESS";
+	
+	/**
+	 * 交易完成
+	 */
+	public static final String AIL_TRADE_FINISHED="TRADE_FINISHED";
+	
+	/**
+	 * 交易等待付款
+	 */
+	public static final String AIL_WAIT_BUYER_PAY="WAIT_BUYER_PAY";
+	
+	/**
+	 * 回调成功
+	 */
+	public static final String NOTIFY_SUCCESS = "success";
+	
+	/**
+	 * 回调失败
+	 */
+	public static final String NOTIFY_FAIL = "fail";
+	
+	/**
+	 * 回调成功状态
+	 */
+	public static final String RETURN_SUCCESS = "00";
+	
+	/**
+	 * 回调失败状态
+	 */
+	public static final String RETURN_FAIL = "01";
+	
+	/**
+	 * 支付渠道标记 
+	 * wechat
+	 */
+	public static final String WECHAT = "wechat";
+	
+	/**
+	 * 支付渠道标记 
+	 * wechatJS
+	 */
+	public static final String WECHATJS = "wechatJS";
+	
+	/**
+	 * 支付渠道标记 
+	 * alipay
+	 */
+	public static final String ALIPAY = "alipay";
+	
+	/**
+	 * 支付渠道标记 
+	 * union
+	 */
+	public static final String UNION = "union";
+}

@@ -1,0 +1,99 @@
+package com.hfepay.scancode.api.webank.service;
+
+import java.util.List;
+
+import com.hfepay.scancode.api.webank.entity.vo.WeBankGoodsDetailVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantAccountsVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantInfoBaseVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantInfoVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantRateVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankPreCreateTradeVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankRefundVo;
+
+public interface WeBankMerchantBusinessService{
+
+	
+	/**
+	 * @Title: getAlipayTicket
+	 * @Description: 获取支付宝Ticket
+	 * @author: husain
+	 * @throws Exception
+	 * @return: String
+	 */
+	public String getWeBankTicket();
+	
+	/**
+	 * @Title: getAlipayToken
+	 * @Description: 获取支付宝getAlipayToken
+	 * @author: husain
+	 * @throws Exception
+	 * @return: String
+	 */
+	public String getWeBankAccessToken();
+	
+	/**
+	 * 商户入网
+	 * @param info 商户基本信息
+	 * @param accounts 商户账户信息
+	 * @param payTypes 商户费率信息列表
+	 * @return merchantID商户编号
+	 * @throws Exception
+	 * @author zy
+	 */
+	public String merchantJoin(WeBankMerchantInfoBaseVo baseVo,WeBankMerchantInfoVo infoVo,WeBankMerchantAccountsVo accountsVo,List<WeBankMerchantRateVo> rateList);
+	
+	/**
+	 * 支付宝扫码预订单
+	 * @param info 商品基本信息
+	 * @return 
+	 * @throws Exception
+	 * @author zy
+	 */
+	public String preCreateTrade(WeBankPreCreateTradeVo tradeVo,List<WeBankGoodsDetailVo> goodsList);
+	
+	/**
+	 * 查询交易订单
+	 * @param 商户编号，订单号
+	 * @return 
+	 * @throws Exception
+	 * @author zy
+	 */
+	public String queryTrade(WeBankRefundVo vo);
+	
+	/**
+	 * 退款
+	 * @param 商户编号，订单号,退款请求号
+	 * @return 
+	 * @throws Exception
+	 * @author zy
+	 */
+	public String refund(WeBankRefundVo vo);
+	
+	/**
+	 * 退款查询
+	 * @param 商户编号，订单号,退款请求号
+	 * @return 
+	 * @throws Exception
+	 * @author zy
+	 */
+	public String queryRefund(WeBankRefundVo vo);
+	
+	/**
+	 * 支付宝条码支付
+	 * @param info 商品基本信息
+	 * @return 
+	 * @throws Exception
+	 * @author zy
+	 */
+	public String scanPay(WeBankPreCreateTradeVo tradeVo,List<WeBankGoodsDetailVo> goodsList);
+	
+	/**
+	 * 支付宝撤销
+	 * @param 商户编号，订单号
+	 * @return 
+	 * @throws Exception
+	 * @author zy
+	 */
+	public String cancel(WeBankRefundVo vo);
+
+}

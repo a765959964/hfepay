@@ -1,0 +1,50 @@
+package com.hfepay.epay.api.entity.pay;
+
+public class QueryPayForm implements java.io.Serializable{
+	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private String orderNo;
+	
+	private String transId;
+	
+	private String channle;
+	
+	private String timestamp;
+
+	public String getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public String getChannle() {
+		return channle;
+	}
+
+	public void setChannle(String channle) {
+		this.channle = channle;
+	}
+
+	public String getOrderNo() {
+		return orderNo;
+	}
+
+	public void setOrderNo(String orderNo) {
+		this.orderNo = orderNo;
+	}
+
+	public String getTransId() {
+		return transId;
+	}
+
+	public void setTransId(String transId) {
+		this.transId = transId;
+	}
+
+}

@@ -1,0 +1,30 @@
+$(function(){
+	$("#doWithDraw").click(function(){
+		var withMoney =  $("#withMoney").val();
+		if(!/^\d+[\.]?\d+$/.test(withMoney)){
+			$.toast("金额有误，请检查","cancle")
+			return;
+		}
+		$("#balanceid").val(withMoney);
+		$("#toSubmit").attr("action",basePath+"/scancode/doWithDraw").submit();
+		/*$.ajax({
+			   type: "POST",
+			   url: basePath+"/scancode/doWithDraw",
+			   data:{"balance":withMoney},
+			   dataType:"json",
+			   success: function(msg){
+				   var errorCode = msg.errorCode;
+				   if(errorCode=='0'){
+					   location.href=basePath+"/scancode/balanceSuccess";
+				   }
+				   else{
+					   $.toast("提现失败","cancle")
+				   }
+			   }
+			});*/
+	});
+	
+	$("#outAll").click(function(){
+		$("#withMoney").val($("#total").text());
+	});
+});

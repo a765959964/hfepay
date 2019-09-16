@@ -1,0 +1,18 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.MerchantAuthDetail;
+import com.hfepay.scancode.dao.MerchantAuthDetailDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="merchantAuthDetailDAO")
+@Generated("2016-11-21 17:19:45")
+public class MerchantAuthDetailDAOImpl extends MybatisEntityDAO<MerchantAuthDetail, String> implements MerchantAuthDetailDAO {
+}

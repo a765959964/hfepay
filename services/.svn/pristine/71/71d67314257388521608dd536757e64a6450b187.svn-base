@@ -1,0 +1,236 @@
+package com.hfepay.epay.api.service.impl;
+
+
+import java.io.UnsupportedEncodingException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.alipay.entity.SingleRefundReqData;
+import com.alipay.entity.WapPayRefundReqData;
+import com.hfepay.common.web.enums.PayChannelsEnum;
+import com.hfepay.commons.base.enums.PaymentErrorEnum;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.exception.ServicesException;
+import com.hfepay.epay.api.entity.refund.OrderRefundForm;
+import com.hfepay.epay.api.service.IAliPayService;
+import com.hfepay.epay.api.service.IGatewayPaymentService;
+import com.hfepay.epay.api.service.IRefundPaymentService;
+import com.hfepay.order.bo.OrderPayBo;
+import com.hfepay.order.bo.OrderRefundCallBackBo;
+import com.hfepay.order.dao.OrderRefundDAO;
+import com.hfepay.order.entity.OrderPay;
+import com.hfepay.order.entity.OrderRefund;
+import com.hfepay.order.enumeration.orderpay.PayStatus;
+import com.hfepay.order.enumeration.orderrefund.RefundState;
+import com.hfepay.order.service.OrderRefundCallBackService;
+import com.hfepay.system.entity.ChannelLog;
+import com.hfepay.system.entity.PaySetting;
+import com.hfepay.system.entity.condition.ChannelLogCondition;
+import com.hfepay.system.entity.condition.PaySettingCondition;
+import com.hfepay.system.service.ChannelLogService;
+import com.hfepay.system.service.PaySettingService;
+import com.tencent.WXPay;
+import com.tencent.business.RefundBusiness;
+import com.tencent.protocol.refund_protocol.RefundReqData;
+import com.tencent.protocol.refund_protocol.RefundResData;
+import com.tencent.service.impl.RefundBusinessResultListenerImpl;
+import com.unionpay.acp.config.Config;
+import com.unionpay.acp.entity.ConsumeRefundReqData;
+import com.unionpay.acp.service.ConsumeService;
+import com.utils.PaymentConstants;
+import com.utils.PropertiesUtil;
+
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+
+@Service
+public class RefundPaymentServiceImpl implements IRefundPaymentService{
+	
+	public static final Logger log = LoggerFactory.getLogger(RefundPaymentServiceImpl.class);
+
+	@Autowired
+	IAliPayService aliPayService;
+	
+	@Autowired
+	private IGatewayPaymentService gatewayPaymentService;
+	
+	@Autowired
+	private OrderRefundCallBackService orderRefundCallBackService;
+	
+	@Autowired
+	private ChannelLogService channelLogService;
+	
+	@Autowired
+	PaySettingService paySettingService;
+	
+	@Autowired
+	private OrderRefundDAO orderRefundDAO;
+	
+	@Override
+	public Object refundPayment(OrderRefundForm orderRefundForm) throws ServicesException {
+		
+		log.info("####退款参数："+JSONSerializer.toJSON(orderRefundForm)+"####");
+		//请求退款信息
+		String channel = orderRefundForm.getChannel();
+		String order_no = orderRefundForm.getOrder_no();
+		String out_platTradeNO = orderRefundForm.getParpay_no();
+		String refund_fee = orderRefundForm.getRefund_fee();
+		String refund_reason = orderRefundForm.getRefund_remak();
+		String refund_url = orderRefundForm.getRefund_url();
+		
+		String merchantPaySwitch = orderRefundForm.getMerchantPaySwitch();//渠道开关
+		
+		PaySettingCondition paySettingCondition = new PaySettingCondition();
+		paySettingCondition.setChannelCode(channel);
+		List<PaySetting> paySetList = paySettingService.findAll(paySettingCondition);
+		String paySwitch = "";//平台开关
+		if (paySetList != null && paySetList.size() > 0){
+			paySwitch = paySetList.get(0).getPaySwitch();
+		}
+		log.info("####退款参数：paySwitch"+paySwitch+"####");
+		if(paySwitch.equals("N")){
+			log.info("####平台支付渠道已关闭####");
+			String errorMsg = "平台支付渠道已关闭";
+			return updateErrorMsg(order_no,refund_fee,errorMsg);
+		}else{
+			if(merchantPaySwitch.equals("N")){
+				log.info("####商户支付渠道已关闭####");
+				String errorMsg = "商户支付渠道已关闭";
+				return updateErrorMsg(order_no,refund_fee,errorMsg);
+			}
+		}
+		//根据支付订单号查询 商户号
+		OrderPay orderPay = orderRefundCallBackService.getOrderPayByTradeId(out_platTradeNO);
+		
+		/*
+		 * 调用商户的服务，根据商户号查询商户的配置信息
+		 * Param  paymentForm.getMerchantId()
+		 */
+		JSONObject object = (JSONObject) gatewayPaymentService.getSettingConfig(orderPay.getMerchantId(),orderPay.getChnnlId());
+		String appid="";
+		String merchidWx="";
+		String key="";
+		try {
+			appid = (String) object.get("appid");
+			merchidWx = (String)object.get("merchantWx");
+			key = (String)object.get("key");
+		} catch (JSONException e1) {
+			e1.printStackTrace();
+		}
+		
+		if(channel.equals(PayChannelsEnum.ALI_APP.getDesc())){
+			SingleRefundReqData singleRefundReqData = new SingleRefundReqData("", "1", "");
+			return aliPayService.takeRefundOrder(singleRefundReqData);
+		}else if(channel.equals(PayChannelsEnum.WX_APP.getDesc())){
+			RefundBusiness.ResultListener resultListener = new RefundBusinessResultListenerImpl();
+			RefundReqData refundReqData = new RefundReqData(appid,merchidWx,out_platTradeNO, order_no, "", "",0, Integer.parseInt(refund_fee), "", "CNY",key,channel);
+			try {
+				WXPay.doRefundBusiness(refundReqData, resultListener, "wechat",key);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}else if(channel.equals(PayChannelsEnum.WX_JSAPI.getDesc())){
+			
+			RefundBusiness.ResultListener resultListener = new RefundBusinessResultListenerImpl();
+			RefundReqData refundReqData = new RefundReqData(appid,merchidWx,"",out_platTradeNO, "",order_no,Integer.parseInt(refund_fee), Integer.parseInt(refund_fee), merchidWx, "CNY",key,channel);
+			
+			//插入支付流水
+			ChannelLogCondition channelLogCondition = new ChannelLogCondition();
+			channelLogCondition.setTradeId(refundReqData.getOut_refund_no());
+			channelLogCondition.setChannelId(channel);
+			channelLogCondition.setMerchantId(orderPay.getMerchantId());
+			JSONObject requestObject = JSONObject.fromObject(refundReqData);
+			channelLogCondition.setRequestParams(requestObject.toString());
+			channelLogCondition.setCreateTime(new Date());
+			channelLogCondition.setId(Strings.getUUID());
+			channelLogService.insert(channelLogCondition);
+			
+			
+			try {
+				RefundResData refundResData = WXPay.doRefundBusiness(refundReqData, resultListener, "wechatJS",key);
+				
+				//更新支付流水
+				ChannelLogCondition channelCondition = new ChannelLogCondition();
+				JSONObject responseObject = JSONObject.fromObject(refundResData);
+				channelCondition.setResponseParams(responseObject.toString());
+				CriteriaBuilder cb = Cnd.builder(ChannelLog.class);
+				cb.andEQ("tradeId", refundReqData.getOut_refund_no());
+				Criteria criteria = cb.buildCriteria();
+				channelLogService.updateByCriteria(channelCondition,criteria);
+				
+				
+				OrderRefundCallBackBo refundBO = new OrderRefundCallBackBo();
+				refundBO.setRefundOrderId(refundResData.getOut_refund_no());
+				refundBO.setRefundAmt(refundResData.getRefund_fee());
+				
+				if (refundResData == null || refundResData.getReturn_code() == null) {
+					refundBO.setRefundStatus("01");
+					refundBO.setErrCode(PaymentErrorEnum.SYSTEM_CHANNEL_CODE.getValue()+"");
+					refundBO.setErrMsg(PaymentErrorEnum.SYSTEM_CHANNEL_CODE.getDesc());
+				}else{
+					if (refundResData.getReturn_code().equals("FAIL")) {
+						refundBO.setRefundStatus("01");
+						refundBO.setErrCode(refundResData.getReturn_code());
+						refundBO.setErrMsg(refundResData.getReturn_msg());
+					}else{
+						if(refundResData.getResult_code().equals("FAIL")) {
+							refundBO.setRefundStatus("01");
+							refundBO.setErrCode(refundResData.getErr_code());
+							refundBO.setErrMsg(refundResData.getErr_code_des());
+						}else{
+							refundBO.setRefundStatus("00");
+							refundBO.setChannelTradeNo(refundResData.getTransaction_id());
+						}
+					}
+				}
+				
+				orderRefundCallBackService.callbackRefund(refundBO);
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+		}else if(channel.equals(PayChannelsEnum.UN_APP.getDesc())){
+			ConsumeRefundReqData reqData = new ConsumeRefundReqData(refund_fee, out_platTradeNO, Config.getCurrentTime());
+			ConsumeService consumeService = new ConsumeService(refund_url, reqData.signtrue());
+			return consumeService.unionRefundHandle();
+		}else if(channel.equals(PayChannelsEnum.ALI_WAP.getDesc())){
+			WapPayRefundReqData wapRefundData = null;
+			try {
+				wapRefundData = new WapPayRefundReqData("", "", "");
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			return aliPayService.takeWapPayRefundOrder(wapRefundData);
+		}
+		return null;
+	}
+
+	private Object updateErrorMsg(String refundId, String refund_fee,String errorMsg) {
+		
+		//校验退款订单
+		OrderRefund refundOrder = orderRefundCallBackService.queryRefundOrderByRefundId(refundId);
+		OrderRefund orderRefund = new OrderRefund();
+		orderRefund.setId(refundOrder.getId());
+		orderRefund.setUpdateTime(new Date());
+		orderRefund.setRefundState(RefundState.RefundFailure.value());
+		orderRefund.setErrCode(PaymentErrorEnum.SYSTEM_CHANNEL_CODE.getValue()+"");
+		orderRefund.setErrDesc(errorMsg);
+		orderRefundDAO.update(orderRefund);
+		Map<String,Object> jsonMap = new HashMap<String,Object>();
+		jsonMap.put("resultCode", PaymentErrorEnum.SYSTEM_CHANNEL_CODE.getValue());
+		jsonMap.put("resultMsg", errorMsg);
+		JSONObject jsonObject = JSONObject.fromObject(jsonMap);
+		return jsonObject;
+	}
+
+}

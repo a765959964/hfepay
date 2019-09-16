@@ -1,0 +1,38 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.pay.service;
+
+import java.util.List;
+
+import com.hfepay.scancode.commons.condition.OrderPayCondition;
+import com.hfepay.scancode.commons.entity.OrderPay;
+import com.hfepay.scancode.commons.entity.OrderPayment;
+
+public interface PayOrderPayService {
+	
+	/**
+	 * 列表
+	 * @param orderPay 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	public List<OrderPay> findAll(OrderPayCondition orderPayCondition);
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	long update(OrderPayCondition orderPayCondition);
+	
+	
+	OrderPay createPayOrder(OrderPayment order,OrderPayCondition orderPayCondition);
+	
+	OrderPay createWithdrawsOrder(OrderPayCondition orderPayCondition);
+
+}
+

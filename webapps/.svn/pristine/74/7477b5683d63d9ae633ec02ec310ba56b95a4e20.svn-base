@@ -1,0 +1,152 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+package com.hfepay.scancode.controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alibaba.fastjson.JSONObject;
+import com.hfepay.common.web.controller.BaseController;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.utils.Pager;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.condition.ChannelBaseCondition;
+import com.hfepay.scancode.entity.ChannelBase;
+import com.hfepay.scancode.entity.ChannelExpand;
+import com.hfepay.scancode.service.operator.ChannelBaseService;
+import com.hfepay.scancode.service.operator.ChannelExpandService;
+
+@Controller
+@RequestMapping("/adminManage/channelbase")
+public class ChannelBaseController extends BaseController{
+	
+	@Autowired
+	private ChannelBaseService channelBaseService;
+	@Autowired
+	private ChannelExpandService channelExpandService;
+	
+	/**
+	 * @Title: saveOrUpdateById
+	 * @Description: 查询列表
+	 * @author: Ricky
+	 * @param 
+	 * @return: String
+	 * @date CreateDate : 2016-10-13 09:50:44
+	 */
+	@RequestMapping(method= {RequestMethod.GET,RequestMethod.POST})
+	public String list() {
+		return "admin/channel/channelbase/list";
+	}
+	
+	/**
+	 * @Title: listContent
+	 * @Description: 列表查询
+	 * @author: Ricky
+	 * @param ChannelBaseCondition
+	 * @return: String
+	 * @date CreateDate : 2016-10-13 09:50:44
+	 */
+	@RequestMapping(value = "/content", method= {RequestMethod.POST})
+	public String listContent(ModelMap model,ChannelBaseCondition channelBaseCondition){		
+		PagingResult<ChannelBase> page = channelBaseService.findPagingResult(channelBaseCondition);
+		Pager<ChannelBase> pager = new Pager<ChannelBase>();
+		pager.setPageNo(channelBaseCondition.getPageNo());
+		pager.setPageSize(channelBaseCondition.getPageSize());
+		pager.setResult(page.getResult());
+		pager.setTotalCount(page.getTotalCount());
+ 		if(pager.getOrder() == null){
+			pager.setOrder("");
+		}
+		model.addAttribute("pager",pager);
+		return "admin/channel/channelbase/listContent";
+	}
+	
+
+	/**
+	 * @Title: list
+	 * @Description: 列表查询，无分页
+	 * @author: Ricky
+	 * @param ChannelBaseCondition
+	 * @return: JSONObject
+	 * @date CreateDate : 2016-10-13 09:50:44
+	 */
+	@RequestMapping(value="/list",method=RequestMethod.POST)
+	@ResponseBody
+	public JSONObject list(HttpServletRequest request,ChannelBaseCondition channelBaseCondition){		
+        List<ChannelBase> list = channelBaseService.findAll(channelBaseCondition);
+        JSONObject json = new JSONObject();
+        json.put("objList", list);
+		return json;
+	}
+	
+	/**
+	 * @Title: saveOrUpdateById
+	 * @Description: 删除
+	 * @author: Ricky
+	 * @param ChannelBaseCondition
+	 * @return: JSONObject
+	 * @date CreateDate : 2016-10-13 09:50:44
+	 */
+	@RequestMapping(value="/del",method=RequestMethod.POST)
+	@ResponseBody
+	public JSONObject del(HttpServletRequest request,ChannelBaseCondition channelBaseCondition){		
+        long flag = channelBaseService.deleteById(channelBaseCondition.getId());
+        JSONObject json = new JSONObject();
+        if(flag == 0){
+        	json.put("message", Constants.FAIL_MSG);
+        	json.put("status", Constants.FAIL_STATE);
+        }else{
+        	json.put("message", Constants.SUCCESS_MSG);
+        	json.put("status", Constants.SUCCESS_STATE);
+        }
+		return json;
+	}
+	
+
+
+	/**
+	 * @Title: saveOrUpdateById
+	 * @Description: 状态变更
+	 * @author: wh
+	 * @param ChannelBaseCondition
+	 * @return: JSONObject
+	 * @date CreateDate : 2016-10-13 09:50:44
+	 */
+	@RequestMapping(value = "/updateStatus", method= {RequestMethod.POST})
+	@ResponseBody
+	public JSONObject updateStatus(HttpServletRequest request,ChannelBaseCondition channelBaseCondition){		
+        long flag = channelBaseService.updateStatus(channelBaseCondition.getId(),channelBaseCondition.getStatus());
+        ChannelBase entity = channelBaseService.findById(channelBaseCondition.getId());
+        if(entity != null){
+        	ChannelExpand channelExpand = channelExpandService.findByChannelNo(entity.getChannelNo());
+        	if(channelExpand != null){
+        		flag = channelExpandService.updateStatus(channelExpand.getId(),channelBaseCondition.getStatus());
+        	}
+        	
+        }
+        JSONObject json = new JSONObject();
+        if(flag == 0){
+        	json.put("message", Constants.FAIL_MSG);
+        	json.put("status", Constants.FAIL_STATE);
+        }else{
+        	json.put("message", Constants.SUCCESS_MSG);
+        	json.put("status", Constants.SUCCESS_STATE);
+        }
+		return json;
+	}	
+	
+}
+

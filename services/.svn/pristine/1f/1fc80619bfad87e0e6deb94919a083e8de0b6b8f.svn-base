@@ -1,0 +1,18 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.Withdrawals;
+import com.hfepay.scancode.dao.WithdrawalsDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="withdrawalsDAO")
+@Generated("2016-11-30 09:32:37")
+public class WithdrawalsDAOImpl extends MybatisEntityDAO<Withdrawals, String> implements WithdrawalsDAO {
+}

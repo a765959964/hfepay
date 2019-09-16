@@ -1,0 +1,116 @@
+$(function(){
+	toPage(startNo);
+	$("#list").delegate(".weui_cell","click",function(){
+		var spans = $(this).find(".detailMsg span");
+		$.each(spans,function(i,item){
+			var classAtt = $(item).attr("class");
+			var val = $(item).text();
+			$("#details ."+classAtt).text(val);
+		});
+		$(this).addClass("open-popup");
+	})
+});
+
+var loading = false;
+var startNo = 1;//其实页
+var totalNum =0;//页码总数
+var timer;//当前定时器
+var lastTimer;//上一个定时器
+$(document.body).infinite().on("infinite", function() {
+	if(loading) return;
+	loading = true;
+	if(lastTimer){
+		clearTimeout(lastTimer);
+	}
+	lastTimer = timer;
+	$(".weui-infinite-scroll").show();
+	timer = setTimeout(function() {
+		startNo++;
+		toPage(startNo);
+	  loading = false;
+	  if(startNo>=totalNum){
+		  loading=true;
+		  if(timer){
+			  clearTimeout(timer);
+		  }
+		  $(".weui-infinite-scroll").hide();
+	  }
+	}, 2000);
+});
+
+
+function toPage(pageNumber){
+	$.ajax({
+		   type: "POST",
+		   url: basePath+"/scancode/withdrawlsBillContent?pageNo="+pageNumber,
+		   dataType:"json",
+		   success: function(msg){
+			   $(".weui-infinite-scroll").hide();
+			   totalNum = msg.totalPages;
+			   if(totalNum==0){
+				   if(!$("#noneData").text()){
+					   $("#list").append("<span style='text-align:center;color:#666;padding:20px;display:block' id='noneData'>暂无数据</span>");
+				   }
+				   
+				   return;
+			   }
+			   var content=msg.result;
+			   if(content){
+				   var length=content.length;
+				   $.each(content,function(i,item){
+					   $("#list").append(setContent(item));
+				   });
+			   }
+			   
+		   },
+		   error:function(){
+			   $(".weui-infinite-scroll").hide();
+		   }
+		});
+}
+
+function setContent(obj){
+	return '<a class="weui_cell" href="javascript:;" data-target="#details">'+
+	'<div class="weui_cell_bd weui_cell_primary">'+
+		'<p>'+tranPayCode(obj.payCode)+'</p><p class="billData">'+transStatus(obj.resultCode)+'</p><p class="billData">'+new Date(obj.beginTime).Format("yyyy-MM-dd hh:mm:ss")+'</p>'+
+	'</div>'+
+	'<div class="weui_cell_ft"><p>提现</p><p>&yen; '+obj.orderAmt.toFixed(2)+'</p></div>'+
+	'<div style="display:none;" class="detailMsg">'+
+	'<span class="orderAmt">&yen;'+obj.orderAmt.toFixed(2)+'</span>'+
+	'<span class="merchantRate">&yen;'+(obj.orderAmt).toFixed(2)+'</span><span class="updateTime">'+new Date(obj.beginTime).Format("yyyy-MM-dd hh:mm:ss")+'</span>'+
+	'<span class="payNo">'+obj.tradeNo+'</span><span class="payType">'+tranPayCode(obj.payCode)+'</span><span class="payStatus">'+transStatus(obj.resultCode)+'</span>'+
+	'</div>'+
+	'</a>';
+}
+
+//00：支付成功、01：支付失败、02：渠道处理中、03：记账处理中
+function transStatus(obj){
+	var objRe='';
+	if(obj=='0'){
+		objRe='订单已创建'
+	}
+	else if(obj=='1'){
+		objRe='提现处理中'
+	}
+	else if(obj=='2'){
+		objRe='提现成功'
+	}
+	else if(obj==' 3'){
+		objRe='提现失败'
+	}
+	return objRe;
+}
+//钱包类型
+function tranPayCode(obj){
+	var objRe='';
+	if(obj=='ZFBSMZF'){
+		objRe='支付宝钱包'
+	}
+	else if(obj=='WXSMZF'){
+		objRe='微信扫码钱包'
+	}
+	else if(obj=='WXGZHZF'){
+		objRe='微信公众号钱包'
+	}
+	return objRe;
+}

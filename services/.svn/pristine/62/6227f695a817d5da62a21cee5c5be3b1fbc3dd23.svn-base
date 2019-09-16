@@ -1,0 +1,393 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.service.operator.impl;
+
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.criteria.Order;
+import com.hfepay.commons.utils.PagingResult;
+
+import com.hfepay.scancode.dao.MerchantPaywayDAO;
+import com.hfepay.scancode.entity.ChannelAdmin;
+import com.hfepay.scancode.entity.MerchantPayway;
+import com.hfepay.scancode.condition.MerchantPaywayCondition;
+import com.hfepay.scancode.service.operator.MerchantPaywayService;
+
+@Service("merchantPaywayService")
+public class MerchantPaywayServiceImpl implements MerchantPaywayService {
+	
+	@Autowired
+    private MerchantPaywayDAO merchantPaywayDAO;
+    
+    /**
+	 * 列表(分页)
+	 * @param merchantPaywayCondition 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-21 10:21:59
+	 */
+    @Override
+	public PagingResult<MerchantPayway> findPagingResult(MerchantPaywayCondition merchantPaywayCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantPayway.class);
+		if(!Strings.isEmpty(merchantPaywayCondition.getId())){
+			cb.andEQ("id", merchantPaywayCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantPaywayCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getPayCode())){
+			cb.andEQ("payCode", merchantPaywayCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getPayName())){
+			cb.andLike("payName", merchantPaywayCondition.getPayName());
+		}
+		if(null != merchantPaywayCondition.getT0Rate()){
+			cb.andEQ("t0Rate", merchantPaywayCondition.getT0Rate());
+		}
+		if(null != merchantPaywayCondition.getT1Rate()){
+			cb.andEQ("t1Rate", merchantPaywayCondition.getT1Rate());
+		}
+		if(null != merchantPaywayCondition.getRate()){
+			cb.andEQ("rate", merchantPaywayCondition.getRate());
+		}
+		if(null != merchantPaywayCondition.getRateAmount()){
+			cb.andEQ("rateAmount", merchantPaywayCondition.getRateAmount());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantPaywayCondition.getRecordStatus());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getStatus())){
+			cb.andEQ("status", merchantPaywayCondition.getStatus());
+		}
+		if(null != merchantPaywayCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantPaywayCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantPaywayCondition.getOperator())){
+			cb.andEQ("operator", merchantPaywayCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantPaywayCondition.getRemark())){
+			cb.andLike("remark", merchantPaywayCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getTemp1())){
+			cb.andEQ("temp1", merchantPaywayCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getTemp2())){
+			cb.andEQ("temp2", merchantPaywayCondition.getTemp2());
+		}
+		if(merchantPaywayCondition.getChannelAdmin() != null){
+			ChannelAdmin admin = merchantPaywayCondition.getChannelAdmin();
+			channelFilter(cb, admin);
+		}
+		cb.orderBy("createTime", Order.DESC);
+		//排序
+		if(!Strings.isEmpty(merchantPaywayCondition.getOrderBy())){
+			if(merchantPaywayCondition.getOrderBy().indexOf(",")>0){
+				String[] orderBys = merchantPaywayCondition.getOrderBy().split(",");
+				String[] orders = merchantPaywayCondition.getOrder().split(",");
+				for(int i=0; i<orderBys.length && i<orders.length; i++){
+					cb.orderBy(orderBys[i], Order.valueOf(orders[i]));
+				}
+			}else{
+				cb.orderBy(merchantPaywayCondition.getOrderBy(), Order.valueOf(merchantPaywayCondition.getOrder()));
+			}
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(merchantPaywayCondition.getFirst()), Long.valueOf(merchantPaywayCondition.getLast()));
+		return merchantPaywayDAO.findPagingResult(buildCriteria);
+	}
+	
+    private void channelFilter(CriteriaBuilder cb, ChannelAdmin admin) {
+		switch (admin.getIdentityFlag()) {
+		case "1":
+			cb.addParam("type", admin.getIdentityFlag());
+			cb.addParam("valueNo", admin.getChannelCode());
+			break;
+		case "2":
+			cb.addParam("type", admin.getIdentityFlag());
+			cb.addParam("valueNo", admin.getAgentNo());
+			break;
+		case "3":
+			cb.andEQ("merchantNo", admin.getMerchantNo());
+			break;
+		default:
+			break;
+		}
+	}
+    
+	/**
+	 * 列表
+	 * @param merchantPayway 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-21 10:21:59
+	 */
+	@Override
+	public List<MerchantPayway> findAll(MerchantPaywayCondition merchantPaywayCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantPayway.class);
+		if(!Strings.isEmpty(merchantPaywayCondition.getId())){
+			cb.andEQ("id", merchantPaywayCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantPaywayCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getPayCode())){
+			cb.andEQ("payCode", merchantPaywayCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getPayName())){
+			cb.andLike("payName", merchantPaywayCondition.getPayName());
+		}
+		if(null != merchantPaywayCondition.getT0Rate()){
+			cb.andEQ("t0Rate", merchantPaywayCondition.getT0Rate());
+		}
+		if(null != merchantPaywayCondition.getT1Rate()){
+			cb.andEQ("t1Rate", merchantPaywayCondition.getT1Rate());
+		}
+		if(null != merchantPaywayCondition.getRate()){
+			cb.andEQ("rate", merchantPaywayCondition.getRate());
+		}
+		if(null != merchantPaywayCondition.getRateAmount()){
+			cb.andEQ("rateAmount", merchantPaywayCondition.getRateAmount());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantPaywayCondition.getRecordStatus());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getStatus())){
+			cb.andEQ("status", merchantPaywayCondition.getStatus());
+		}
+		if(null != merchantPaywayCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantPaywayCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantPaywayCondition.getOperator())){
+			cb.andEQ("operator", merchantPaywayCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantPaywayCondition.getRemark())){
+			cb.andLike("remark", merchantPaywayCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getTemp1())){
+			cb.andEQ("temp1", merchantPaywayCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getTemp2())){
+			cb.andEQ("temp2", merchantPaywayCondition.getTemp2());
+		}
+		if(merchantPaywayCondition.getChannelAdmin() != null){
+			ChannelAdmin admin = merchantPaywayCondition.getChannelAdmin();
+			channelFilter(cb, admin);
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return merchantPaywayDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 主键查找
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-21 10:21:59
+	 */
+	@Override
+	public MerchantPayway findById(String id){
+		return merchantPaywayDAO.get(id);
+	}
+	
+	/**
+	 * 新增
+	 * @param merchantPaywayCondition
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-21 10:21:59
+	 */
+	@Override
+	public long insert(MerchantPaywayCondition merchantPaywayCondition){
+		MerchantPayway merchantPayway = new MerchantPayway();
+		BeanUtils.copyProperties(merchantPaywayCondition, merchantPayway);
+		return merchantPaywayDAO.insert(merchantPayway);
+	}
+
+	/**
+	 * 删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-21 10:21:59
+	 */
+	@Override
+	public long deleteById(String id){
+		return merchantPaywayDAO.deleteById(id);
+	}
+	
+	/**
+	 * 条件删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-21 10:21:59
+	 */
+	@Override
+	public long deleteByCriteria(MerchantPaywayCondition merchantPaywayCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantPayway.class);
+		if(!Strings.isEmpty(merchantPaywayCondition.getId())){
+			cb.andEQ("id", merchantPaywayCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantPaywayCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getPayCode())){
+			cb.andEQ("payCode", merchantPaywayCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getPayName())){
+			cb.andEQ("payName", merchantPaywayCondition.getPayName());
+		}
+		if(null != merchantPaywayCondition.getT0Rate()){
+			cb.andEQ("t0Rate", merchantPaywayCondition.getT0Rate());
+		}
+		if(null != merchantPaywayCondition.getT1Rate()){
+			cb.andEQ("t1Rate", merchantPaywayCondition.getT1Rate());
+		}
+		if(null != merchantPaywayCondition.getRate()){
+			cb.andEQ("rate", merchantPaywayCondition.getRate());
+		}
+		if(null != merchantPaywayCondition.getRateAmount()){
+			cb.andEQ("rateAmount", merchantPaywayCondition.getRateAmount());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantPaywayCondition.getRecordStatus());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getStatus())){
+			cb.andEQ("status", merchantPaywayCondition.getStatus());
+		}
+		if(null != merchantPaywayCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantPaywayCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantPaywayCondition.getOperator())){
+			cb.andEQ("operator", merchantPaywayCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantPaywayCondition.getRemark())){
+			cb.andLike("remark", merchantPaywayCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getTemp1())){
+			cb.andEQ("temp1", merchantPaywayCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getTemp2())){
+			cb.andEQ("temp2", merchantPaywayCondition.getTemp2());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		MerchantPayway merchantPayway = new MerchantPayway();
+		BeanUtils.copyProperties(merchantPaywayCondition, merchantPayway);
+		return merchantPaywayDAO.deleteByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 行数汇总
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-21 10:21:59
+	 */
+	@Override
+	public long countByCriteria(MerchantPaywayCondition merchantPaywayCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantPayway.class);
+		if(!Strings.isEmpty(merchantPaywayCondition.getId())){
+			cb.andEQ("id", merchantPaywayCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantPaywayCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getPayCode())){
+			cb.andEQ("payCode", merchantPaywayCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getPayName())){
+			cb.andEQ("payName", merchantPaywayCondition.getPayName());
+		}
+		if(null != merchantPaywayCondition.getT0Rate()){
+			cb.andEQ("t0Rate", merchantPaywayCondition.getT0Rate());
+		}
+		if(null != merchantPaywayCondition.getT1Rate()){
+			cb.andEQ("t1Rate", merchantPaywayCondition.getT1Rate());
+		}
+		if(null != merchantPaywayCondition.getRate()){
+			cb.andEQ("rate", merchantPaywayCondition.getRate());
+		}
+		if(null != merchantPaywayCondition.getRateAmount()){
+			cb.andEQ("rateAmount", merchantPaywayCondition.getRateAmount());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantPaywayCondition.getRecordStatus());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getStatus())){
+			cb.andEQ("status", merchantPaywayCondition.getStatus());
+		}
+		if(null != merchantPaywayCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantPaywayCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantPaywayCondition.getOperator())){
+			cb.andEQ("operator", merchantPaywayCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantPaywayCondition.getRemark())){
+			cb.andLike("remark", merchantPaywayCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getTemp1())){
+			cb.andEQ("temp1", merchantPaywayCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getTemp2())){
+			cb.andEQ("temp2", merchantPaywayCondition.getTemp2());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		MerchantPayway merchantPayway = new MerchantPayway();
+		BeanUtils.copyProperties(merchantPaywayCondition, merchantPayway);
+		return merchantPaywayDAO.countByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-21 10:21:59
+	 */
+	@Override
+	public long update(MerchantPaywayCondition merchantPaywayCondition){
+		MerchantPayway merchantPayway = new MerchantPayway();
+		BeanUtils.copyProperties(merchantPaywayCondition, merchantPayway);
+		return merchantPaywayDAO.update(merchantPayway);
+	}
+	
+	/**
+	 * 条件更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-21 10:21:59
+	 */
+	@Override
+	public long updateByCriteria(MerchantPaywayCondition merchantPaywayCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantPayway.class);
+		if(!Strings.isEmpty(merchantPaywayCondition.getId())){
+			cb.andEQ("id", merchantPaywayCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantPaywayCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getPayCode())){
+			cb.andEQ("payCode", merchantPaywayCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(merchantPaywayCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantPaywayCondition.getRecordStatus());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		MerchantPayway merchantPayway = new MerchantPayway();
+		BeanUtils.copyProperties(merchantPaywayCondition, merchantPayway);
+		return merchantPaywayDAO.updateByCriteria(merchantPayway,buildCriteria);
+	}	
+}
+

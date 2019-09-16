@@ -1,0 +1,29 @@
+package com.hfepay.scancode.service.order;
+
+public interface ProfitService {
+
+	/**
+	 * @Title: doSaveProfit
+	 * @Description: 交易利润
+	 * @author: husain
+	 * @return: void
+	 */
+	void doSaveProfit();
+	
+	/**
+	 * @Title: showRedisRateDiff
+	 * @Description: 显示利率差,作为调试用
+	 * @author: husain
+	 * @return: void
+	 */
+	void showRedisRateDiff();
+	
+	/**
+	 * @Title: doSaveWithdrawProfit
+	 * @Description: 计算提现利润
+	 * @author: husain
+	 * @return: void
+	 */
+	//void doSaveWithdrawProfit();
+	
+}

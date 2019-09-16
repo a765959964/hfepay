@@ -1,0 +1,10 @@
+package com.hfepay.scancode.service;
+
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.SysResourceCondition;
+import com.hfepay.scancode.entity.SysResource;
+
+public interface PageService {
+
+	public PagingResult<SysResource> findAllMenu(SysResourceCondition condition);//(int pageNo,int pageSize);
+}

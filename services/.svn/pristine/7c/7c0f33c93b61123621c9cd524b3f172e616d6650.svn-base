@@ -1,0 +1,122 @@
+package com.hfepay.scancode.api.httpClient;
+
+import java.io.IOException;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.commons.httpclient.HttpException;
+import org.apache.commons.httpclient.NameValuePair;
+
+import net.sf.json.JSONObject;
+
+import com.alibaba.fastjson.JSON;
+import com.hfepay.scancode.api.config.HfepayConfig;
+import com.hfepay.scancode.api.entity.vo.HeaderMessage;
+import com.hfepay.scancode.api.entity.vo.Message;
+import com.hfepay.scancode.api.entity.vo.ParamsMessage;
+import com.hfepay.scancode.api.httputil.Dates;
+import com.hfepay.scancode.api.signature.EncrypterUtil;
+
+public class HttpHandle {
+	
+	public static Map<String,String> requestHandle(String method, String key, Map<String, Object> body) throws Exception {
+		//添加头部信息
+		Map<String, Object> header = new HashMap<String, Object>();
+		header.put("version", HfepayConfig.version);
+		//用户请求流水
+		header.put("userTradeNo", Dates.format("yyyyMMddHHmmssSSS", new Date()));
+		header.put("reqTime", Dates.format("yyyyMMddHHmmssSSS", new Date()));
+		//设置body加密后转换成Message对象
+		Map<String, Object> message = new HashMap<String, Object>();
+		message.put("body", body);
+		Message data = EncrypterUtil.encode(JSON.toJSONString(message));
+		
+		//设置参数消息对象
+		ParamsMessage params = new ParamsMessage();
+		HeaderMessage head = JSON.parseObject(JSON.toJSONString(header), HeaderMessage.class);
+		//设置渠道编号
+		params.setChannelNo(HfepayConfig.appid);
+		params.setMethod(method);
+		params.setHead(head);
+		params.setBody(data.getContent());
+		params.setSign(data.getSign());
+		params.setEncryptKey(data.getKey());
+		message = new HashMap<String, Object>();
+		message.put("params", params);
+		String str = JSON.toJSONString(params);
+		JSONObject obj = new JSONObject().fromObject(str);
+		String resJson = buildRequestJsonPost(HfepayConfig.gateway_uri,obj.toString());
+		System.out.println(resJson);
+		Map response = JSON.parseObject(resJson, Map.class);
+		if(response.get("body")!=null) {
+			String content = (String) response.get("body");
+			String sign = (String) response.get("sign");
+			String encryptKey = (String) response.get("encryptKey");
+			if (content != null && sign != null && encryptKey != null) {
+				response.put("body", EncrypterUtil.decode(content, sign, encryptKey));
+			}
+		}else {
+			response.put("head", response.get("head"));
+			response.put("body","");
+		}
+		
+		return response;
+	}
+	/**
+     * MAP类型数组转换成NameValuePair类型
+     * @param properties  MAP类型数组
+     * @return NameValuePair类型数组
+     */
+    private static NameValuePair[] generatNameValuePair(Map<String, String> properties) {
+        NameValuePair[] nameValuePair = new NameValuePair[properties.size()];
+        int i = 0;
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+            nameValuePair[i++] = new NameValuePair(entry.getKey(), entry.getValue());
+        }
+
+        return nameValuePair;
+    }
+	
+    public static String buildRequestGet(String URL,Map<String, String> sParaTemp) throws HttpException, IOException {
+    	
+    	 HttpProtocolHandler httpProtocolHandler = HttpProtocolHandler.getInstance();
+
+         HttpRequest request = new HttpRequest(HttpResultType.BYTES);
+         //设置编码集
+         request.setMethod("GET");
+         request.setCharset(HfepayConfig.input_charset);
+         request.setParameters(generatNameValuePair(sParaTemp));
+         request.setUrl(URL);
+         HttpResponse response = httpProtocolHandler.execute(request,"","","");
+         if (response == null) {
+             return null;
+         }
+         
+         String strResult = response.getStringResult();
+
+         return strResult;
+    	
+    }
+    
+	public static String buildRequestJsonPost(String URL,String objectString) throws Exception {
+        
+        HttpProtocolHandler httpProtocolHandler = HttpProtocolHandler.getInstance();
+
+        HttpRequest request = new HttpRequest(HttpResultType.BYTES);
+        //设置编码集
+        request.setMethod("POST");
+        request.setCharset(HfepayConfig.input_charset);
+        request.setUrl(URL);
+        HttpResponse response = httpProtocolHandler.execute(request,objectString,"","");
+        if (response == null) {
+            return null;
+        }
+        
+        String strResult = response.getStringResult();
+
+        return strResult;
+    }
+	
+}

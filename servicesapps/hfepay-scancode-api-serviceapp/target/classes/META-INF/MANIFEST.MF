@@ -1,0 +1,57 @@
+Manifest-Version: 1.0
+Built-By: ￥ﾼﾠ￥ﾸﾆ
+Class-Path: lib/hfepay-scancode-api-service-impl-1.0.0.jar lib/hfepay-
+ scancode-api-service-1.0.0.jar lib/hfepay-scancode-api-entity-1.0.0.j
+ ar lib/hfepay-commons-web-1.0.0.jar lib/jackson-core-2.3.0-rc1.jar li
+ b/jackson-databind-2.3.0-rc1.jar lib/jackson-annotations-2.3.0-rc1.ja
+ r lib/jackson-xc-1.9.7.jar lib/jackson-core-asl-1.9.7.jar lib/jackson
+ -mapper-asl-1.9.7.jar lib/json-lib-2.4-jdk15.jar lib/spring-web-4.2.5
+ .RELEASE.jar lib/spring-test-4.2.5.RELEASE.jar lib/spring-webmvc-4.2.
+ 5.RELEASE.jar lib/javax.servlet-api-3.1.0.jar lib/jxls-core-1.0.5.jar
+  lib/commons-collections-3.2.1.jar lib/commons-digester-2.0.jar lib/c
+ ommons-jexl-2.0.1.jar lib/poi-3.9.jar lib/poi-ooxml-3.9.jar lib/poi-o
+ oxml-schemas-3.9.jar lib/xmlbeans-2.3.0.jar lib/dom4j-1.6.1.jar lib/j
+ xls-reader-1.0.5.jar lib/jxl-2.6.12.jar lib/hfepay-scancode-api-dao-i
+ mpl-1.0.0.jar lib/hfepay-scancode-api-dao-1.0.0.jar lib/commons-httpc
+ lient-3.1.jar lib/commons-lang3-3.1.jar lib/httpclient-4.5.2.jar lib/
+ httpcore-4.4.4.jar lib/commons-codec-1.9.jar lib/fastjson-1.1.33.jar 
+ lib/hfepay-commons-cache-1.0.0.jar lib/jedis-2.8.1.jar lib/commons-po
+ ol2-2.4.2.jar lib/xstream-1.4.8.jar lib/xmlpull-1.1.3.1.jar lib/xpp3_
+ min-1.1.4c.jar lib/bcprov-jdk16-1.46.jar lib/hfepay-commons-dao-1.0.0
+ .jar lib/hfepay-commons-base-1.0.0.jar lib/commons-beanutils-1.9.1.ja
+ r lib/joda-time-2.3.jar lib/spring-jdbc-4.2.5.RELEASE.jar lib/spring-
+ tx-4.2.5.RELEASE.jar lib/mybatis-3.2.4.jar lib/mybatis-spring-1.2.1.j
+ ar lib/xercesImpl-2.9.1.jar lib/xml-apis-1.3.04.jar lib/druid-0.2.8.j
+ ar lib/toplink-essentials-1.0.jar lib/persistence-api-1.0.jar lib/org
+ .json-chargebee-1.0.jar lib/aspectjweaver-1.7.4.jar lib/jsoup-1.7.3.j
+ ar lib/quartz-2.2.1.jar lib/c3p0-0.9.1.1.jar lib/quartz-jobs-2.2.1.ja
+ r lib/spring-session-data-redis-1.2.0.RELEASE.jar lib/spring-data-red
+ is-1.7.1.RELEASE.jar lib/spring-data-keyvalue-1.1.1.RELEASE.jar lib/s
+ pring-data-commons-1.12.1.RELEASE.jar lib/spring-oxm-4.2.5.RELEASE.ja
+ r lib/spring-context-support-4.2.5.RELEASE.jar lib/spring-session-1.2
+ .0.RELEASE.jar lib/dubbo-2.5.3.jar lib/javassist-3.15.0-GA.jar lib/ne
+ tty-3.2.5.Final.jar lib/hadoop-core-1.2.1.jar lib/commons-cli-1.2.jar
+  lib/xmlenc-0.52.jar lib/jersey-core-1.8.jar lib/jersey-json-1.8.jar 
+ lib/jettison-1.1.jar lib/stax-api-1.0.1.jar lib/jaxb-impl-2.2.3-1.jar
+  lib/jaxb-api-2.2.2.jar lib/stax-api-1.0-2.jar lib/activation-1.1.jar
+  lib/jackson-jaxrs-1.7.1.jar lib/jersey-server-1.8.jar lib/asm-3.1.ja
+ r lib/commons-io-2.1.jar lib/commons-math-2.1.jar lib/commons-net-1.4
+ .1.jar lib/jetty-6.1.26.jar lib/servlet-api-2.5-20081211.jar lib/jett
+ y-util-6.1.26.jar lib/jasper-runtime-5.5.12.jar lib/jasper-compiler-5
+ .5.12.jar lib/jsp-api-2.1-6.1.14.jar lib/servlet-api-2.5-6.1.14.jar l
+ ib/jsp-2.1-6.1.14.jar lib/ant-1.6.5.jar lib/commons-el-1.0.jar lib/je
+ ts3t-0.6.1.jar lib/hsqldb-1.8.0.10.jar lib/oro-2.0.8.jar lib/core-3.1
+ .1.jar lib/commons-configuration-1.9.jar lib/commons-lang-2.6.jar lib
+ /spring-core-4.2.5.RELEASE.jar lib/spring-aop-4.2.5.RELEASE.jar lib/a
+ opalliance-1.0.jar lib/spring-beans-4.2.5.RELEASE.jar lib/spring-expr
+ ession-4.2.5.RELEASE.jar lib/mysql-connector-java-5.1.27.jar lib/hibe
+ rnate-validator-5.0.1.Final.jar lib/validation-api-1.1.0.Final.jar li
+ b/jboss-logging-3.1.1.GA.jar lib/classmate-0.8.0.jar lib/zookeeper-3.
+ 4.7.jar lib/slf4j-log4j12-1.6.1.jar lib/log4j-1.2.16.jar lib/jline-0.
+ 9.94.jar lib/netty-3.7.0.Final.jar lib/zkclient-0.2.jar lib/slf4j-api
+ -1.7.21.jar lib/logback-classic-1.0.13.jar lib/logback-core-1.0.13.ja
+ r lib/jcl-over-slf4j-1.7.5.jar
+Build-Jdk: 1.8.0_66
+Created-By: Maven Integration for Eclipse
+Main-Class: startup.StartUp
+

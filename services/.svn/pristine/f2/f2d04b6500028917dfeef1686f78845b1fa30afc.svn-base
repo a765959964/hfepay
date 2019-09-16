@@ -1,0 +1,21 @@
+package com.hfepay.scancode.service.payway;
+
+import com.hfepay.scancode.bo.MerchantNotifyMessage;
+import com.hfepay.scancode.bo.MerchantWithdrowNotifyMessage;
+
+public interface CallBackService {
+
+	/**
+	 * 支付回调
+	 * @param MerchantNotifyMessage
+	 * @return
+	 */
+	void payCallBack(MerchantNotifyMessage bo) throws Exception;
+	
+	/**
+	 * 提现回调
+	 * @param MerchantNotifyMessage
+	 * @return
+	 */
+	void withdrawsCallBack(MerchantWithdrowNotifyMessage bo) throws Exception;
+}

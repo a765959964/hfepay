@@ -1,0 +1,588 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+package com.hfepay.scancode.controller;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import net.sf.json.JSON;
+import net.sf.json.JSONArray;
+import net.sf.json.JSONObject;
+import net.sf.json.JSONSerializer;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+
+
+import com.hfepay.commons.base.collection.Lists;
+import com.hfepay.commons.base.collection.Maps;
+import com.hfepay.commons.base.lang.Dates;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.utils.Pager;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.api.entity.vo.BankCardAuthVo;
+import com.hfepay.scancode.api.entity.vo.MerchantAccountsVo;
+import com.hfepay.scancode.api.entity.vo.MerchantInfoVo;
+import com.hfepay.scancode.api.entity.vo.MerchantRateVo;
+import com.hfepay.scancode.api.service.MerchantBusinessService;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.commons.ScanBaseController;
+import com.hfepay.scancode.condition.AgentBaseCondition;
+import com.hfepay.scancode.condition.ChannelExpandCondition;
+import com.hfepay.scancode.condition.MerchantBankcardCondition;
+import com.hfepay.scancode.condition.MerchantInfoCondition;
+import com.hfepay.scancode.condition.MerchantPaywayCondition;
+import com.hfepay.scancode.condition.MerchantStoreCondition;
+import com.hfepay.scancode.condition.PlatformQrcodeCondition;
+import com.hfepay.scancode.entity.Admin;
+import com.hfepay.scancode.entity.AgentBase;
+import com.hfepay.scancode.entity.ChannelExpand;
+import com.hfepay.scancode.entity.MerchantBankcard;
+import com.hfepay.scancode.entity.MerchantInfo;
+import com.hfepay.scancode.entity.MerchantPayway;
+import com.hfepay.scancode.entity.PlatformQrcode;
+import com.hfepay.scancode.service.contants.ConfigPreCode;
+import com.hfepay.scancode.service.operator.AgentBaseService;
+import com.hfepay.scancode.service.operator.ChannelExpandService;
+import com.hfepay.scancode.service.operator.IdCreateService;
+import com.hfepay.scancode.service.operator.MerchantBankcardService;
+import com.hfepay.scancode.service.operator.MerchantInfoService;
+import com.hfepay.scancode.service.operator.MerchantPaywayService;
+import com.hfepay.scancode.service.operator.MerchantStoreService;
+import com.hfepay.scancode.service.operator.PlatformQrcodeService;
+
+
+@Controller
+@RequestMapping("/adminManage/merchantinfo")
+public class MerchantInfoController extends ScanBaseController{
+	
+	@Autowired
+	private MerchantInfoService merchantInfoService;
+	
+	@Autowired
+	private AgentBaseService agentBaseService;
+	
+	@Autowired
+	private ChannelExpandService channelExpandService;
+	
+	@Autowired
+	private PlatformQrcodeService platformQrcodeService;
+	
+	@Autowired
+	private MerchantBusinessService merchantBusinessService;
+	
+	@Autowired
+	private IdCreateService idCreateService;
+	
+	@Autowired
+	private MerchantPaywayService merchantPaywayService;
+	
+	@Autowired
+	private MerchantBankcardService merchantBankcardService;
+	
+	@Autowired
+	private MerchantStoreService merchantStoreService;
+	
+	/** 列表 */
+	@RequestMapping(method= {RequestMethod.GET,RequestMethod.POST})
+	public String list(HttpServletRequest request) {
+		
+		//渠道列表
+		ChannelExpandCondition channelCondition = new ChannelExpandCondition();
+		channelCondition.setStatus(Constants.SUCCESS_STATE);
+		request.setAttribute("channels",channelExpandService.findAll(channelCondition));
+		
+		//代理商列表
+		AgentBaseCondition agentBaseCondition =new AgentBaseCondition();
+		agentBaseCondition.setStatus(Constants.SUCCESS_STATE);
+		agentBaseCondition.setRecordStatus(Constants.RECORD_STATUS_YES);
+		request.setAttribute("agents",agentBaseService.findAll(agentBaseCondition));
+		return "admin/merchantinfo/list";
+	}
+	
+	/**
+	 * 列表显示
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/content", method= {RequestMethod.POST})
+	public String listContent(HttpServletRequest request,ModelMap model,MerchantInfoCondition merchantInfoCondition){		
+		PagingResult<MerchantInfo> page = merchantInfoService.findPagingResult(merchantInfoCondition);
+		Pager<MerchantInfo> pager = new Pager<MerchantInfo>();
+		pager.setPageNo(merchantInfoCondition.getPageNo());
+		pager.setPageSize(merchantInfoCondition.getPageSize());
+		pager.setResult(page.getResult());
+		pager.setTotalCount(page.getTotalCount());
+ 		if(pager.getOrder() == null){
+			pager.setOrder("");
+		}
+		model.addAttribute("pager",pager);
+		return "admin/merchantinfo/listContent";
+	}
+	
+	/** 列表无分页 */
+	@RequestMapping(value="/list",method=RequestMethod.POST)
+	@ResponseBody
+	public JSONObject list(HttpServletRequest request,MerchantInfoCondition merchantInfoCondition){		
+        List<MerchantInfo> list = merchantInfoService.findAll(merchantInfoCondition);
+        JSONObject json = new JSONObject();
+        json.put("objList", list);
+		return json;
+	}
+	
+	/** 进入新增/更新 */
+	@RequestMapping(value="/{id}", method= {RequestMethod.GET})
+	public String show(ModelMap model,@PathVariable String id) throws Exception {
+		if(!"0".equalsIgnoreCase(id)){
+			MerchantInfo entity = merchantInfoService.findById(id);
+			 model.addAttribute("Obj", entity);
+		}
+		//渠道列表
+		ChannelExpandCondition channelCondition = new ChannelExpandCondition();
+		channelCondition.setStatus(Constants.SUCCESS_STATE);
+		model.addAttribute("channels",channelExpandService.findAll(channelCondition));
+		
+		//代理商列表
+		AgentBaseCondition agentBaseCondition =new AgentBaseCondition();
+		agentBaseCondition.setStatus(Constants.SUCCESS_STATE);
+		agentBaseCondition.setRecordStatus(Constants.RECORD_STATUS_YES);
+		model.addAttribute("agents",agentBaseService.findAll(agentBaseCondition));
+		return "admin/merchantinfo/edit";
+	}
+	
+	/** 
+	 *商户审核，新增费率
+	 */
+	@RequestMapping(value="/addAerchantpayway/{id}", method= {RequestMethod.GET})
+	public String add(HttpServletRequest request,ModelMap model,@PathVariable String id) throws Exception {
+		MerchantInfo entity = merchantInfoService.findById(id);
+		MerchantPayway merchantPayway =new MerchantPayway();
+		merchantPayway.setMerchantNo(entity.getMerchantNo());
+		//merchantPayway.setMerchantName(entity.getMerchantName());
+		model.addAttribute("Obj",merchantPayway );
+		model.addAttribute("Obj",merchantPayway);
+		return "admin/merchantpayway/edit";
+	}
+	
+	
+	/** 新增/更新 */
+	@RequestMapping(value="/save", method= {RequestMethod.POST})
+	@ResponseBody
+	@Transactional
+	public JSON _new(HttpServletRequest request,ModelMap model,MerchantInfoCondition merchantInfoCondition,MerchantStoreCondition merchantStoreCondition) {
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		Admin user = (Admin) request.getSession().getAttribute("currentUser");
+		merchantInfoCondition.setOperator(user.getId());
+		merchantInfoCondition.setOperator(getCurrentUserId());
+		try {
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG,"url","/adminManage/merchantinfo");
+			if(Strings.isEmpty(merchantInfoCondition.getId())){
+				merchantInfoCondition.setCreateTime(new Date());
+				merchantInfoCondition.setId(Strings.getUUID());
+				merchantInfoCondition.setStatus(Constants.SUCCESS_STATE);
+				merchantInfoCondition.setAuthenStatus(Integer.parseInt(Constants.FAIL_STATE));
+				
+				//设置商户编号
+				ChannelExpandCondition channelExpandCondition = new ChannelExpandCondition();
+				channelExpandCondition.setChannelNo(merchantInfoCondition.getChannelNo());
+				ChannelExpand channelInfo = channelExpandService.findAll(channelExpandCondition).get(0);
+				merchantInfoCondition.setMerchantNo(idCreateService.createParamNo(channelInfo.getChannelPreCode() + ConfigPreCode.MERCHANT_PRE_CODE));
+				merchantStoreCondition.setMerchantNo(merchantInfoCondition.getMerchantNo());
+				//创建商户的同时创建门店
+				insertStore(merchantStoreCondition,merchantInfoCondition.getChannelNo());
+				
+				//给商户绑定主二维码
+				Map<Object, Object> bindmap = bindQrcode(merchantInfoCondition,map,merchantStoreCondition.getStoreNo());
+				//新增商户
+				merchantInfoService.insert(merchantInfoCondition);
+				if(bindmap != null) return JSONSerializer.toJSON(bindmap);
+			}else{
+				merchantInfoCondition.setUpdateTime(new Date());
+				merchantInfoService.update(merchantInfoCondition);
+			}
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/**
+	 * 创建门店
+	 * @param merchantStoreCondition
+	 */
+	private void insertStore(MerchantStoreCondition merchantStoreCondition,String channelNo){
+		//新增
+		MerchantStoreCondition store = new MerchantStoreCondition();
+		store.setCreateTime(new Date());
+		store.setId(Strings.getUUID());
+		store.setStoreStatus(Constants.SUCCESS_STATE);
+		store.setStoreAddress(merchantStoreCondition.getStoreAddress());
+		store.setStoreName(merchantStoreCondition.getStoreName());
+		store.setServicePhone(merchantStoreCondition.getServicePhone());
+		store.setMerchantNo(merchantStoreCondition.getMerchantNo());
+		
+		//设置门店编号
+		ChannelExpandCondition channelExpandCondition = new ChannelExpandCondition();
+		channelExpandCondition.setChannelNo(channelNo);
+		ChannelExpand channelExpand = channelExpandService.findAll(channelExpandCondition).get(0);
+		store.setStoreNo(idCreateService.createParamNo(channelExpand.getChannelPreCode() + ConfigPreCode.STORE_PRE_CODE));
+		
+		merchantStoreService.insert(store);
+	}
+
+	/**
+	 * 给商户绑定二维码，同时更改平台二维码的商户及门店信息，再修改代理商的剩余二维码数量
+	 * @param merchantInfoCondition
+	 * @param map
+	 */
+	private Map<Object, Object> bindQrcode(MerchantInfoCondition merchantInfoCondition,Map<Object, Object> map,String storeNo) {
+		//调用查询该代理商下的二维码
+		PlatformQrcode platformQrcode = platformQrcodeService.findPlatformQrcode(merchantInfoCondition.getAgentNo());
+		if(platformQrcode != null){
+			merchantInfoCondition.setQrCode(platformQrcode.getQrCode());
+			//将使用过的二维码绑定给商户
+			PlatformQrcodeCondition platformQrcodeCondition=new PlatformQrcodeCondition();
+			platformQrcodeCondition.setId(platformQrcode.getId());
+			platformQrcodeCondition.setMerchantNo(merchantInfoCondition.getMerchantNo());
+			platformQrcodeCondition.setStoreId(storeNo);
+			platformQrcodeCondition.setUpdateTime(new Date());
+			platformQrcodeCondition.setUseStatus(Constants.STATUS_ACTIVE);
+			platformQrcodeService.update(platformQrcodeCondition);
+			//修改代理商二维码剩余数量
+			AgentBaseCondition agentBaseCondition =new AgentBaseCondition();
+			agentBaseCondition.setAgentNo(merchantInfoCondition.getAgentNo());
+			List<AgentBase> agentBase = agentBaseService.findAll(agentBaseCondition);
+			if(agentBase.size() > 0){
+				if(agentBase.get(0).getLessTotal() == 0){
+					map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,"商户已创建，代理商二维码已用完，请联系上级代理商!","url","/adminManage/merchantinfo");
+					return map;
+				}else{
+					agentBaseCondition.setId(agentBase.get(0).getId());
+					agentBaseCondition.setUseTotal(agentBase.get(0).getUseTotal()+1);
+					agentBaseCondition.setLessTotal(agentBase.get(0).getLessTotal()-1);
+					agentBaseCondition.setUpdateTime(new Date());
+					agentBaseService.update(agentBaseCondition);
+				}
+			}
+		}else{
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,"商户已创建，代理商二维码已用完，请联系上级代理商!","url","/adminManage/merchantinfo");
+			return map;
+		}
+		
+		return null;
+	}
+	
+	/** 删除 */
+	@RequestMapping(value="/del",method=RequestMethod.POST)
+	@ResponseBody
+	public JSON del(HttpServletRequest request,MerchantInfoCondition merchantInfoCondition){		
+		Admin user = (Admin) request.getSession().getAttribute("currentUser");
+		merchantInfoCondition.setOperator(user.getId());
+		//merchantInfoCondition.setRecordStatus(RecordStatus.LOCKED);
+		merchantInfoCondition.setOperator(getCurrentUserId());
+		merchantInfoCondition.setUpdateTime(new Date());
+        Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+			merchantInfoService.update(merchantInfoCondition);
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG);
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/**
+	 * 状态变更
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/updateStatus", method= {RequestMethod.POST})
+	@ResponseBody
+	public JSON updateStatus(HttpServletRequest request,MerchantInfoCondition merchantInfoCondition){		
+        Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+
+			merchantInfoService.update(merchantInfoCondition);
+			merchantInfoCondition.setOperator(getCurrentUserId());
+			merchantInfoCondition.setUpdateTime(new Date());
+			merchantInfoService.update(merchantInfoCondition);
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG);
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/**
+	 * 绑定二维码
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/bindqrcode", method= {RequestMethod.POST})
+	@ResponseBody
+	public JSON bindqrcode(HttpServletRequest request,MerchantInfoCondition merchantInfoCondition){		
+        Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+			//判定商户是否有二维码
+			MerchantInfo entity = merchantInfoService.findByMerchantNo(merchantInfoCondition.getMerchantNo());
+			if(entity != null && Strings.isNotEmpty(entity.getQrCode())){
+				map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,"商户已有二维码,请知悉");
+				return JSONSerializer.toJSON(map);
+			}
+			merchantInfoCondition.setOperator(getCurrentUserId());
+			merchantInfoCondition.setUpdateTime(new Date());
+			MerchantStoreCondition merchantStoreCondition = new MerchantStoreCondition();
+			merchantStoreCondition.setMerchantNo(merchantInfoCondition.getMerchantNo());
+			String StoreNo = merchantStoreService.findAll(merchantStoreCondition).get(0).getStoreNo();
+			Map<Object, Object> bindmap = bindQrcode(merchantInfoCondition,map,StoreNo);
+			
+			if(bindmap != null) return JSONSerializer.toJSON(bindmap);
+			merchantInfoService.update(merchantInfoCondition);
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG,"url","/adminManage/merchantinfo");
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/** 
+	 * 商户审核（平台审核）
+	 * @param merchantInfoCondition
+	 * @throws Exception
+	*/
+	@RequestMapping(value="/audit/platform", method= {RequestMethod.POST})
+	@ResponseBody
+	@Transactional
+	public JSON auditPlatform(HttpServletRequest request,ModelMap model,MerchantInfoCondition merchantInfoCondition) throws Exception {
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG,"url","/adminManage/merchantinfo");
+			merchantInfoCondition.setOperator(getCurrentUserId());
+			merchantInfoCondition.setUpdateTime(new Date());
+			boolean flag = false;
+			//平台认证通过
+			if(merchantInfoCondition.getStatus().equals("3")){
+				//商户基本信息
+				MerchantInfo entity = merchantInfoService.findById(merchantInfoCondition.getId());
+				
+				//获取费率列表
+				MerchantPaywayCondition merchantPaywayCondition = new MerchantPaywayCondition();
+				merchantPaywayCondition.setRecordStatus(Constants.RECORD_STATUS_YES);
+				merchantPaywayCondition.setStatus(Constants.STATUS_ACTIVE);
+				merchantPaywayCondition.setMerchantNo(entity.getMerchantNo());
+				List<MerchantPayway> payways = merchantPaywayService.findAll(merchantPaywayCondition);
+				if(payways.size() == 0){
+					map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,"商户费率信息不存在，请检查相关信息");
+					return JSONSerializer.toJSON(map);
+				}
+				//商户入网
+				JSON res = merchantJoin(map, entity, payways);
+				if(res != null){
+					return res;
+				}
+				//商户四要素验证
+				res = merchantBankCard4(map, entity);
+				if(res != null){
+					return res;
+				}
+				flag = true;
+			}else if(merchantInfoCondition.getStatus().equals("4")){
+				flag = true;
+			}
+			//只能修改为3、4（平台通过或拒绝）
+			if(flag) merchantInfoService.update(merchantInfoCondition);
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/** 
+	 * 商户费率信息入网
+	 * @param merNo 商户编号
+	 * @param payCode 支付编码
+	 * @throws Exception
+	*/
+	@RequestMapping(value="/audit/platform/{merNo}/{payCode}", method= {RequestMethod.POST})
+	@ResponseBody
+	@Transactional
+	public JSON auditPlatform(HttpServletRequest request,ModelMap model,@PathVariable String merNo,@PathVariable String payCode) throws Exception {
+		Map<Object, Object> map = null;
+		try {
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG,"url","/adminManage/merchantinfo");
+			MerchantInfo entity = merchantInfoService.findByMerchantNo(merNo);
+			//获取费率列表
+			MerchantPaywayCondition merchantPaywayCondition = new MerchantPaywayCondition();
+			merchantPaywayCondition.setRecordStatus(Constants.RECORD_STATUS_YES);
+			merchantPaywayCondition.setStatus(Constants.STATUS_ACTIVE);
+			merchantPaywayCondition.setMerchantNo(merNo);
+			merchantPaywayCondition.setPayCode(payCode);
+			List<MerchantPayway> payways = merchantPaywayService.findAll(merchantPaywayCondition);
+			if(payways.size() == 0){
+				map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,"商户费率信息不存在，请检查相关信息（状态等）");
+				return JSONSerializer.toJSON(map);
+			}
+			JSON res = merchantJoin(map, entity, payways);
+			if(res != null){
+				return res;
+			}
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+
+	/**
+	 * 调用商户入网接口
+	 * @param map 返回web的响应对象map
+	 * @param entity 商户基本信息
+	 * @param payways 商户费率信息对象列表
+	 * 
+	 * @throws Exception
+	 */
+	private JSON merchantJoin(Map<Object, Object> map, MerchantInfo entity,List<MerchantPayway> payways) throws Exception {
+		if(entity == null || Strings.isEmpty(entity.getMerchantNo())){
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,"商户信息不完整，请检查相关信息");
+			return JSONSerializer.toJSON(map);
+		}
+		
+		//获取银行卡列表
+		MerchantBankcardCondition merchantBankcardCondition = new MerchantBankcardCondition();
+		merchantBankcardCondition.setMerchantNo(entity.getMerchantNo());
+		merchantBankcardCondition.setStatus(Constants.STATUS_ACTIVE);
+		List<MerchantBankcard> bankcards =  merchantBankcardService.findAll(merchantBankcardCondition);
+		if(bankcards.size() == 0){
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,"商户银行卡信息不存在，请检查相关信息");
+			return JSONSerializer.toJSON(map);
+		}
+		
+		MerchantAccountsVo account = new MerchantAccountsVo();
+		MerchantBankcard card = bankcards.get(0);
+		account.setAccountName(card.getName());
+		account.setBankCard(card.getBankCard());
+		account.setBankCode(card.getBankCode());
+		account.setBankName(card.getBankName());
+		account.setIsRealAccount(card.getIsRealAccount());
+		
+		List<MerchantRateVo> paywayList = Lists.newList();
+		MerchantRateVo payway = null;
+		for (MerchantPayway pay:payways) {
+			payway = new MerchantRateVo();
+			payway.setPayCode(pay.getPayCode());
+			payway.setTradeRate(String.valueOf(pay.getT1Rate()));
+			payway.setWithdrawAmt(String.valueOf(pay.getRateAmount()));
+			payway.setWithdrawRate(String.valueOf(pay.getRate()));
+			paywayList.add(payway);
+		}
+		
+		MerchantInfoVo info = new MerchantInfoVo();
+		info.setMerchantNo(entity.getMerchantNo());
+		info.setMerchantName(entity.getMerchantName());
+		info.setShortName(entity.getShortName());
+		info.setAddress(entity.getAddress());
+		info.setSerPhone(entity.getPhone());
+		info.setCategory(entity.getBusType());
+		info.setIdCard(entity.getIdCard());
+		info.setName(entity.getName());
+		info.setMerchantLicense(entity.getMerchantLicense());
+		info.setPhone(entity.getPhone());
+		info.setMobile(entity.getMobile());
+		info.setEmail(entity.getEmail());
+		info.setRemark(entity.getRemark());
+		
+		//调用商户入网接口
+		Map<String,String> res = merchantBusinessService.merchantJoin(info,account,paywayList);
+		//解析返回结果
+		afterMerchantJoin(res);
+		return null;
+	}
+	
+	/**
+	 * 调用商户入网接口
+	 * @param map 返回web的响应对象map
+	 * @param entity 商户基本信息
+	 * @param payways 商户费率信息对象列表
+	 * 
+	 * @throws Exception
+	 */
+	private JSON merchantBankCard4(Map<Object, Object> map, MerchantInfo entity) throws Exception {
+		//获取银行卡列表
+		MerchantBankcardCondition merchantBankcardCondition = new MerchantBankcardCondition();
+		merchantBankcardCondition.setMerchantNo(entity.getMerchantNo());
+		merchantBankcardCondition.setStatus(Constants.STATUS_ACTIVE);
+		MerchantBankcard bankcard =  merchantBankcardService.findAll(merchantBankcardCondition).get(0);
+		
+		BankCardAuthVo auth = new BankCardAuthVo();
+		auth.setRealName(bankcard.getName());
+		auth.setBankCard(bankcard.getBankCard());
+		auth.setIdCard(bankcard.getIdCard());
+		auth.setMobile(bankcard.getMobile());
+		
+		Map<String,String> res = merchantBusinessService.bankCardAuthFour(auth);
+		String respCode = res.get("respCode");
+		String respDesc = res.get("respDesc");
+		if(Constants.INTERFACE_SUCCESS_STATUS.equals(respCode)){
+			entity.setAuthenStatus(Integer.parseInt(Constants.STATUS_ACTIVE));
+		}else{
+			entity.setAuthenStatus(Integer.parseInt(Constants.STATUS_NOT_USE));
+		}
+		entity.setRemark(entity.getRemark() + "==auth--"+Dates.yyyyMMddHHmmss(new Date())+":"+respDesc);
+		MerchantInfoCondition merchantInfoCondition = new MerchantInfoCondition();
+		BeanUtils.copyProperties(entity, merchantInfoCondition);
+		merchantInfoService.update(merchantInfoCondition);
+		return null;
+	}
+	/**
+	 * 解析商户入驻返回结果
+	 * @param res
+	 */
+	private void afterMerchantJoin(Map<String,String> res) {
+		String merchantNo = res.get("merchantNo");
+		JSONArray paytypes = JSONArray.fromObject(res.get("payType"));
+		MerchantPaywayCondition pay = null;
+		for (Object string : paytypes) {
+			JSONObject map = JSONObject.fromObject(string);
+			String payCode = map.getString("payCode");
+			String status = map.getString("status");
+			String respDesc = map.getString("respDesc");
+			//System.err.println(merchantNo+"=="+payCode+"=="+status+"=="+respDesc);
+			pay = new MerchantPaywayCondition();
+			pay.setMerchantNo(merchantNo);
+			pay.setPayCode(payCode);
+			pay.setUpdateTime(new Date());
+			pay.setOperator(getCurrentUserId());
+			pay.setRemark(respDesc);
+			if(Constants.INTERFACE_SUCCESS_STATUS.equals(status)){
+				pay.setAcceptStatus(Constants.STATUS_ACTIVE);
+			}else{
+				pay.setAcceptStatus(Constants.STATUS_NOT_USE);
+			}
+			merchantPaywayService.updateByCriteria(pay);
+		}
+	}
+
+	/** 查看详情 */
+	@RequestMapping(value="/detail/{id}", method= {RequestMethod.POST})
+	public String show(HttpServletRequest request,ModelMap model,@PathVariable String id) throws Exception {
+		MerchantInfo entity = merchantInfoService.findById(id);
+		model.addAttribute("item",entity);
+		return "admin/merchantinfo/detail";
+	}
+	
+}
+

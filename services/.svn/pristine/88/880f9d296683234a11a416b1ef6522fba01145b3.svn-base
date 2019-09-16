@@ -1,0 +1,15 @@
+package com.hfepay.scancode.service.payway;
+
+import java.util.Map;
+
+import com.hfepay.scancode.bo.PayBackBo;
+
+public interface CallBackService {
+
+	/**
+	 * 支付回调
+	 * @param OrderBo
+	 * @return
+	 */
+	Map<String, String> payCallBack(PayBackBo bo) throws Exception;
+}

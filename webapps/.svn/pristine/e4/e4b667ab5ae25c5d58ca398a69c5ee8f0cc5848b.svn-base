@@ -1,0 +1,75 @@
+package com.hfepay.scancode.commons;
+
+import java.io.Serializable;
+
+public class WechatConfig implements Serializable{
+
+	/**
+	 * @fieldName: serialVersionUID
+	 * @fieldType: long
+	 * @Description: TODO
+	 */
+	private static final long serialVersionUID = -8177539725490925333L;
+
+	private String backNewUrl;//新用户授权回调地址
+
+	private String backgo;//授权地址
+	
+	private String backPublicCallback;//公众号直接进入回调地址
+	
+	private String backUnPassUrl;//注册没有完成的用户回调地址
+	
+	private String backCashierUrl;//收银员注册
+	
+	private String backAgentPromoteUrl;//代理商推广码回调地址
+
+	public String getBackNewUrl() {
+		return backNewUrl;
+	}
+
+	public void setBackNewUrl(String backNewUrl) {
+		this.backNewUrl = backNewUrl;
+	}
+
+	public String getBackgo() {
+		return backgo;
+	}
+
+	public void setBackgo(String backgo) {
+		this.backgo = backgo;
+	}
+
+	public String getBackPublicCallback() {
+		return backPublicCallback;
+	}
+
+	public void setBackPublicCallback(String backPublicCallback) {
+		this.backPublicCallback = backPublicCallback;
+	}
+
+	public String getBackUnPassUrl() {
+		return backUnPassUrl;
+	}
+
+	public void setBackUnPassUrl(String backUnPassUrl) {
+		this.backUnPassUrl = backUnPassUrl;
+	}
+
+	public String getBackCashierUrl() {
+		return backCashierUrl;
+	}
+
+	public void setBackCashierUrl(String backCashierUrl) {
+		this.backCashierUrl = backCashierUrl;
+	}
+
+	public String getBackAgentPromoteUrl() {
+		return backAgentPromoteUrl;
+	}
+
+	public void setBackAgentPromoteUrl(String backAgentPromoteUrl) {
+		this.backAgentPromoteUrl = backAgentPromoteUrl;
+	}
+
+	
+}

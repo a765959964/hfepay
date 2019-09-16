@@ -1,0 +1,51 @@
+package com.hfepay.scancode.api.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.hfepay.scancode.api.condition.MerchantPayCondition;
+import com.hfepay.scancode.api.entity.vo.BankCardAuthVo;
+import com.hfepay.scancode.api.entity.vo.MerchantAccountsVo;
+import com.hfepay.scancode.api.entity.vo.MerchantInfoVo;
+import com.hfepay.scancode.api.entity.vo.MerchantPayInfoVo;
+import com.hfepay.scancode.api.entity.vo.MerchantRateVo;
+
+public interface MerchantBusinessService{
+
+	
+	/**
+	 * 商户入网
+	 * @param info 商户基本信息
+	 * @param accounts 商户账户信息
+	 * @param payTypes 商户费率信息列表
+	 * @return
+	 * @throws Exception
+	 * @author lemon
+	 */
+	public Map<String, String> merchantJoin(MerchantInfoVo info, MerchantAccountsVo accounts, List<MerchantRateVo> payTypes) throws Exception;
+	
+	/**
+	 * 预订单（扫码付）
+	 * @param payInfo 订单信息
+	 * @return
+	 * @throws Exception
+	 * @author lemons
+	 */
+	public Map<String,String> merchantOrder(MerchantPayInfoVo payInfo) throws Exception;
+	
+	/**
+	 * 微信公众号支付
+	 * @param payInfo 订单信息
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, String> merchantWechatOfficial(MerchantPayInfoVo payInfo) throws Exception;
+	
+	/**
+	 * 银行卡四要素
+	 * @param bankCard
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, String> bankCardAuthFour(BankCardAuthVo bankCard) throws Exception;
+}

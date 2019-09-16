@@ -1,0 +1,212 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+package com.hfepay.scancode.controller;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import net.sf.json.JSON;
+import net.sf.json.JSONSerializer;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alibaba.fastjson.JSONObject;
+import com.hfepay.common.web.controller.BaseController;
+import com.hfepay.commons.base.collection.Maps;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.entity.RecordStatus;
+import com.hfepay.commons.utils.Pager;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.commons.BatchNoUtil;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.commons.TransCodeEnum;
+import com.hfepay.scancode.condition.AuditLogCondition;
+import com.hfepay.scancode.condition.ChangeLogCondition;
+import com.hfepay.scancode.condition.MerchantBankcardCondition;
+import com.hfepay.scancode.entity.Admin;
+import com.hfepay.scancode.entity.ChannelBase;
+import com.hfepay.scancode.entity.MerchantBankcard;
+import com.hfepay.scancode.entity.MerchantInfo;
+import com.hfepay.scancode.service.operator.ChangeLogService;
+import com.hfepay.scancode.service.operator.ChannelBaseService;
+import com.hfepay.scancode.service.operator.MerchantBankcardService;
+import com.hfepay.scancode.service.operator.MerchantInfoService;
+
+@Controller
+@RequestMapping("/adminManage/merchantbankcard")
+public class MerchantBankcardController extends BaseController{
+	
+	@Autowired
+	private MerchantBankcardService merchantBankcardService;
+	@Autowired
+	private ChangeLogService changeLogService; 
+	@Autowired
+	private MerchantInfoService merchantInfoService;
+	/** 列表 */
+	@RequestMapping(method= {RequestMethod.GET,RequestMethod.POST})
+	public String list(HttpServletRequest request) {
+		return "admin/merchantbankcard/list";
+	}
+	
+	/**
+	 * 列表显示
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/content", method= {RequestMethod.POST})
+	public String listContent(HttpServletRequest request,ModelMap model,MerchantBankcardCondition merchantBankcardCondition){		
+		PagingResult<MerchantBankcard> page = merchantBankcardService.findPagingResult(merchantBankcardCondition);
+		Pager<MerchantBankcard> pager = new Pager<MerchantBankcard>();
+		pager.setPageNo(merchantBankcardCondition.getPageNo());
+		pager.setPageSize(merchantBankcardCondition.getPageSize());
+		pager.setResult(page.getResult());
+		pager.setTotalCount(page.getTotalCount());
+ 		if(pager.getOrder() == null){
+			pager.setOrder("");
+		}
+		model.addAttribute("pager",pager);
+		return "admin/merchantbankcard/listContent";
+	}
+	
+	/** 列表无分页 */
+	@RequestMapping(value="/list",method=RequestMethod.POST)
+	@ResponseBody
+	public JSONObject list(HttpServletRequest request,MerchantBankcardCondition merchantBankcardCondition){		
+        List<MerchantBankcard> list = merchantBankcardService.findAll(merchantBankcardCondition);
+        JSONObject json = new JSONObject();
+        json.put("objList", list);
+		return json;
+	}
+	
+	/** 进入新增/更新 */
+	@RequestMapping(value="/{id}", method= {RequestMethod.GET})
+	public String show(ModelMap model,@PathVariable String id) throws Exception {
+		if(!"0".equalsIgnoreCase(id)){
+			MerchantBankcard entity = merchantBankcardService.findById(id);
+			 model.addAttribute("Obj", entity);
+		}
+		return "admin/merchantbankcard/edit";
+	}
+
+	/** 新增/更新 */
+	@RequestMapping(value="/save", method= {RequestMethod.POST})
+	@ResponseBody
+	public JSON _new(HttpServletRequest request,ModelMap model,MerchantBankcardCondition merchantBankcardCondition) throws Exception {
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		Admin user = (Admin) request.getSession().getAttribute("currentUser");
+		merchantBankcardCondition.setOperator(user.getUserName());
+		try {
+			if(Strings.isEmpty(merchantBankcardCondition.getId())){
+				//新增
+				merchantBankcardCondition.setCreateTime(new Date());
+				merchantBankcardCondition.setId(Strings.getUUID());
+				//merchantBankcardCondition.setRecordStatus(RecordStatus.ACTIVE);
+				merchantBankcardCondition.setStatus(Constants.SUCCESS_STATE);
+				merchantBankcardService.insert(merchantBankcardCondition);
+			}else{
+				MerchantBankcard entity = merchantBankcardService.findById(merchantBankcardCondition.getId());
+				//有变更才写入数据变更日志
+				if(entity != null && 
+						!(entity.getBankCode().equals(merchantBankcardCondition.getBankCode())
+								&&entity.getBankName().equals(merchantBankcardCondition.getBankName())
+								&&entity.getBankCard().equals(merchantBankcardCondition.getBankCard())
+								&&entity.getIdCard().equals(merchantBankcardCondition.getIdCard())
+								&&entity.getName().equals(merchantBankcardCondition.getName())
+								&&entity.getMobile().equals(merchantBankcardCondition.getMobile())
+								&&entity.getIsRealAccount().equals(merchantBankcardCondition.getIsRealAccount()))){
+					MerchantInfo merchantInfo = merchantInfoService.findByMerchantNo(merchantBankcardCondition.getMerchantNo());
+					if(merchantInfo != null){
+						ChangeLogCondition changeLogCondition = new ChangeLogCondition();
+						String tradeNo = merchantInfo.getId();//MerchantInfo表Id关联
+						String batchNo = BatchNoUtil.getBatchNo();
+						changeLogCondition.setTradeNo(tradeNo);
+						changeLogCondition.setBatchNo(batchNo);
+						changeLogCondition.setTransCode(String.valueOf(TransCodeEnum.MERCHANT_BANKCARD_CODE.getValue()));
+						changeLogCondition.setTransName(TransCodeEnum.MERCHANT_BANKCARD_CODE.getDesc());
+						changeLogCondition.setOwnersNo(merchantBankcardCondition.getMerchantNo());
+						changeLogCondition.setBefore(JSONSerializer.toJSON(entity).toString());
+						changeLogCondition.setStatus(Constants.APPROVE_STATUS_NEW);
+						changeLogCondition.setOperator(user.getUserName());
+						changeLogCondition.setCreateTime(new Date());
+						changeLogService.insert(changeLogCondition);
+					}
+					//修改插入商户账户信息审核记录表数据
+					AuditLogCondition   auditLogCondition =new AuditLogCondition();
+					//auditLogCondition.setAuditId(value);//审核记录ID
+					auditLogCondition.setAuditStatus("1");
+					auditLogCondition.setMerchantNo(merchantInfo.getMerchantNo());
+					auditLogCondition.setMerchantName(merchantInfo.getMerchantName());
+					//auditLogCondition.setReason(value);//审核意见
+					//auditLogCondition.setOperatorOrganizations(value);//审核人机构
+					auditLogCondition.setCreateTime(new Date());
+					auditLogCondition.setOperator(user.getUserName());
+					//auditLogCondition.setRemark(value);//备注
+				}
+				merchantBankcardCondition.setUpdateTime(new Date());
+				merchantBankcardService.update(merchantBankcardCondition);
+			}
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG,"url","/adminManage/merchantbankcard");
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/** 删除 */
+	@RequestMapping(value="/del",method=RequestMethod.POST)
+	@ResponseBody
+	public JSON del(HttpServletRequest request,MerchantBankcardCondition merchantBankcardCondition){		
+		Admin user = (Admin) request.getSession().getAttribute("currentUser");
+		merchantBankcardCondition.setOperator(user.getUserName());
+		//merchantBankcardCondition.setRecordStatus(RecordStatus.LOCKED);
+		merchantBankcardCondition.setUpdateTime(new Date());
+        Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+			merchantBankcardService.update(merchantBankcardCondition);
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG);
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/**
+	 * 状态变更
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/updateStatus", method= {RequestMethod.POST})
+	@ResponseBody
+	public JSON updateStatus(HttpServletRequest request,MerchantBankcardCondition merchantBankcardCondition){		
+        Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+			merchantBankcardService.updateStatus(merchantBankcardCondition.getId(),merchantBankcardCondition.getStatus());
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG);
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}	
+	
+	/** 查看详情 */
+	@RequestMapping(value="/detail/{id}", method= {RequestMethod.POST})
+	public String show(HttpServletRequest request,ModelMap model,@PathVariable String id) throws Exception {
+		MerchantBankcard entity = merchantBankcardService.findById(id);
+		model.addAttribute("item",entity);
+		return "admin/merchantbankcard/detail";
+	}
+}
+

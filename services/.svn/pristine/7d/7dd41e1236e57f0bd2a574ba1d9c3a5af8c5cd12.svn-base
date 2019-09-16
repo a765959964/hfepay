@@ -1,0 +1,282 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+package com.hfepay.scancode.service.operator.impl;
+
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.OrganProfitCondition;
+import com.hfepay.scancode.dao.OrganProfitDAO;
+import com.hfepay.scancode.entity.OrganProfit;
+import com.hfepay.scancode.service.operator.OrganProfitService;
+
+@Service("organProfitService")
+public class OrganProfitServiceImpl implements OrganProfitService {
+	
+	@Autowired
+    private OrganProfitDAO organProfitDAO;
+    
+    /**
+	 * @Title: findPagingResult
+	 * @Description: 列表(分页)
+	 * @author: Ricky
+	 * @param organProfitCondition
+	 * @return: PagingResult<OrganProfit>
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+    @Override
+	public PagingResult<OrganProfit> findPagingResult(OrganProfitCondition organProfitCondition){
+		CriteriaBuilder cb = Cnd.builder(OrganProfit.class);
+		if(!Strings.isEmpty(organProfitCondition.getId())){
+			cb.andEQ("id", organProfitCondition.getId());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getTradeNo())){
+			cb.andEQ("tradeNo", organProfitCondition.getTradeNo());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getOrganNo())){
+			cb.andEQ("organNo", organProfitCondition.getOrganNo());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getOrganLevel())){
+			cb.andEQ("organLevel", organProfitCondition.getOrganLevel());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", organProfitCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getQrCode())){
+			cb.andEQ("qrCode", organProfitCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getPayCode())){
+			cb.andEQ("payCode", organProfitCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getType())){
+			cb.andEQ("type", organProfitCondition.getType());
+		}
+		if(null != organProfitCondition.getAmount()){
+			cb.andEQ("amount", organProfitCondition.getAmount());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getRateType())){
+			cb.andEQ("rateType", organProfitCondition.getRateType());
+		}
+		if(null != organProfitCondition.getRate()){
+			cb.andEQ("rate", organProfitCondition.getRate());
+		}
+		if(null != organProfitCondition.getFixedAmount()){
+			cb.andEQ("fixedAmount", organProfitCondition.getFixedAmount());
+		}
+		if(null != organProfitCondition.getProfitAmount()){
+			cb.andEQ("profitAmount", organProfitCondition.getProfitAmount());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getStatus())){
+			cb.andEQ("status", organProfitCondition.getStatus());
+		}
+		if(null != organProfitCondition.getCreateTime()){
+			cb.andEQ("createTime", organProfitCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(organProfitCondition.getRemark())){
+			cb.andLike("remark", organProfitCondition.getRemark());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getTemp1())){
+			cb.andEQ("temp1", organProfitCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getTemp2())){
+			cb.andEQ("temp2", organProfitCondition.getTemp2());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(organProfitCondition.getFirst()), Long.valueOf(organProfitCondition.getLast()));
+		return organProfitDAO.findPagingResult(buildCriteria);
+	}
+	
+	/**
+	 * @Title: findAll
+	 * @Description: 列表
+	 * @author: Ricky
+	 * @param organProfitCondition
+	 * @return: List<OrganProfit>
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+	@Override
+	public List<OrganProfit> findAll(OrganProfitCondition organProfitCondition){
+		CriteriaBuilder cb = Cnd.builder(OrganProfit.class);
+		if(!Strings.isEmpty(organProfitCondition.getId())){
+			cb.andEQ("id", organProfitCondition.getId());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getTradeNo())){
+			cb.andEQ("tradeNo", organProfitCondition.getTradeNo());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getOrganNo())){
+			cb.andEQ("organNo", organProfitCondition.getOrganNo());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getOrganLevel())){
+			cb.andEQ("organLevel", organProfitCondition.getOrganLevel());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", organProfitCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getQrCode())){
+			cb.andEQ("qrCode", organProfitCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getPayCode())){
+			cb.andEQ("payCode", organProfitCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getType())){
+			cb.andEQ("type", organProfitCondition.getType());
+		}
+		if(null != organProfitCondition.getAmount()){
+			cb.andEQ("amount", organProfitCondition.getAmount());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getRateType())){
+			cb.andEQ("rateType", organProfitCondition.getRateType());
+		}
+		if(null != organProfitCondition.getRate()){
+			cb.andEQ("rate", organProfitCondition.getRate());
+		}
+		if(null != organProfitCondition.getFixedAmount()){
+			cb.andEQ("fixedAmount", organProfitCondition.getFixedAmount());
+		}
+		if(null != organProfitCondition.getProfitAmount()){
+			cb.andEQ("profitAmount", organProfitCondition.getProfitAmount());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getStatus())){
+			cb.andEQ("status", organProfitCondition.getStatus());
+		}
+		if(null != organProfitCondition.getCreateTime()){
+			cb.andEQ("createTime", organProfitCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(organProfitCondition.getRemark())){
+			cb.andLike("remark", organProfitCondition.getRemark());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getTemp1())){
+			cb.andEQ("temp1", organProfitCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(organProfitCondition.getTemp2())){
+			cb.andEQ("temp2", organProfitCondition.getTemp2());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return organProfitDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * @Title: findById
+	 * @Description: 主键查找
+	 * @author: Ricky
+	 * @param id
+	 * @return: OrganProfit
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+	@Override
+	public OrganProfit findById(String id){
+		return organProfitDAO.get(id);
+	}
+	
+	/**
+	 * @Title: insert
+	 * @Description: 新增
+	 * @author: Ricky
+	 * @param organProfitCondition
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+	@Override
+	public long insert(OrganProfitCondition organProfitCondition){
+		OrganProfit organProfit = new OrganProfit();
+		BeanUtils.copyProperties(organProfitCondition, organProfit);
+		return organProfitDAO.insert(organProfit);
+	}
+
+	/**
+	 * @Title: deleteById
+	 * @Description: 删除
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+	@Override
+	public long deleteById(String id){
+		return organProfitDAO.deleteById(id);
+	}
+	
+	/**
+	 * @Title: deleteByCriteria
+	 * @Description: 条件删除
+	 * @author: Ricky
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+	@Override
+	public long deleteByCriteria(Criteria criteria){
+		return organProfitDAO.deleteByCriteria(criteria);
+	}
+	
+	/**
+	 * @Title: countByCriteria
+	 * @Description: 行数汇总
+	 * @author: Ricky
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+	@Override
+	public long countByCriteria(Criteria criteria){
+		return organProfitDAO.countByCriteria(criteria);
+	}
+	
+	/**
+	 * @Title: update
+	 * @Description: 更新
+	 * @author: Ricky
+	 * @param organProfitCondition
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+	@Override
+	public long update(OrganProfitCondition organProfitCondition){
+		OrganProfit organProfit = new OrganProfit();
+		BeanUtils.copyProperties(organProfitCondition, organProfit);
+		return organProfitDAO.update(organProfit);
+	}
+	
+	/**
+	 * @Title: updateByCriteria
+	 * @Description: 条件更新
+	 * @author: Ricky
+	 * @param organProfitCondition
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+	@Override
+	public long updateByCriteria(OrganProfitCondition organProfitCondition,Criteria criteria){
+		OrganProfit organProfit = new OrganProfit();
+		BeanUtils.copyProperties(organProfitCondition, organProfit);
+		return organProfitDAO.updateByCriteria(organProfit,criteria);
+	}
+	
+	/**
+	 * @Title: updateStatus
+	 * @Description: 状态更新
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+	@Override
+	public long updateStatus(String id,String status){
+		return organProfitDAO.updateStatus(id,status);
+	}	
+}
+

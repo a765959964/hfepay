@@ -1,0 +1,25 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao;
+
+import java.util.Map;
+
+import com.hfepay.commons.base.annotation.Generated;
+import com.hfepay.commons.dao.EntityDAO;
+import com.hfepay.scancode.entity.ChannelInfo;
+
+@Generated("2016-06-15 20:42:11")
+public interface ChannelInfoDAO extends EntityDAO<ChannelInfo, String> {
+	/**
+	 * 状态更新
+	 */
+	long updateStatus(String id,String status);	
+	
+	/**
+	 * 生成编码
+	 * @param map
+	 */
+	public void getChannelCode(Map<String, String> map);
+}

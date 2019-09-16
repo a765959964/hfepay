@@ -1,0 +1,270 @@
+package com.hfepay.epay.api.entity.order;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.apache.commons.lang.StringUtils;
+/**
+ * 预约订单数据 
+ * @author parry.xie
+ *
+ */
+@SuppressWarnings("serial")
+public class OrderForm implements java.io.Serializable{
+	
+	
+	/**
+	 * 商户APP编号
+	 */
+	private String mech_no;
+	/**
+	 * 商户APP应用ID
+	 */
+	private String app_id;
+	/**
+	 * 时间搓
+	 */
+	private String timestamp;
+	/**
+	 * 数据签名
+	 */
+	private String sign;
+	/**
+	 * 渠道类型
+	 */
+	private String channel;
+	/**
+	 * 商户订单号
+	 */
+	private String order_no;
+	
+	/**
+	 * 商户商品名称
+	 */
+	private String title;
+	
+	/**
+	 * 商户商品详情
+	 */
+	private String detail;
+	/**
+	 * 订单金额
+	 */
+	private String total_fee;
+	/**
+	 * 订单日期
+	 */
+	private String add_date;
+	/**
+	 * 商户保存数据，该字段在平台回调商户接口的时候返回给商户做数据校验 ，长度255
+	 */
+	private String categ_data;
+	/**
+	 * 商户回调地址
+	 */
+	private String return_url;
+	/**
+	 * 商户设置订单超时时间60s
+	 */
+	private String failure_time;
+	
+	/**
+	 * 签名类型
+	 */
+	private String sign_type;
+	
+	/**
+	 * web-前端回调地址页面
+	 */
+	private String  web_url;
+	
+
+
+
+	public String getDetail() {
+		return detail;
+	}
+
+	public void setDetail(String detail) {
+		this.detail = detail;
+	}
+
+
+	
+
+
+	public String getApp_id() {
+		return app_id;
+	}
+
+
+
+
+	public void setApp_id(String app_id) {
+		this.app_id = app_id;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+
+	public String getOrder_no() {
+		return order_no;
+	}
+
+	public void setOrder_no(String order_no) {
+		this.order_no = order_no;
+	}
+
+	public String getTitle() {
+		return title;
+	}
+
+	public void setTitle(String title) {
+		this.title = title;
+	}
+
+	public String getCateg_data() {
+		return categ_data;
+	}
+
+	public void setCateg_data(String categ_data) {
+		this.categ_data = categ_data;
+	}
+
+	public String getReturn_url() {
+		return return_url;
+	}
+
+
+
+
+	public void setReturn_url(String return_url) {
+		this.return_url = return_url;
+	}
+
+
+
+
+	public String getFailure_time() {
+		return failure_time;
+	}
+
+
+
+
+	public void setFailure_time(String failure_time) {
+		this.failure_time = failure_time;
+	}
+
+	public String getMech_no() {
+		return mech_no;
+	}
+
+	public void setMech_no(String mech_no) {
+		this.mech_no = mech_no;
+	}
+
+	public String getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public String getSign() {
+		return sign;
+	}
+
+	public void setSign(String sign) {
+		this.sign = sign;
+	}
+
+	public String getTotal_fee() {
+		return total_fee;
+	}
+
+	public void setTotal_fee(String total_fee) {
+		this.total_fee = total_fee;
+	}
+
+	public String getAdd_date() {
+		return add_date;
+	}
+
+	public void setAdd_date(String add_date) {
+		this.add_date = add_date;
+	}
+
+	public String getSign_type() {
+		return sign_type;
+	}
+
+	public void setSign_type(String sign_type) {
+		this.sign_type = sign_type;
+	}
+
+	public String getWeb_url() {
+		return web_url;
+	}
+
+	public void setWeb_url(String web_url) {
+		this.web_url = web_url;
+	}
+
+	public Map<String,String> toMap(){
+        Map<String,String> map = new HashMap<String, String>();
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            Object obj;
+            try {
+                obj = field.get(this);
+                if(obj!=null && field.getName()!="sign_type" && field.getName()!="sign"){
+                    map.put(field.getName(), String.valueOf(obj));
+                }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return map;
+    }
+	
+	public Boolean vlidator(){
+		
+		if(StringUtils.isBlank(this.order_no)) {
+			return true;
+		}
+		
+		if(StringUtils.isBlank(this.title)) {
+			return true;
+		}
+		
+		
+		if(StringUtils.isBlank(this.total_fee)) {
+			return true;
+		}
+		
+		if(StringUtils.isBlank(this.channel)) {
+			return true;
+		}
+		
+		if(StringUtils.isBlank(this.timestamp)) {
+			return true;
+		}
+		
+		if(StringUtils.isBlank(this.return_url)) {
+			return true;
+		}
+		
+        return false;
+	}
+
+}

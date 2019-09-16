@@ -1,0 +1,18 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao;
+
+import com.hfepay.scancode.entity.OrganProfit;
+import com.hfepay.commons.dao.EntityDAO;
+
+import java.util.List;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+@Generated("2016-11-30 17:50:55")
+public interface OrganProfitDAO extends EntityDAO<OrganProfit, String> {
+
+	void insertBatch(List<OrganProfit> list);
+}

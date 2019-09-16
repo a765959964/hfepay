@@ -1,0 +1,222 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+package com.hfepay.scancode.controller;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import net.sf.json.JSON;
+import net.sf.json.JSONSerializer;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alibaba.fastjson.JSONObject;
+import com.hfepay.common.web.controller.BaseController;
+import com.hfepay.commons.base.collection.Maps;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.utils.Pager;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.condition.ChannelInfoCondition;
+import com.hfepay.scancode.condition.SysAdminCondition;
+import com.hfepay.scancode.condition.SysRoleCondition;
+import com.hfepay.scancode.entity.Admin;
+import com.hfepay.scancode.entity.ChannelInfo;
+import com.hfepay.scancode.service.contants.ConfigType;
+import com.hfepay.scancode.service.operator.AdminService;
+import com.hfepay.scancode.service.operator.ChannelInfoService;
+import com.hfepay.scancode.service.operator.SysConfigService;
+import com.hfepay.scancode.service.operator.SysRoleService;
+
+@Controller
+@RequestMapping("/adminManage/channelinfo")
+public class ChannelInfoController extends BaseController{
+	
+	@Autowired
+	private AdminService AdminService;
+	
+	@Autowired
+	private ChannelInfoService channelInfoService;
+	
+	@Autowired
+    private SysRoleService roleService;
+	
+	@Autowired
+	private SysConfigService sysConfigService;
+	
+	/** 列表 */
+	@RequestMapping(method= {RequestMethod.GET,RequestMethod.POST})
+	public String list(HttpServletRequest request) {
+		return "admin/channelinfo/list";
+	}
+	
+	/**
+	 * 列表显示
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/content", method= {RequestMethod.POST})
+	public String listContent(HttpServletRequest request,ModelMap model,ChannelInfoCondition channelInfoCondition){		
+		PagingResult<ChannelInfo> page = channelInfoService.findPagingResult(channelInfoCondition);
+		Pager<ChannelInfo> pager = new Pager<ChannelInfo>();
+		pager.setPageNo(channelInfoCondition.getPageNo());
+		pager.setPageSize(channelInfoCondition.getPageSize());
+		pager.setResult(page.getResult());
+		pager.setTotalCount(page.getTotalCount());
+ 		if(pager.getOrder() == null){
+			pager.setOrder("");
+		}
+		model.addAttribute("pager",pager);
+		return "admin/channelinfo/listContent";
+	}
+	
+	/** 列表无分页 */
+	@RequestMapping(value="/list",method=RequestMethod.POST)
+	@ResponseBody
+	public JSONObject list(HttpServletRequest request,ChannelInfoCondition channelInfoCondition){	
+		if(Strings.isNotEmpty(channelInfoCondition.getPreCode())){
+			channelInfoCondition.setPreCode(channelInfoCondition.getPreCode().toUpperCase());
+		}
+        List<ChannelInfo> list = channelInfoService.findAll(channelInfoCondition);
+        JSONObject json = new JSONObject();
+        json.put("objList", list);
+		return json;
+	}
+	
+	/** 进入新增/更新 */
+	@RequestMapping(value="/{id}", method= {RequestMethod.GET})
+	public String show1(HttpServletRequest request,ModelMap model,@PathVariable String id) throws Exception {
+		if(!"0".equalsIgnoreCase(id)){
+			ChannelInfo entity = channelInfoService.findById(id);
+			 model.addAttribute("Obj", entity);
+		}else{
+			model.addAttribute("roles", roleService.findAllNoPage(new SysRoleCondition()));
+		}
+		request.setAttribute("ObjList", sysConfigService.getSysConfig(ConfigType.SKIN_CONFIG_THEME.value()));
+		return "admin/channelinfo/edit";
+	}
+
+	/** 新增/更新 */
+	@RequestMapping(value="/save", method= {RequestMethod.POST})
+	@ResponseBody
+	public JSON _new(HttpServletRequest request,ModelMap model,ChannelInfoCondition channelInfoCondition,String userName,String password,String roleId) throws Exception {
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		Admin user = (Admin) request.getSession().getAttribute("currentUser");
+		channelInfoCondition.setOperatorId(user.getId());
+		try {
+			channelInfoCondition.setPreCode(channelInfoCondition.getPreCode().toUpperCase());
+			if(Strings.isEmpty(channelInfoCondition.getId())){
+				//新增
+				channelInfoCondition.setCreateTime(new Date());
+				channelInfoCondition.setId(Strings.getUUID());
+				channelInfoCondition.setStatus(Constants.SUCCESS_STATE);
+				channelInfoCondition.setIsActive(Constants.Y);
+				channelInfoCondition.setPaySwitch(Constants.STATUS_ACTIVE);
+				channelInfoService.insert(channelInfoCondition);
+				
+				//创建渠道的同时，创建渠道对应的角色用户
+				SysAdminCondition SysAdminCondition = new SysAdminCondition();
+				SysAdminCondition.setUserName(userName);
+				SysAdminCondition.setPassword(password);
+				AdminService.updateFix(SysAdminCondition, roleId);
+			}else{
+				channelInfoCondition.setUpdateTime(new Date());
+				channelInfoService.update(channelInfoCondition);
+			}
+			
+			channelInfoService.saveChannelInfoToRedisByCode(channelInfoCondition.getCode());
+			HttpSession session = request.getSession();
+			session.removeAttribute("currentChannelInfo");
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG,"url","/adminManage/channelinfo");
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/** 删除 */
+	@RequestMapping(value="/del",method=RequestMethod.POST)
+	@ResponseBody
+	public JSON del(HttpServletRequest request,ChannelInfoCondition channelInfoCondition){		
+		Admin user = (Admin) request.getSession().getAttribute("currentUser");
+		channelInfoCondition.setOperatorId(user.getId());
+		channelInfoCondition.setUpdateTime(new Date());
+        Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+			channelInfoService.update(channelInfoCondition);
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG);
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/**
+	 * 状态变更
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/updateStatus", method= {RequestMethod.POST})
+	@ResponseBody
+	public JSON updateStatus(HttpServletRequest request,ChannelInfoCondition channelInfoCondition){		
+        Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+			Admin user = (Admin) request.getSession().getAttribute("currentUser");
+			channelInfoCondition.setOperatorId(user.getId());
+			channelInfoCondition.setUpdateTime(new Date());
+			channelInfoService.update(channelInfoCondition);
+			
+			channelInfoService.saveChannelInfoToRedisByCode(channelInfoCondition.getCode());
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG);
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/**
+	 * 渠道支付开关
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/updatePay", method= {RequestMethod.POST})
+	@ResponseBody
+	public JSON updatePay(HttpServletRequest request,ChannelInfoCondition channelInfoCondition){		
+        Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+			Admin user = (Admin) request.getSession().getAttribute("currentUser");
+			channelInfoCondition.setOperatorId(user.getId());
+			channelInfoCondition.setUpdateTime(new Date());
+			channelInfoService.update(channelInfoCondition);
+			
+			channelInfoService.saveChannelInfoToRedisByCode(channelInfoCondition.getCode());
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG);
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/** 查看详情 */
+	@RequestMapping(value="/detail/{id}", method= {RequestMethod.POST})
+	public String show(HttpServletRequest request,ModelMap model,@PathVariable String id) throws Exception {
+		ChannelInfo entity = channelInfoService.findById(id);
+		model.addAttribute("item",entity);
+		return "admin/channelinfo/detail";
+	}
+}
+

@@ -1,0 +1,145 @@
+$(function(){
+	reset();
+	$(".haszz").hide();
+	$(".weui_switch").click(function(){//checkbox选择开关
+		var temp = $(this).is(":checked");
+		if(temp){
+			$(".haszz").show();
+		}else{
+			$(".haszz").hide();
+		}
+	});
+	//注册按钮
+	$("#next").click(function(){
+		var storeName = $("#storeName").val();
+		var busType = $("#busType").val();
+		var address=$("#address").val();
+		var servicePhone=$("#servicePhone").val();
+		var merchantLicense=$("#merchantLicense").val();
+		
+		var idlicenceimg = $("#idlicenceimg").val();
+		var idhandimg = $("#idhandimg").val();
+		var idgroupimg =$("#idgroupimg").val();
+		var idinimg =$("#idinimg").val();
+		
+		
+		if(!storeName ||storeName==""){
+			showDiv("请填写门店名称");
+			return;
+		}
+		if(!busType ||busType==""){
+			showDiv("请填写经营类型");
+			return;		
+		}
+		if(!address ||address==""){
+			showDiv("请填写地址");
+			return;
+		}
+		if(!/\d+$/.test(servicePhone)){
+			showDiv("请填写正确的服务电话");
+			return;		
+		}
+		if(!merchantLicense ||merchantLicense==""){
+			showDiv("请填写营业执照号");
+			return;
+		}
+		
+		if($(".haszz").is(':visible')){
+			if(!idlicenceimg||idlicenceimg==""){
+				showDiv("店铺营业执照原件照片");
+				return;		
+			}
+		}
+		
+		if(!idhandimg || idhandimg==""){
+			showDiv("申请人手持身份证正面在店铺收银台照片");
+			return;
+		}
+		if(!idgroupimg || idgroupimg==""){
+			showDiv("申请人与店铺门头合照（能看到店铺名）");
+			return;
+		}
+		if(!idinimg || idinimg==""){
+			showDiv("店铺内景照");
+			return;
+		}
+		
+		//有错误信息显示不提交
+		/*if($("#errorDiv").is(":visible")){
+			return;
+		}*/
+		var dataJson = {"storeName":storeName,"busType":busType,"storeAddress":address,"servicePhone":servicePhone,"merchantLicense":merchantLicense
+				,"groupPhotoImg":idgroupimg,"storeImg":idinimg,"storePhotosImg":idhandimg,"merchantLicenseImg":idlicenceimg};
+		//注册
+		$.ajax({
+				url:basePath+"/scancode/apply/step2",
+				data:dataJson,
+				type:"POST",
+				success:function(json)
+				{
+					json = JSON.parse(json);
+					var executeStatus = json.errorCode; 
+					if(executeStatus == "0"){
+						location.href=basePath+"/scancode/apply3";
+					}
+					else{
+						showDiv(json.errorMsg);
+						return;
+					}
+				}
+			});
+	});
+	$("#storeName").on("blur",function(){
+		var value = $(this).val();
+		if(value==""){
+			showDiv("请输入商户名称");
+		}else{
+			reset();
+		}
+	});
+	$("#busType").on("blur",function(){
+		var value = $(this).val();
+		if(value==""){
+			showDiv("请输入经营类别");
+		}else{
+			reset();
+		}
+	});
+	$("#address").on("blur",function(){
+		var value = $(this).val();
+		if(value==""){
+			showDiv("请输入地址");
+		}else{
+			reset();
+		}
+	});
+	
+	$("#servicePhone").on("blur",function(){
+		var value = $(this).val();
+		if(value==""){
+			showDiv("请输入服务电话");
+		}else{
+			reset();
+		}
+	});
+	$("#merchantLicense").on("blur",function(){
+		var value = $(this).val();
+		if(value==""){
+			showDiv("请输入营业执照号");
+		}else{
+			reset();
+		}
+	});
+	
+	function reset(){
+		$("#errorDiv").hide();
+		$("#errorMsg").text("");
+	}
+	
+	function showDiv(msg){
+		$("#errorDiv").show();
+		$("#errorMsg").text(msg);
+	}
+	
+});
+

@@ -1,0 +1,1 @@
+$(function(){$("#query").click(function(){toPage(1)});toPage(1)});function toPage(a){var c=$("#baseUrl").text().trim();var b=$("#form").serialize();$.ajax({type:"POST",url:c+"/adminManage/merchantbankcardchange/bankContent?pageNo="+a,data:b,success:function(d){$("#tablec").html(d)}})};

@@ -1,0 +1,18 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2017
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.WechatUser;
+import com.hfepay.scancode.dao.WechatUserDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="wechatUserDAO")
+@Generated("2017-01-03 15:54:28")
+public class WechatUserDAOImpl extends MybatisEntityDAO<WechatUser, String> implements WechatUserDAO {
+}

@@ -1,0 +1,62 @@
+package com.hfepay.epay.api.entity.order;
+
+public class OrderResVO implements java.io.Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	
+	private String app_id;
+	
+	private String sgin;
+	
+	private String channel;
+	
+	private String prepay_no;
+	
+	private String timestamp;
+
+	public String getApp_id() {
+		return app_id;
+	}
+
+	public void setApp_id(String app_id) {
+		this.app_id = app_id;
+	}
+
+	public String getSgin() {
+		return sgin;
+	}
+
+	public void setSgin(String sgin) {
+		this.sgin = sgin;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+
+	public String getPrepay_no() {
+		return prepay_no;
+	}
+
+	public void setPrepay_no(String prepay_no) {
+		this.prepay_no = prepay_no;
+	}
+
+	public String getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(String timestamp) {
+		this.timestamp = timestamp;
+	}
+	
+
+}

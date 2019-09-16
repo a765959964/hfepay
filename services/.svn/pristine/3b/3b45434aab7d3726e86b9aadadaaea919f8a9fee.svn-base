@@ -1,0 +1,39 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao;
+
+import com.hfepay.scancode.entity.OrderPay;
+import com.hfepay.commons.dao.EntityDAO;
+
+import java.math.BigDecimal;
+import java.util.Map;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+@Generated("2016-10-17 11:37:40")
+public interface OrderPayDAO extends EntityDAO<OrderPay, String> {
+
+	/**
+	 * @Title: getTotalMoney
+	 * @Description: 按照时间统计交易金额
+	 * @author: husain
+	 * @param date
+	 * @return: BigDecimal
+	 */
+	BigDecimal getTotalMoney(String date,String merchantNo);
+
+	/**
+	 * 当天的交易金额和实际到账金额
+	 * @Title: getDealMoney
+	 * @Description: TODO
+	 * @author: husain
+	 * @param format
+	 * @param identityNo
+	 * @return
+	 * @return: Map<String,String>
+	 */
+	Map<String, BigDecimal> getDealMoney(String format, String identityNo);
+
+}

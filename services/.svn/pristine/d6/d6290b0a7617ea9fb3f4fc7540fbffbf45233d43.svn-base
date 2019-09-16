@@ -1,0 +1,59 @@
+package com.hfepay.epay.api.entity.order;
+
+public class OrderRefundResVO implements java.io.Serializable{
+		
+	
+	private static final long serialVersionUID = -9034282002123192282L;
+
+	private String parpay_no;//交易订单号
+	
+	private String channel;//支付渠道
+	
+	private String refund_url;//退款回调地址
+	
+	private String refund_fee;//退款金额
+	
+	private String refund_remak;//退款原因
+	
+
+	public String getRefund_remak() {
+		return refund_remak;
+	}
+
+	public void setRefund_remak(String refund_remak) {
+		this.refund_remak = refund_remak;
+	}
+
+	public String getRefund_fee() {
+		return refund_fee;
+	}
+
+	public void setRefund_fee(String refund_fee) {
+		this.refund_fee = refund_fee;
+	}
+
+	public String getRefund_url() {
+		return refund_url;
+	}
+
+	public void setRefund_url(String refund_url) {
+		this.refund_url = refund_url;
+	}
+
+	public String getParpay_no() {
+		return parpay_no;
+	}
+
+	public void setParpay_no(String parpay_no) {
+		this.parpay_no = parpay_no;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+	
+}

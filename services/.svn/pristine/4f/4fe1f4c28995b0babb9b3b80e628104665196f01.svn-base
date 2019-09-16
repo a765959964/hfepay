@@ -1,0 +1,77 @@
+package com.hfepay.epay.api.service;
+
+import com.hfepay.commons.exception.ServicesException;
+import com.hfepay.epay.api.entity.merchant.MerChantAppVo;
+import com.hfepay.epay.api.entity.order.OrderForm;
+import com.hfepay.epay.api.entity.order.PaymentForm;
+import com.hfepay.epay.api.entity.pay.QrcodePayForm;
+import com.hfepay.epay.api.entity.pay.QueryPayForm;
+import com.hfepay.epay.api.entity.refund.OrderRefundForm;
+
+/**
+ * 对外提供商户支付，查询，退款 核心接口
+ * @author parry.xie
+ *
+ */
+public interface IGatewayPaymentService {
+	
+	
+	/**
+	 * 预订单
+	 * @param orderForm
+	 * @return
+	 */
+	public Object unifiedorder(OrderForm orderForm) throws ServicesException;
+	
+	
+	/**
+	 * 渠道支付接口
+	 * @param paymentForm
+	 * @return
+	 * @throws ServiceException
+	 */
+	public Object payment(PaymentForm paymentForm) throws ServicesException;
+	
+	/**
+	 * 二维码扫码付
+	 * @param qrcodePayFrom
+	 * @return
+	 * @throws ServiceException
+	 */
+	public Object qrcodePaymet(QrcodePayForm qrcodePayFrom) throws ServicesException;
+	
+	/**
+	 * 查询支付状态
+	 * @param qrcodePayFrom
+	 * @return
+	 * @throws ServiceException
+	 */
+	public Object queryPayment(QueryPayForm queryPayForm) throws ServicesException;
+	
+	
+	/**
+	 * 查询商户详情
+	 * @param queryMerchantDitel
+	 * @return
+	 * @throws ServiceException
+	 */
+	public MerChantAppVo queryMerchantDitel(String appid,String mech_no) throws ServicesException;
+	
+	
+	/**
+	 * 退款接口
+	 * @param orderRefundForm
+	 * @return
+	 * @throws ServicesException
+	 */
+	public Object refund(OrderRefundForm orderRefundForm)  throws ServicesException;
+	
+	/**
+	 * 查询商户配置信息
+	 * @param orderRefundForm
+	 * @return
+	 * @throws ServicesException
+	 */
+	public Object getSettingConfig(String mch_id,String channel)  throws ServicesException;
+	
+}

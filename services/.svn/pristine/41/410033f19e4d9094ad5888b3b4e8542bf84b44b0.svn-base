@@ -1,0 +1,442 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.service.impl;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.cache.jedis.RedisKey;
+import com.hfepay.cache.jedis.impl.RedisSharedCache;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.criteria.Order;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.ChannelInfoCondition;
+import com.hfepay.scancode.dao.ChannelInfoDAO;
+import com.hfepay.scancode.entity.ChannelInfo;
+import com.hfepay.scancode.service.ChannelInfoService;
+import com.hfepay.scancode.service.commons.ScanCodeConstants;
+
+@Service("channelInfoService")
+public class ChannelInfoServiceImpl implements ChannelInfoService {
+	
+	@Autowired
+    private ChannelInfoDAO channelInfoDAO;
+	
+	@Autowired
+	private RedisSharedCache redisSharedCache;
+	
+	Logger logger = LoggerFactory.getLogger(ChannelInfoServiceImpl.class);
+    
+    /**
+	 * 列表(分页)
+	 * @param channelInfoCondition 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+    @Override
+	public PagingResult<ChannelInfo> findPagingResult(ChannelInfoCondition channelInfoCondition){
+		CriteriaBuilder cb = Cnd.builder(ChannelInfo.class);
+		if(!Strings.isEmpty(channelInfoCondition.getId())){
+			cb.andEQ("id", channelInfoCondition.getId());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getCode())){
+			cb.andEQ("code", channelInfoCondition.getCode());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getNumber())){
+			cb.andEQ("number", channelInfoCondition.getNumber());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getNickName())){
+			cb.andEQ("nickName", channelInfoCondition.getNickName());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getStatus())){
+			cb.andEQ("status", channelInfoCondition.getStatus());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getIndexTopImg())){
+			cb.andEQ("indexTopImg", channelInfoCondition.getIndexTopImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getIndexBottomImg())){
+			cb.andEQ("indexBottomImg", channelInfoCondition.getIndexBottomImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getIndexWxImg())){
+			cb.andEQ("indexWxImg", channelInfoCondition.getIndexWxImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getAddress())){
+			cb.andEQ("address", channelInfoCondition.getAddress());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getPhone())){
+			cb.andEQ("phone", channelInfoCondition.getPhone());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getTechnicalSupportEmail())){
+			cb.andEQ("technicalSupportEmail", channelInfoCondition.getTechnicalSupportEmail());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getQqGroup())){
+			cb.andEQ("qqGroup", channelInfoCondition.getQqGroup());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getCustomServiceQq())){
+			cb.andEQ("customServiceQq", channelInfoCondition.getCustomServiceQq());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getBusinessCooperationQq())){
+			cb.andEQ("businessCooperationQq", channelInfoCondition.getBusinessCooperationQq());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getBusinessCooperationEmail())){
+			cb.andEQ("businessCooperationEmail", channelInfoCondition.getBusinessCooperationEmail());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getMicroblogUrl())){
+			cb.andEQ("microblogUrl", channelInfoCondition.getMicroblogUrl());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getContactAddressImg())){
+			cb.andEQ("contactAddressImg", channelInfoCondition.getContactAddressImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getLoginBackgroundImg())){
+			cb.andEQ("loginBackgroundImg", channelInfoCondition.getLoginBackgroundImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getCenterHeadImg())){
+			cb.andEQ("centerHeadImg", channelInfoCondition.getCenterHeadImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getIsActive())){
+			cb.andEQ("isActive", channelInfoCondition.getIsActive());
+		}
+		if(null != channelInfoCondition.getCreateTime()){
+			cb.andEQ("createTime", channelInfoCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(channelInfoCondition.getOperatorId())){
+			cb.andEQ("operatorId", channelInfoCondition.getOperatorId());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getRemark())){
+			cb.andLike("remark", channelInfoCondition.getRemark());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getCompanyName())){
+			cb.andEQ("companyName", channelInfoCondition.getCompanyName());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getPreCode())){
+			cb.andEQ("preCode", channelInfoCondition.getPreCode());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getRecordNumber())){
+			cb.andEQ("recordNumber", channelInfoCondition.getRecordNumber());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getIcon())){
+			cb.andEQ("icon", channelInfoCondition.getIcon());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getTitle())){
+			cb.andEQ("title", channelInfoCondition.getTitle());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getKeyWords())){
+			cb.andEQ("keyWords", channelInfoCondition.getKeyWords());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getDescription())){
+			cb.andEQ("description", channelInfoCondition.getDescription());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getPaySwitch())){
+			cb.andEQ("paySwitch", channelInfoCondition.getPaySwitch());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getDomainName())){
+			cb.andEQ("domainName", channelInfoCondition.getDomainName());
+		}
+		cb.orderBy("createTime", Order.DESC);
+		//排序
+		if(!Strings.isEmpty(channelInfoCondition.getOrderBy())){
+			if(channelInfoCondition.getOrderBy().indexOf(",")>0){
+				String[] orderBys = channelInfoCondition.getOrderBy().split(",");
+				String[] orders = channelInfoCondition.getOrder().split(",");
+				for(int i=0; i<orderBys.length && i<orders.length; i++){
+					cb.orderBy(orderBys[i], Order.valueOf(orders[i]));
+				}
+			}else{
+				cb.orderBy(channelInfoCondition.getOrderBy(), Order.valueOf(channelInfoCondition.getOrder()));
+			}
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(channelInfoCondition.getFirst()), Long.valueOf(channelInfoCondition.getLast()));
+		return channelInfoDAO.findPagingResult(buildCriteria);
+	}
+	
+	/**
+	 * 列表
+	 * @param channelInfo 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	@Override
+	public List<ChannelInfo> findAll(ChannelInfoCondition channelInfoCondition){
+		CriteriaBuilder cb = Cnd.builder(ChannelInfo.class);
+		if(!Strings.isEmpty(channelInfoCondition.getId())){
+			cb.andEQ("id", channelInfoCondition.getId());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getCode())){
+			cb.andEQ("code", channelInfoCondition.getCode());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getNumber())){
+			cb.andEQ("number", channelInfoCondition.getNumber());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getNickName())){
+			cb.andEQ("nickName", channelInfoCondition.getNickName());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getStatus())){
+			cb.andEQ("status", channelInfoCondition.getStatus());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getIndexTopImg())){
+			cb.andEQ("indexTopImg", channelInfoCondition.getIndexTopImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getIndexBottomImg())){
+			cb.andEQ("indexBottomImg", channelInfoCondition.getIndexBottomImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getIndexWxImg())){
+			cb.andEQ("indexWxImg", channelInfoCondition.getIndexWxImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getAddress())){
+			cb.andEQ("address", channelInfoCondition.getAddress());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getPhone())){
+			cb.andEQ("phone", channelInfoCondition.getPhone());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getTechnicalSupportEmail())){
+			cb.andEQ("technicalSupportEmail", channelInfoCondition.getTechnicalSupportEmail());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getQqGroup())){
+			cb.andEQ("qqGroup", channelInfoCondition.getQqGroup());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getCustomServiceQq())){
+			cb.andEQ("customServiceQq", channelInfoCondition.getCustomServiceQq());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getBusinessCooperationQq())){
+			cb.andEQ("businessCooperationQq", channelInfoCondition.getBusinessCooperationQq());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getBusinessCooperationEmail())){
+			cb.andEQ("businessCooperationEmail", channelInfoCondition.getBusinessCooperationEmail());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getMicroblogUrl())){
+			cb.andEQ("microblogUrl", channelInfoCondition.getMicroblogUrl());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getContactAddressImg())){
+			cb.andEQ("contactAddressImg", channelInfoCondition.getContactAddressImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getLoginBackgroundImg())){
+			cb.andEQ("loginBackgroundImg", channelInfoCondition.getLoginBackgroundImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getCenterHeadImg())){
+			cb.andEQ("centerHeadImg", channelInfoCondition.getCenterHeadImg());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getIsActive())){
+			cb.andEQ("isActive", channelInfoCondition.getIsActive());
+		}
+		if(null != channelInfoCondition.getCreateTime()){
+			cb.andEQ("createTime", channelInfoCondition.getCreateTime());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getDomainName())){
+			cb.andEQ("domainName", channelInfoCondition.getDomainName());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getOperatorId())){
+			cb.andEQ("operatorId", channelInfoCondition.getOperatorId());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getRemark())){
+			cb.andLike("remark", channelInfoCondition.getRemark());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getCompanyName())){
+			cb.andEQ("companyName", channelInfoCondition.getCompanyName());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getPreCode())){
+			cb.andEQ("preCode", channelInfoCondition.getPreCode());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getRecordNumber())){
+			cb.andEQ("recordNumber", channelInfoCondition.getRecordNumber());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getIcon())){
+			cb.andEQ("icon", channelInfoCondition.getIcon());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getTitle())){
+			cb.andEQ("title", channelInfoCondition.getTitle());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getKeyWords())){
+			cb.andEQ("keyWords", channelInfoCondition.getKeyWords());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getDescription())){
+			cb.andEQ("description", channelInfoCondition.getDescription());
+		}
+		if(!Strings.isEmpty(channelInfoCondition.getPaySwitch())){
+			cb.andEQ("paySwitch", channelInfoCondition.getPaySwitch());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return channelInfoDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 主键查找
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	@Override
+	public ChannelInfo findById(String id){
+		return channelInfoDAO.get(id);
+	}
+	
+	/**
+	 * 新增
+	 * @param channelInfoCondition
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	@Override
+	public long insert(ChannelInfoCondition channelInfoCondition){
+		ChannelInfo channelInfo = new ChannelInfo();
+		BeanUtils.copyProperties(channelInfoCondition, channelInfo);
+		channelInfo.setNumber(nextCode());
+		return channelInfoDAO.insert(channelInfo);
+	}
+	
+	public String nextCode() {
+		Map<String, String> map = new HashMap<String, String>();
+		map.put("namePre", ScanCodeConstants.CHANNEL_CODE_PRE_NAME);
+		map.put("newNo", "");
+		channelInfoDAO.getChannelCode(map);
+		return map.get("newNo");
+	}
+
+	/**
+	 * 删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	@Override
+	public long deleteById(String id){
+		return channelInfoDAO.deleteById(id);
+	}
+	
+	/**
+	 * 条件删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	@Override
+	public long deleteByCriteria(Criteria criteria){
+		return channelInfoDAO.deleteByCriteria(criteria);
+	}
+	
+	/**
+	 * 行数汇总
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	@Override
+	public long countByCriteria(Criteria criteria){
+		return channelInfoDAO.countByCriteria(criteria);
+	}
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	@Override
+	public long update(ChannelInfoCondition channelInfoCondition){
+		ChannelInfo channelInfo = new ChannelInfo();
+		BeanUtils.copyProperties(channelInfoCondition, channelInfo);
+		return channelInfoDAO.update(channelInfo);
+	}
+	
+	/**
+	 * 条件更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	@Override
+	public long updateByCriteria(ChannelInfoCondition channelInfoCondition,Criteria criteria){
+		ChannelInfo channelInfo = new ChannelInfo();
+		BeanUtils.copyProperties(channelInfoCondition, channelInfo);
+		return channelInfoDAO.updateByCriteria(channelInfo,criteria);
+	}
+	
+	/**
+	 * 状态更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-06-15 20:42:11
+	 */
+	@Override
+	public long updateStatus(String id,String status){
+		return channelInfoDAO.updateStatus(id,status);
+	}
+
+	@Override
+	public ChannelInfo findByCode(String code) {
+		CriteriaBuilder cb = Cnd.builder(ChannelInfo.class);
+		cb.andEQ("code", code);
+		Criteria criteria = cb.buildCriteria();
+		return channelInfoDAO.findOneByCriteria(criteria);
+	}
+	
+	@Override
+	public Object getChannelInfoToRedisByCode(String code)throws Exception {
+		//先去redis中取渠道信息,如果没有,则从数据库中查询保存至redis中
+		RedisKey redisKey = new RedisKey(ScanCodeConstants.REDIS_KEY_MODULE, code);
+		Object currentChannelInfo = null;
+		try {
+			currentChannelInfo = redisSharedCache.getObj(redisKey);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			logger.info("***********从缓存中获取渠道信息失败************");
+			currentChannelInfo = saveChannelInfoToRedisByCode(code);
+		}
+		if(null == currentChannelInfo){
+			currentChannelInfo = saveChannelInfoToRedisByCode(code);
+		}
+		return currentChannelInfo;
+	}
+	
+	@Override
+	public Object saveChannelInfoToRedisByCode(String code)throws Exception{
+		ChannelInfo channelInfo = findByCode(code);
+		if(null == channelInfo){
+			logger.info("***********渠道code为:"+code+"不存在************");
+			throw new Exception("***********渠道code为:"+code+"不存在************");
+		}else{
+			try {
+				redisSharedCache.setObj(new RedisKey(ScanCodeConstants.REDIS_KEY_MODULE, code), channelInfo,60*60*24);//缓存一天
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.info("***********将渠道信息存入缓存失败************");
+				return channelInfo;
+			}
+		}
+		return channelInfo;
+	}
+	
+	@Override
+	public ChannelInfo findByDomainName(String domainName) {
+		CriteriaBuilder cb = Cnd.builder(ChannelInfo.class);
+		cb.andEQ("domainName", domainName);
+		Criteria criteria = cb.buildCriteria();
+		return channelInfoDAO.findOneByCriteria(criteria);
+	}
+
+	@Override
+	public ChannelInfo findByNumber(String number) {
+		CriteriaBuilder cb = Cnd.builder(ChannelInfo.class);
+		cb.andEQ("number", number);
+		Criteria criteria = cb.buildCriteria();
+		return channelInfoDAO.findOneByCriteria(criteria);
+	}
+	
+}
+

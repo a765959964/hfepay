@@ -1,0 +1,36 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.OrganProfit;
+import com.hfepay.scancode.dao.OrganProfitDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="organProfitDAO")
+@Generated("2016-11-10 14:06:20")
+public class OrganProfitDAOImpl extends MybatisEntityDAO<OrganProfit, String> implements OrganProfitDAO {
+
+	/**
+	 * @Title: updateStatus
+	 * @Description: 状态更新
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 14:06:20
+	 */
+	@Override
+	public long updateStatus(String id,String status){
+		Map<String, Object> map = new HashMap<String, Object>();
+		map.put("id", id);
+		map.put("status", status);
+		return getSqlSession().update(sqlId("updateStatus"),map);
+	}	
+}

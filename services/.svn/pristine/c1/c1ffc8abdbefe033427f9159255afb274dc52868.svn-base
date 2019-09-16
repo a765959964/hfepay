@@ -1,0 +1,108 @@
+package com.hfepay.scancode.api.service.impl;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSON;
+import com.hfepay.scancode.api.config.HfepayConfig;
+import com.hfepay.scancode.api.entity.vo.MerchantAccountsVo;
+import com.hfepay.scancode.api.entity.vo.MerchantRateVo;
+import com.hfepay.scancode.api.entity.vo.MerchantSettledVo;
+import com.hfepay.scancode.api.httpClient.HttpHandle;
+import com.hfepay.scancode.api.service.MerchantBusinessService;
+
+@Service
+public class MerchantBusinessServiceImpl implements MerchantBusinessService{
+
+	@Override
+	public Map<String, String> merchantJoin(Map<String, String> map) {
+		
+		// 设置商户基本信息
+		Map<String, Object> body = new HashMap<String, Object>();
+		MerchantSettledVo merchantSettledVo = new MerchantSettledVo();
+		merchantSettledVo.setMerchantNo("201610091712");
+		merchantSettledVo.setMerchantName("谢佩渠道测试商户0001");
+		merchantSettledVo.setShortName("渠道测试商户0001");
+		merchantSettledVo.setAddress("深圳市南山区高新南七道");
+		merchantSettledVo.setSerPhone("18938856957");
+		merchantSettledVo.setCategory("2016051000165496");
+		merchantSettledVo.setIdCard("432503190911245245");
+		merchantSettledVo.setName("谢佩");
+		merchantSettledVo.setMerchantLicense("5678568575845451");
+		merchantSettledVo.setPhone("18938856957");
+		merchantSettledVo.setMobile("18938856957");
+		merchantSettledVo.setEmail("xiepei@hfepay.com");
+		merchantSettledVo.setRemark("谢佩测试商户");
+		body.put("info", merchantSettledVo.toMap());
+		// 添加商户账号信息
+		MerchantAccountsVo merchantAccountsVo = new MerchantAccountsVo();
+		merchantAccountsVo.setBankCard("6222068787458745");
+		merchantAccountsVo.setBankCode("86957847");
+		merchantAccountsVo.setBankName("中国银行深圳支行");
+		merchantAccountsVo.setIsRealAccount("Y");
+		body.put("account", merchantAccountsVo.toMap());
+		List<Map<String, String>> listRate = new ArrayList<Map<String, String>>();
+		// 添加通道费率信息 HFEPAY001支付宝 ,HFEPAY001微信
+		MerchantRateVo merchantRateVo = new MerchantRateVo();
+		merchantRateVo.setPayCode("HFEPAY002");
+		merchantRateVo.setRateAmt("1");
+		merchantRateVo.setT0Rate("0.006");
+		merchantRateVo.setT1Rate("0.004");
+		listRate.add(merchantRateVo.toMap());
+		body.put("payType", listRate);
+		System.out.println(body.toString());
+		Map<String, String> response = null;
+		try {
+			response = HttpHandle.requestHandle(HfepayConfig.join_service_method,
+					HfepayConfig.join_service_id, body);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(JSON.toJSONString(response));
+		return response;
+	}
+	
+	public static void main(String[] args) {
+		Map m = new HashMap();
+		MerchantBusinessServiceImpl merchantBusinessServiceImpl = new MerchantBusinessServiceImpl();
+		merchantBusinessServiceImpl.merchantJoin(m);
+	}
+
+	@Override
+	public Map<String,String> merchantOrder(Map<String, String> map) throws Exception {
+		Map<String, Object> body = new HashMap<String, Object>();
+		body.put("merchantNo", "201610090935047360");
+		body.put("userOrderNo", "201610102114");
+		body.put("payCode", "HFEPAY006");//支付宝"HFEPAY002" 微信HFEPAY001
+		body.put("totalAmount", new BigDecimal("0.1"));
+		body.put("returnType", "02");
+		body.put("appId", "");
+		body.put("openId", "");
+
+		body.put("subject", "测试支付");
+		body.put("desc", "");
+		body.put("opertorId", "");
+		body.put("storeId", "");
+		body.put("terminalId", "");
+		body.put("limitPay", "");
+		body.put("remark", "");
+		body.put("ip", "");
+		body.put("appNo", "");
+		body.put("notifyUrl", "");
+		body.put("callBackUrl", "");
+		Map<String,String> response = HttpHandle.requestHandle(HfepayConfig.trade_service_method, HfepayConfig.trade_service_id, body);
+		String bodyStr = response.get("body");
+		System.out.println(bodyStr);
+		Map<String,String> resValue = JSON.parseObject(bodyStr, Map.class);
+		System.out.println(resValue.get("orderNo"));
+		System.out.println(resValue.get("payUrl"));
+		return resValue;
+		
+	}
+}

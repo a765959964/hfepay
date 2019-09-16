@@ -1,0 +1,222 @@
+package com.hfepay.scancode.service.commons;
+
+public interface ScanCodeConstants {
+
+	/**
+	 * 短信发送成功
+	 */
+	public static String SMS_SEND_SUCCESS="1";
+	
+	/**
+	 * 短信发送失败
+	 */
+	public static String SMS_SEND_FAIL="2";
+	
+	/**
+	 * 处理状态0初始  1处理中 2处理完成 3无需处理
+	 */
+	public static String TREATMENT_STATUS="0";
+	
+	/**
+	 * 是否需要后续跟踪0无需 1需要 2关闭
+	 */
+	public static String TRACK_STATUS="0";
+	
+	/**
+	 * 验证手机--注册
+	 */
+	public static String VALIDATE_PHONE_TYPE_REGISTER = "0";
+	
+	/**
+	 * 验证手机--找回密码
+	 */
+	public static String VALIDATE_PHONE_TYPE_FORGET = "1";
+	
+	/**
+	 * 发送验证码--注册
+	 */
+	public static String SEND_VALIDATE_CODE_REGISTER = "00";
+	
+	/**
+	 * 发送验证码--登陆
+	 */
+	public static String SEND_VALIDATE_CODE_LOGIN = "11";
+	
+	/**
+	 * 发送验证码--找回密码
+	 */
+	public static String SEND_VALIDATE_CODE_FORGET = "22";
+	
+	/**
+	 * 发送验证码--解绑手机
+	 */
+	public static String SEND_VALIDATE_CODE_UNBUNDLING_PHONE = "33";
+	
+	/**
+	 * 发送验证码--绑定新手机
+	 */
+	public static String SEND_VALIDATE_CODE_BUNDLING_PHONE = "44";
+	
+	
+	/**
+	 * 用户认证状态--未认证
+	 */
+	public static Integer IDENTIFICATION_STATUS_NO = 0;
+	
+	/**
+	 * 用户认证状态--已认证
+	 */
+	public static Integer IDENTIFICATION_STATUS_YES = 1;
+	
+	/**
+	 * 用户认证状态--认证中
+	 */
+	public static Integer IDENTIFICATION_STATUS_ING = 2;
+	
+	/**
+	 * 用户认证状态--认证失败
+	 */
+	public static Integer IDENTIFICATION_STATUS_FAIL = 3;
+	
+	/**
+	 * 用户认证状态--初审
+	 */	
+	public static Integer IDENTIFICATION_THE_TRIAL = 4;
+	
+	/**
+	 * 状态--可用
+	 */
+	public static String STATUS_ACTIVE = "1";
+	
+	/**
+	 * 状态--禁用
+	 */
+	public static String STATUS_DISABLE = "0";
+	
+	/**
+	 * 联系人类型--商务
+	 */
+	public static String BUS_LINKMAN = "0";
+	
+	/**
+	 * 联系人类型--研发
+	 */
+	public static String DEP_LINKMAN = "1";
+	
+	/**
+	 * 联系人类型--结算
+	 */
+	public static String SETTLE_LINKMAN = "2";
+	
+	/**
+	 * 用户编码抬头
+	 */
+	public static String USER_CODE_PRE_NAME = "HFJK";
+	
+	/**
+	 * 渠道编号抬头
+	 */
+	public static String CHANNEL_CODE_PRE_NAME = "QDXX";
+	
+	/**
+	 * 商户编号抬头
+	 */
+	public static String MERCHANT_CODE_PRE_NAME = "MC";
+	/**
+	 * 二维码编号抬头
+	 */
+	public static String QRCODE_PRE_NAME = "QRXX";
+	
+	/**
+	 * redis 缓存key 项目前缀
+	 */
+	public static String REDIS_KEY_MODULE = "superplat";
+	
+	/**
+	 * 测试渠道编号
+	 */
+	public static String TEST_CHANNEL_NUMBER = "QDXX20161028000005";
+	
+	/**
+	 * h5注册默认商户角色
+	 */
+	public static String DEFAULE_ROLE = "merchant";
+	
+	/**
+	 * h5注册默认代理商编号
+	 */
+	public static String DEFAULE_AGENTNO = "HFJK20161028000017";
+	
+	public static String DEFAULT_AGENTNAME="小二买单默认代理商";
+	
+	public static String DEFAULT_CHANNELNO = "QDXX20161028000005";
+	
+	public static String DEFAULT_CHANNELNAME="华付小二买单";
+	
+	/**
+	 * 是否为默认值：0默认
+	 */
+	public static String IS_DEFAULT="0";
+	
+	
+	/**
+	 * 
+	 * 路径分隔符
+	 */
+	public static final String  SPT = "/";
+	
+	/**
+	 * 上传文件路径
+	 */
+	public static final String FILE_UPLOAD_ROOT_PATH = "/data/files";
+	
+	public static final String IMG_EXTEND=".png";
+	
+	public static final String WECHAT_IMGUPLOAD_TYPE="business";
+	
+	/**
+	 * 通用状态 -- Y
+	 */
+	public static String Y = "Y";
+	
+	/**
+	 * 通用状态 -- N
+	 */
+	public static String N = "N";
+	
+	/**
+	 * 角色类型--渠道
+	 */
+	public static String ROLE_TYPE_CHANNEL = "channel";
+	
+	/**
+	 * 角色类型--代理商
+	 */
+	public static String ROLE_TYPE_AGENT = "agent";
+	
+	/**
+	 * 角色类型--商户
+	 */
+	public static String ROLE_TYPE_MERCHANT = "merchant";
+	
+	/**
+	 * 标识--渠道
+	 */
+	public static String IDENTITYFLAG_CHANNEL = "1";
+	
+	/**
+	 * 标识--代理商
+	 */
+	public static String IDENTITYFLAG_AGENT = "2";
+	
+	/**
+	 * 标识--商户
+	 */
+	public static String IDENTITYFLAG_MERCHANT = "3";
+	
+	/**
+	 * 操作人--系统
+	 */
+	public static String OPERATOR_SYSTEM = "system";
+
+}

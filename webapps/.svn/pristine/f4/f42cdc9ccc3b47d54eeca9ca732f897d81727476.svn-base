@@ -1,0 +1,142 @@
+$(function(){
+	Metronic.init(); // 初始化框架核心组件
+	Layout.init(); // 初始化网格
+	QuickSidebar.init(); // 初始化快捷操作栏
+	Demo.init(); // 初始化项目
+	
+	$("#cancle").click(function(){
+		history.go(-1);
+	});
+	
+	$("#payName").change(function(t){
+		var payCode = $("#payName").find("option:selected").attr("payCode");
+		$("#form").find("#payCode").val(payCode);
+	});
+	
+	$.validator.addMethod("isNumTwo", function(value, element) { 
+		   var tel =  /^[0]+(\.[0-9]{1,5}){1}$/;
+		   return this.optional(element) || (tel.test(value) && value!=0); 
+		   }, "请输入0~1之间的小数，且最多五位小数!");
+	
+	function checkIsSame(){
+		var payType = $("#payType").val();
+		var payCode = $("#payCode").val();
+		var id = $("#id").val();
+		var bool = false;
+		$.ajax({
+			   url:"check",
+	 		   data:{"payType":payType,"payCode":payCode,"id":id}, 
+	 		   type: "POST",
+	 		   async:false,
+	 		   success: function(msg){
+	 			  msg = $.parseJSON(msg);
+	 			  bool = msg.check;
+//	 			   if(msg.check==true){
+//	 				   return true;
+//	 			   }else{
+//	 				   return false;
+//	 			   }
+	 		   }
+	 		});
+		return bool;
+	}
+	
+	/*验证表格*/
+	$("#form").validate({
+        event:"blur",
+   	    rules: {
+   		    payName: {
+	   	        required: true
+	   	      },
+	   	    payType: {
+	   	        required: true
+	   	      },
+	   	    payDesc: {
+	   	        required: true,
+	   	        maxlength: 100
+	   	      },
+	   	    t0Rate: {
+	   	        required: true,
+	   	        maxlength: 10,
+ 			    isNumTwo:true
+	   	      },
+	   	    t1Rate: {
+	   	        required: true,
+	   	        maxlength: 10,
+ 			    isNumTwo:true
+	   	      },
+	   	    rate: {
+	   	        required: true,
+	   	        maxlength: 10
+	   	      }
+   	    },
+   	    messages: {
+   	    	payName: {
+	   	        required: "请输入【支付通道】"
+	   	      },
+	   	    payType: {
+	   	        required: "请输入【通道类型】"
+	   	      },
+	   	    payDesc: {
+	   	        required: "请输入【支付通道描述】",
+	   	        maxlength: "长度不能超过100"
+	   	      },
+	   	    t0Rate: {
+	   	        required: "请输入【垫资费率】",
+	   	        maxlength: "长度不能超过10"
+	   	      },
+	   	    t1Rate: {
+	   	        required: "请输入【交易手续费】",
+	   	        maxlength: "长度不能超过10"
+	   	      },
+	   	    rate: {
+		   	        required: "请输入【提现手续费】",
+		   	        maxlength: "长度不能超过10"
+		   	      }
+		},
+   	    submitHandler:function(form){$("#save").attr("disabled","disabled");
+   			var flag = 0;
+   			var errMsg = '';
+   			var text = $(".form-horizontal input[val='hidden']");
+   			for(var i = 0; i < text.size();i++){
+   				var $this = $(text[i]);
+   				var val = $this.val();
+   				if(val == null || val == ''){
+   					flag ++ ;
+   					errMsg += $this.attr("name") + "不可为空!";
+   				}
+   			}
+   			
+   			if(checkIsSame()!=true){
+   				flag++;
+   				errMsg+="该支付方式已存在";
+   			}
+   			
+   			if(flag == 0){
+   				var baseUrl = $("#baseUrl").text().trim();
+   				var datajson = $('#form').serialize();
+   				$.ajax({
+   					url:baseUrl+"/adminManage/hfepaypayway/save",
+   					data:datajson,
+   					type:"POST",
+   					success:function(msg)
+   					{
+   						msg = $.parseJSON(msg);
+   			 			  bootbox.alert(msg.values,function(){
+   			 				 if(msg.executeStatus == '0'){
+   			 					location.href=baseUrl+msg.url;
+   			 				 }
+   			 			  });
+   					}
+   				});
+   			}else{
+   				bootbox.alert(errMsg,function(){});
+   			}
+			return false;
+	    },
+		errorPlacement: function(error, element) { 
+		     error.appendTo(element.parent().parent()); 
+		}
+	}); 
+		
+});

@@ -1,0 +1,420 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="ChannelInfo">
+	<resultMap id="BaseResultMap" type="com.hfepay.scancode.entity.ChannelInfo">
+        <result property="id" column="A_ID"/>
+        <result property="code" column="A_CODE"/>
+        <result property="number" column="A_NUMBER"/>
+        <result property="nickName" column="A_NICK_NAME"/>
+        <result property="status" column="A_STATUS"/>
+        <result property="indexTopImg" column="A_INDEX_TOP_IMG"/>
+        <result property="indexBottomImg" column="A_INDEX_BOTTOM_IMG"/>
+        <result property="indexWxImg" column="A_INDEX_WX_IMG"/>
+        <result property="address" column="A_ADDRESS"/>
+        <result property="phone" column="A_PHONE"/>
+        <result property="technicalSupportEmail" column="A_TECHNICAL_SUPPORT_EMAIL"/>
+        <result property="qqGroup" column="A_QQ_GROUP"/>
+        <result property="customServiceQq" column="A_CUSTOM_SERVICE_QQ"/>
+        <result property="businessCooperationQq" column="A_BUSINESS_COOPERATION_QQ"/>
+        <result property="businessCooperationEmail" column="A_BUSINESS_COOPERATION_EMAIL"/>
+        <result property="microblogUrl" column="A_MICROBLOG_URL"/>
+        <result property="contactAddressImg" column="A_CONTACT_ADDRESS_IMG"/>
+        <result property="loginBackgroundImg" column="A_LOGIN_BACKGROUND_IMG"/>
+        <result property="centerHeadImg" column="A_CENTER_HEAD_IMG"/>
+        <result property="isActive" column="A_IS_ACTIVE"/>
+        <result property="createTime" column="A_CREATE_TIME"/>
+        <result property="updateTime" column="A_UPDATE_TIME"/>
+        <result property="operatorId" column="A_OPERATOR_ID"/>
+        <result property="remark" column="A_remark"/>
+        <result property="companyName" column="A_company_name"/>
+        <result property="preCode" column="A_pre_code"/>
+        <result property="recordNumber" column="A_Record_number"/>
+        <result property="aboutUs" column="A_about_us"/>
+        <result property="icon" column="A_icon"/>
+        <result property="title" column="A_title"/>
+        <result property="keyWords" column="A_key_words"/>
+        <result property="description" column="A_description"/>
+        <result property="paySwitch" column="A_pay_switch"/>
+        <result property="skin" column="A_skin"/>
+        <result property="domainName" column="A_domain_name"/>
+        <result property="telephone" column="A_telephone"/>
+	</resultMap>
+	
+	<resultMap id="BaseResultMapVo" type="com.hfepay.scancode.vo.ChannelInfoVo" extends="BaseResultMap">
+		<result property="operatorName" column="operator_name"/>
+	</resultMap>
+	
+	<sql id="Base_Column_List">
+	    <![CDATA[
+		A.ID as A_ID,A.CODE as A_CODE,A.NUMBER as A_NUMBER,A.NICK_NAME as A_NICK_NAME,A.STATUS as A_STATUS,A.INDEX_TOP_IMG as A_INDEX_TOP_IMG,A.INDEX_BOTTOM_IMG as A_INDEX_BOTTOM_IMG,A.INDEX_WX_IMG as A_INDEX_WX_IMG,A.ADDRESS as A_ADDRESS,A.PHONE as A_PHONE,A.TECHNICAL_SUPPORT_EMAIL as A_TECHNICAL_SUPPORT_EMAIL,A.QQ_GROUP as A_QQ_GROUP,A.CUSTOM_SERVICE_QQ as A_CUSTOM_SERVICE_QQ,A.BUSINESS_COOPERATION_QQ as A_BUSINESS_COOPERATION_QQ,A.BUSINESS_COOPERATION_EMAIL as A_BUSINESS_COOPERATION_EMAIL,A.MICROBLOG_URL as A_MICROBLOG_URL,A.CONTACT_ADDRESS_IMG as A_CONTACT_ADDRESS_IMG,A.LOGIN_BACKGROUND_IMG as A_LOGIN_BACKGROUND_IMG,A.CENTER_HEAD_IMG as A_CENTER_HEAD_IMG,A.IS_ACTIVE as A_IS_ACTIVE,A.CREATE_TIME as A_CREATE_TIME,A.UPDATE_TIME as A_UPDATE_TIME,A.OPERATOR_ID as A_OPERATOR_ID,A.remark as A_remark,A.company_name as A_company_name,A.pre_code as A_pre_code,A.Record_number as A_Record_number,A.about_us as A_about_us,A.icon as A_icon,A.title as A_title,A.key_words as A_key_words,A.description as A_description,A.pay_switch as A_pay_switch,A.skin as A_skin,A.domain_name as A_domain_name,A.telephone as A_telephone
+	    ]]>
+	</sql>
+
+	<select id="findByCriteria" parameterType="com.hfepay.commons.criteria.Criteria" resultMap="BaseResultMapVo" >
+    select
+    <include refid="Base_Column_List" />
+     from t_channel_info A
+    <if test="_parameter != null and _parameter != '' " >
+      <where >
+        <include refid="Global.Where_Clause" />
+      </where>
+    </if>
+    <if test="hasOrderBy" >
+      order by
+      <foreach collection="orderBys" item="orderBy" separator="," > ${orderBy} </foreach>
+    </if>
+  </select>
+  <select resultMap="BaseResultMapVo" parameterType="java.lang.String" id="findById" >
+    select 
+    <include refid="Base_Column_List" />,B.user_name as operator_name
+    from t_channel_info A left join t_sys_admin B on A.operator_id = B.id 
+    where A.ID = #{id}
+  </select>
+  <delete parameterType="java.lang.String" id="deleteById" >
+    delete from t_channel_info
+    where ID = #{id}
+  </delete>
+  <delete id="deleteByCriteria" parameterType="com.hfepay.commons.criteria.Criteria" >
+    delete A from t_channel_info A
+    <if test="_parameter != null and _parameter != '' " >
+      <where >
+        <include refid="Global.Where_Clause" />
+      </where>
+    </if>
+  </delete>
+  <insert id="insert" parameterType="com.hfepay.scancode.entity.ChannelInfo" >
+    insert into t_channel_info (
+        	ID,
+        	CODE,
+        	NUMBER,
+        	NICK_NAME,
+        	STATUS,
+        	INDEX_TOP_IMG,
+        	INDEX_BOTTOM_IMG,
+        	INDEX_WX_IMG,
+        	ADDRESS,
+        	PHONE,
+        	TECHNICAL_SUPPORT_EMAIL,
+        	QQ_GROUP,
+        	CUSTOM_SERVICE_QQ,
+        	BUSINESS_COOPERATION_QQ,
+        	BUSINESS_COOPERATION_EMAIL,
+        	MICROBLOG_URL,
+        	CONTACT_ADDRESS_IMG,
+        	LOGIN_BACKGROUND_IMG,
+        	CENTER_HEAD_IMG,
+        	IS_ACTIVE,
+        	CREATE_TIME,
+        	UPDATE_TIME,
+        	OPERATOR_ID,
+        	remark,
+        	company_name,
+        	pre_code,
+        	Record_number,
+        	about_us,
+        	icon,
+        	title,
+        	key_words,
+        	description,
+        	pay_switch,
+        	skin,
+        	domain_name,
+        	telephone
+        )
+    values (
+        	#{id},
+        	#{code},
+        	#{number},
+        	#{nickName},
+        	#{status},
+        	#{indexTopImg},
+        	#{indexBottomImg},
+        	#{indexWxImg},
+        	#{address},
+        	#{phone},
+        	#{technicalSupportEmail},
+        	#{qqGroup},
+        	#{customServiceQq},
+        	#{businessCooperationQq},
+        	#{businessCooperationEmail},
+        	#{microblogUrl},
+        	#{contactAddressImg},
+        	#{loginBackgroundImg},
+        	#{centerHeadImg},
+        	#{isActive},
+        	#{createTime},
+        	#{updateTime},
+        	#{operatorId},
+        	#{remark},
+        	#{companyName},
+        	#{preCode},
+        	#{recordNumber},
+        	#{aboutUs},
+        	#{icon},
+        	#{title},
+        	#{keyWords},
+        	#{description},
+        	#{paySwitch},
+        	#{skin},
+        	#{domainName},
+        	#{telephone}
+    )
+  </insert>
+  <select id="countByCriteria" parameterType="com.hfepay.commons.criteria.Criteria" resultType="java.lang.Integer" >
+    select count(*) from t_channel_info A
+    <if test="_parameter != null and _parameter != '' " >
+      <where >
+        <include refid="Global.Where_Clause" />
+      </where>
+    </if>
+  </select>
+  <update id="updateByCriteria" parameterType="map" >
+    update t_channel_info A
+    <set >
+        	<if test="record.id != null and record.id != '' " >
+        		A.ID = #{record.id},
+      		</if>
+        	<if test="record.code != null and record.code != '' " >
+        		A.CODE = #{record.code},
+      		</if>
+        	<if test="record.number != null and record.number != '' " >
+        		A.NUMBER = #{record.number},
+      		</if>
+        	<if test="record.nickName != null and record.nickName != '' " >
+        		A.NICK_NAME = #{record.nickName},
+      		</if>
+        	<if test="record.status != null and record.status != '' " >
+        		A.STATUS = #{record.status},
+      		</if>
+        	<if test="record.indexTopImg != null and record.indexTopImg != '' " >
+        		A.INDEX_TOP_IMG = #{record.indexTopImg},
+      		</if>
+        	<if test="record.indexBottomImg != null and record.indexBottomImg != '' " >
+        		A.INDEX_BOTTOM_IMG = #{record.indexBottomImg},
+      		</if>
+        	<if test="record.indexWxImg != null and record.indexWxImg != '' " >
+        		A.INDEX_WX_IMG = #{record.indexWxImg},
+      		</if>
+        	<if test="record.address != null and record.address != '' " >
+        		A.ADDRESS = #{record.address},
+      		</if>
+        	<if test="record.phone != null and record.phone != '' " >
+        		A.PHONE = #{record.phone},
+      		</if>
+        	<if test="record.technicalSupportEmail != null and record.technicalSupportEmail != '' " >
+        		A.TECHNICAL_SUPPORT_EMAIL = #{record.technicalSupportEmail},
+      		</if>
+        	<if test="record.qqGroup != null and record.qqGroup != '' " >
+        		A.QQ_GROUP = #{record.qqGroup},
+      		</if>
+        	<if test="record.customServiceQq != null and record.customServiceQq != '' " >
+        		A.CUSTOM_SERVICE_QQ = #{record.customServiceQq},
+      		</if>
+        	<if test="record.businessCooperationQq != null and record.businessCooperationQq != '' " >
+        		A.BUSINESS_COOPERATION_QQ = #{record.businessCooperationQq},
+      		</if>
+        	<if test="record.businessCooperationEmail != null and record.businessCooperationEmail != '' " >
+        		A.BUSINESS_COOPERATION_EMAIL = #{record.businessCooperationEmail},
+      		</if>
+        	<if test="record.microblogUrl != null and record.microblogUrl != '' " >
+        		A.MICROBLOG_URL = #{record.microblogUrl},
+      		</if>
+        	<if test="record.contactAddressImg != null and record.contactAddressImg != '' " >
+        		A.CONTACT_ADDRESS_IMG = #{record.contactAddressImg},
+      		</if>
+        	<if test="record.loginBackgroundImg != null and record.loginBackgroundImg != '' " >
+        		A.LOGIN_BACKGROUND_IMG = #{record.loginBackgroundImg},
+      		</if>
+        	<if test="record.centerHeadImg != null and record.centerHeadImg != '' " >
+        		A.CENTER_HEAD_IMG = #{record.centerHeadImg},
+      		</if>
+        	<if test="record.isActive != null and record.isActive != '' " >
+        		A.IS_ACTIVE = #{record.isActive},
+      		</if>
+        	<if test="record.createTime != null and record.createTime != '' " >
+        		A.CREATE_TIME = #{record.createTime},
+      		</if>
+        	<if test="record.updateTime != null and record.updateTime != '' " >
+        		A.UPDATE_TIME = #{record.updateTime},
+      		</if>
+        	<if test="record.operatorId != null and record.operatorId != '' " >
+        		A.OPERATOR_ID = #{record.operatorId},
+      		</if>
+      		<if test="record.remark != null and record.remark != '' " >
+        		A.remark = #{record.remark},
+      		</if>
+        	<if test="record.companyName != null and record.companyName != '' " >
+        		A.company_name = #{record.companyName},
+      		</if>
+        	<if test="record.preCode != null and record.preCode != '' " >
+        		A.pre_code = #{record.preCode},
+      		</if>
+        	<if test="record.recordNumber != null and record.recordNumber != '' " >
+        		A.Record_number = #{record.recordNumber},
+      		</if>
+      		<if test="record.aboutUs != null and record.aboutUs != '' " >
+        		A.about_us = #{record.aboutUs},
+      		</if>
+      		<if test="record.icon != null and record.icon != '' " >
+        		A.icon = #{record.icon},
+      		</if>
+      		<if test="record.title != null and record.title != '' " >
+        		A.title = #{record.title},
+      		</if>
+        	<if test="record.keyWords != null and record.keyWords != '' " >
+        		A.key_words = #{record.keyWords},
+      		</if>
+        	<if test="record.description != null and record.description != '' " >
+        		A.description = #{record.description},
+      		</if>
+      		<if test="record.paySwitch != null and record.paySwitch != '' " >
+        		A.pay_switch = #{record.paySwitch},
+      		</if>
+      		<if test="record.skin != null and record.skin != '' " >
+        		A.skin = #{record.skin},
+      		</if>
+      		<if test="record.domainName != null and record.domainName != '' " >
+        		A.domain_name = #{record.domainName},
+      		</if>
+      		<if test="record.telephone != null and record.telephone != '' " >
+        		A.telephone = #{record.telephone},
+      		</if>
+    </set>
+    <if test="_parameter != null and _parameter != '' " >
+      <where >
+        <include refid="Global.Where_Clause" />
+      </where>
+    </if>
+  </update>
+  <update id="update" parameterType="com.hfepay.scancode.entity.ChannelInfo" >
+    update t_channel_info A
+    <set >
+        	<if test="id != null and id != '' " >
+        		A.ID = #{id},
+      		</if>
+        	<if test="code != null and code != '' " >
+        		A.CODE = #{code},
+      		</if>
+        	<if test="number != null and number != '' " >
+        		A.NUMBER = #{number},
+      		</if>
+        	<if test="nickName != null and nickName != '' " >
+        		A.NICK_NAME = #{nickName},
+      		</if>
+        	<if test="status != null and status != '' " >
+        		A.STATUS = #{status},
+      		</if>
+        	<if test="indexTopImg != null and indexTopImg != '' " >
+        		A.INDEX_TOP_IMG = #{indexTopImg},
+      		</if>
+        	<if test="indexBottomImg != null and indexBottomImg != '' " >
+        		A.INDEX_BOTTOM_IMG = #{indexBottomImg},
+      		</if>
+        	<if test="indexWxImg != null and indexWxImg != '' " >
+        		A.INDEX_WX_IMG = #{indexWxImg},
+      		</if>
+        	<if test="address != null and address != '' " >
+        		A.ADDRESS = #{address},
+      		</if>
+        	<if test="phone != null and phone != '' " >
+        		A.PHONE = #{phone},
+      		</if>
+        	<if test="technicalSupportEmail != null and technicalSupportEmail != '' " >
+        		A.TECHNICAL_SUPPORT_EMAIL = #{technicalSupportEmail},
+      		</if>
+        	<if test="qqGroup != null and qqGroup != '' " >
+        		A.QQ_GROUP = #{qqGroup},
+      		</if>
+        	<if test="customServiceQq != null and customServiceQq != '' " >
+        		A.CUSTOM_SERVICE_QQ = #{customServiceQq},
+      		</if>
+        	<if test="businessCooperationQq != null and businessCooperationQq != '' " >
+        		A.BUSINESS_COOPERATION_QQ = #{businessCooperationQq},
+      		</if>
+        	<if test="businessCooperationEmail != null and businessCooperationEmail != '' " >
+        		A.BUSINESS_COOPERATION_EMAIL = #{businessCooperationEmail},
+      		</if>
+        	<if test="microblogUrl != null and microblogUrl != '' " >
+        		A.MICROBLOG_URL = #{microblogUrl},
+      		</if>
+        	<if test="contactAddressImg != null and contactAddressImg != '' " >
+        		A.CONTACT_ADDRESS_IMG = #{contactAddressImg},
+      		</if>
+        	<if test="loginBackgroundImg != null and loginBackgroundImg != '' " >
+        		A.LOGIN_BACKGROUND_IMG = #{loginBackgroundImg},
+      		</if>
+        	<if test="centerHeadImg != null and centerHeadImg != '' " >
+        		A.CENTER_HEAD_IMG = #{centerHeadImg},
+      		</if>
+        	<if test="isActive != null and isActive != '' " >
+        		A.IS_ACTIVE = #{isActive},
+      		</if>
+        	<if test="createTime != null and createTime != '' " >
+        		A.CREATE_TIME = #{createTime},
+      		</if>
+        	<if test="updateTime != null and updateTime != '' " >
+        		A.UPDATE_TIME = #{updateTime},
+      		</if>
+        	<if test="operatorId != null and operatorId != '' " >
+        		A.OPERATOR_ID = #{operatorId},
+      		</if>
+      		<if test="remark != null and remark != '' " >
+        		A.remark = #{remark},
+      		</if>
+        	<if test="companyName != null and companyName != '' " >
+        		A.company_name = #{companyName},
+      		</if>
+        	<if test="preCode != null and preCode != '' " >
+        		A.pre_code = #{preCode},
+      		</if>
+        	<if test="recordNumber != null and recordNumber != '' " >
+        		A.Record_number = #{recordNumber},
+      		</if>
+      		<if test="aboutUs != null and aboutUs != '' " >
+        		A.about_us = #{aboutUs},
+      		</if>
+      		<if test="icon != null and icon != '' " >
+        		A.icon = #{icon},
+      		</if>
+      			<if test="title != null and title != '' " >
+        		A.title = #{title},
+      		</if>
+        	<if test="keyWords != null and keyWords != '' " >
+        		A.key_words = #{keyWords},
+      		</if>
+        	<if test="description != null and description != '' " >
+        		A.description = #{description},
+      		</if>
+      		<if test="paySwitch != null and paySwitch != '' " >
+        		A.pay_switch = #{paySwitch},
+      		</if>
+      		<if test="skin != null and skin != '' " >
+        		A.skin = #{skin},
+      		</if>
+      		<if test="domainName != null and domainName != '' " >
+        		A.domain_name = #{domainName},
+      		</if>
+      		<if test="telephone != null and telephone != '' " >
+        		A.telephone = #{telephone},
+      		</if>
+    </set>
+    where A.ID = #{id}
+  </update>
+  
+  <parameterMap type="java.util.Map" id="channelCode">
+        <parameter property="namePre" mode="IN" jdbcType="CHAR"/>
+        <parameter property="newNo" mode="OUT" jdbcType="VARCHAR"/>
+  </parameterMap>
+  
+  <select id="getChannelCode" parameterMap="channelCode" statementType="CALLABLE">
+  		CALL generate_superNextNo(?,'t_channel_info','number',?)
+  </select>
+  
+	<update id="updateStatus">
+    update t_channel_info
+		set `STATUS` = #{status}
+		where ID=#{id}
+  </update>
+</mapper>
+

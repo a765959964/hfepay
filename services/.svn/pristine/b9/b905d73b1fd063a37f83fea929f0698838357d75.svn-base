@@ -1,0 +1,13 @@
+package com.hfepay.scancode.dao.channel;
+
+import com.hfepay.commons.dao.EntityDAO;
+import com.hfepay.scancode.entity.ChannelAdmin;
+
+
+    @com.hfepay.commons.base.annotation.Generated("2016-04-14 09:42")
+public interface ChannelAdminDAO extends EntityDAO<ChannelAdmin, String> {
+    	/**
+    	 * 状态更新
+    	 */
+    	long updateStatus(String id,Integer status);
+}

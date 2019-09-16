@@ -1,0 +1,175 @@
+package com.hfepay.epay.api.entity.pay;
+
+/**
+ * 二维码扫码付 接受对象
+ * @author Administrator
+ *
+ */
+public class QrcodePayForm implements java.io.Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	private String openId;
+	
+	private String qrcodeId;
+	
+	private String payFee;
+	
+	private String channel;
+	
+	private String mchNo;
+	
+	private String businessType;//业务类型0：基础商品类业务1：普通消费类业务
+	
+	private String productName;//商品名称
+	
+	private String platformRate;//平台费率
+	
+	private String channelRate;//通道费率
+	
+	private String productBody;      //商品描述
+	
+	private String productDetail;      //商品详情
+	
+	private String platformDiscount; //平台折扣率
+	
+	private String channelDiscount;  //渠道折扣率
+	
+	private String notify_url; //商户回调地址
+	
+	private String show_url;//商品展示界面
+	
+	private String merchantPaySwitch;//商户支付开关
+	
+	public String getMchNo() {
+		return mchNo;
+	}
+
+	public void setMchNo(String mchNo) {
+		this.mchNo = mchNo;
+	}
+
+	public String getOpenId() {
+		return openId;
+	}
+
+	public void setOpenId(String openId) {
+		this.openId = openId;
+	}
+
+	public String getQrcodeId() {
+		return qrcodeId;
+	}
+
+	public void setQrcodeId(String qrcodeId) {
+		this.qrcodeId = qrcodeId;
+	}
+
+	public String getPayFee() {
+		return payFee;
+	}
+
+	public void setPayFee(String payFee) {
+		this.payFee = payFee;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+
+	public String getBusinessType() {
+		return businessType;
+	}
+
+	public void setBusinessType(String businessType) {
+		this.businessType = businessType;
+	}
+
+	public String getProductName() {
+		return productName;
+	}
+
+	public void setProductName(String productName) {
+		this.productName = productName;
+	}
+
+	public String getPlatformRate() {
+		return platformRate;
+	}
+
+	public void setPlatformRate(String platformRate) {
+		this.platformRate = platformRate;
+	}
+
+	public String getChannelRate() {
+		return channelRate;
+	}
+
+	public void setChannelRate(String channelRate) {
+		this.channelRate = channelRate;
+	}
+
+	public String getProductBody() {
+		return productBody;
+	}
+
+	public void setProductBody(String productBody) {
+		this.productBody = productBody;
+	}
+
+	public String getPlatformDiscount() {
+		return platformDiscount;
+	}
+
+	public void setPlatformDiscount(String platformDiscount) {
+		this.platformDiscount = platformDiscount;
+	}
+
+	public String getChannelDiscount() {
+		return channelDiscount;
+	}
+
+	public void setChannelDiscount(String channelDiscount) {
+		this.channelDiscount = channelDiscount;
+	}
+
+	public String getProductDetail() {
+		return productDetail;
+	}
+
+	public void setProductDetail(String productDetail) {
+		this.productDetail = productDetail;
+	}
+
+	public String getNotify_url() {
+		return notify_url;
+	}
+
+	public void setNotify_url(String notify_url) {
+		this.notify_url = notify_url;
+	}
+
+	public String getShow_url() {
+		return show_url;
+	}
+
+	public void setShow_url(String show_url) {
+		this.show_url = show_url;
+	}
+
+	public String getMerchantPaySwitch() {
+		return merchantPaySwitch;
+	}
+
+	public void setMerchantPaySwitch(String merchantPaySwitch) {
+		this.merchantPaySwitch = merchantPaySwitch;
+	}
+	
+}

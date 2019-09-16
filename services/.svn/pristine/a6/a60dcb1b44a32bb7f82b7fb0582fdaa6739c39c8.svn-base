@@ -1,0 +1,404 @@
+package com.hfepay.scancode.api.service.impl;
+
+import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import net.sf.json.JSONObject;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSON;
+import com.hfepay.commons.base.collection.Maps;
+import com.hfepay.commons.base.lang.HttpRequestClient;
+import com.hfepay.commons.base.lang.SnowflakeIdGenerator;
+import com.hfepay.scancode.api.config.HfepayConfig;
+import com.hfepay.scancode.api.entity.vo.BankCardAuthVo;
+import com.hfepay.scancode.api.entity.vo.HeaderMessage;
+import com.hfepay.scancode.api.entity.vo.MerchantAccountsVo;
+import com.hfepay.scancode.api.entity.vo.MerchantInfoVo;
+import com.hfepay.scancode.api.entity.vo.MerchantPayInfoVo;
+import com.hfepay.scancode.api.entity.vo.MerchantRateVo;
+import com.hfepay.scancode.api.entity.vo.Message;
+import com.hfepay.scancode.api.entity.vo.ParamsMessage;
+import com.hfepay.scancode.api.exception.ValidatException;
+import com.hfepay.scancode.api.httpClient.HttpProtocolHandler;
+import com.hfepay.scancode.api.httpClient.HttpRequest;
+import com.hfepay.scancode.api.httpClient.HttpResponse;
+import com.hfepay.scancode.api.httpClient.HttpResultType;
+import com.hfepay.scancode.api.httputil.Dates;
+import com.hfepay.scancode.api.service.MerchantBusinessService;
+import com.hfepay.scancode.api.signature.EncrypterUtil;
+import com.hfepay.scancode.entity.PlatformSecretKey;
+import com.hfepay.scancode.service.operator.PlatformSecretKeyService;
+
+@Service
+public class MerchantBusinessServiceImpl implements MerchantBusinessService{
+
+	Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired
+	PlatformSecretKeyService platformSecretKeyService;
+	
+	@Autowired
+	SnowflakeIdGenerator idGenerator;
+	
+	/**
+	 * 商户入网
+	 */
+	@Override
+	public Map<String, String> merchantJoin(MerchantInfoVo info, MerchantAccountsVo accounts, List<MerchantRateVo> payTypes) throws Exception{
+		Map<String, String> respValue = null;
+		try {
+			// 商户基本信息
+			Map<String, Object> body = new HashMap<String, Object>();
+			body.put("info", info);
+			logger.error("商户基本信息："+ JSON.toJSONString(info));
+			// 商户账号信息
+			body.put("account", accounts);
+			logger.error("商户账户信息："+JSON.toJSONString(accounts));
+			// 支付通道信息
+			body.put("payType", payTypes);
+			logger.error("商户支付通道信息："+JSON.toJSONString(payTypes));
+			Map<String, String> response = null;
+			response = requestHandle(HfepayConfig.join_service_method, body);
+			logger.error("响应报文（解密）, response="+JSON.toJSONString(response));
+			//处理响应报文
+			respValue = responseHandle(response);
+			return response;
+		} catch (Exception e) {
+			logger.error("商户入网异常"+e.getMessage());
+			e.printStackTrace();
+		}
+		return respValue;
+	}
+	
+	/**
+	 * 扫码付预订单
+	 */
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String,String> merchantOrder(MerchantPayInfoVo payInfo) throws Exception {
+		Map<String, Object> body = new HashMap<String, Object>();
+		//将对象转为JSON字符串
+		String json = JSON.toJSONString(payInfo);
+		//将json字符串转为map
+		body = JSON.parseObject(json, Map.class);
+		Map<String,String> response = requestHandle(HfepayConfig.trade_order, body);
+		Map<String,String> respValue = responseHandle(response);
+		return respValue;
+	}
+	
+	
+	/**
+	 * 微信公众号支付
+	 */
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public Map<String, String> merchantWechatOfficial(MerchantPayInfoVo payInfo) throws Exception {
+		Map<String, Object> body = new HashMap<String, Object>();
+		//将对象转为JSON字符串
+		String json = JSON.toJSONString(payInfo);
+		//将json字符串转为map
+		body = JSON.parseObject(json, Map.class);
+		Map<String,String> response = requestHandle(HfepayConfig.trade_order_official, body);
+		Map<String,String> resValue = responseHandle(response);
+		return resValue;
+	}
+	
+	@Override
+	public Map<String, String> bankCardAuthFour(BankCardAuthVo bankCard) throws Exception {
+		logger.debug("============银行卡四要素校验==============");
+		//1、组装请求报文
+		JSONObject headerJson = new JSONObject();
+		JSONObject conditionJson = new JSONObject();
+		headerJson.put("qryBatchNo", idGenerator.generate());  //验证批次号  用户生成的唯一编号
+		headerJson.put("userCode", HfepayConfig.userCode);   //商户编号，即用户编号
+		headerJson.put("sysCode", HfepayConfig.sysCode); //应用编号
+		//必填
+		conditionJson.put("realName", bankCard.getRealName());
+		conditionJson.put("idCard", bankCard.getIdCard());
+		conditionJson.put("bankCard", bankCard.getBankCard());
+		conditionJson.put("mobile", bankCard.getMobile());
+		
+		JSONObject allJson = new JSONObject();
+		allJson.put("header", headerJson);
+		allJson.put("condition", conditionJson);
+		logger.debug(allJson.toString());
+		String data = allJson.toString();
+		logger.debug("请求报文："+data);
+		
+		/**
+		 * 组装请求参数 调用实名认证接口
+		 */
+		//2、请求API对应的接口
+		List<NameValuePair> parameters = new ArrayList<NameValuePair>();
+		parameters.add(new BasicNameValuePair("condition", data));
+		parameters.add(new BasicNameValuePair("userCode", HfepayConfig.userCode));
+		parameters.add(new BasicNameValuePair("appKey", HfepayConfig.appKey));
+		String result = HttpRequestClient.invoke_http(HfepayConfig.bank_card_auth_uri,parameters,"UTF-8");
+		logger.debug("返回报文："+result);
+		logger.debug("============银行卡四要素校验完成==============");
+		JSONObject resultJson = JSONObject.fromObject(result);
+		return null;
+	}
+	
+	/**
+	 * 获取密钥
+	 * @param payCode
+	 * @return
+	 */
+	private PlatformSecretKey getSecretKey(String payCode) throws ValidatException, Exception{
+		PlatformSecretKey platformSecretKey = platformSecretKeyService.findByPayCode(payCode);
+		if(platformSecretKey == null){
+			throw new ValidatException("100010","密钥不存在");
+		}
+		return platformSecretKey;
+	}
+	
+	/**
+	 * http请求处理方法
+	 * @param method 服务名称
+	 * @param body 报文体
+	 * @return
+	 * @throws Exception
+	 */
+	@SuppressWarnings("unchecked")
+	private Map<String,String> requestHandle(String method,Map<String, Object> body) throws ValidatException, Exception {
+		//获取密钥
+		PlatformSecretKey secretKey = getSecretKey(method);
+		Map<String, Object> message = Maps.newMap();
+		logger.debug("请求body(未加密)："+JSON.toJSONString(body));
+		message.put("body", body);
+		//加密报文体
+		Message data = EncrypterUtil.encode(JSON.toJSONString(message),secretKey.getJoinPublicKey(), secretKey.getJoinPrivateKey());
+		//添加头部信息
+		HeaderMessage head = new HeaderMessage();
+		head.setVersion("V1.0.0");
+		head.setReqTime(Dates.format("yyyyMMddHHmmss", new Date()));
+		head.setUserReqNo(Dates.format("yyyyMMddHHmmss", new Date()));
+		head.setChannelNo(HfepayConfig.channelNo);//渠道编号
+		head.setMethod(method);
+		head.setSign(data.getSign());
+		head.setEncryptKey(data.getKey());
+		//设置参数消息对象
+		ParamsMessage params = new ParamsMessage();
+		//设置渠道编号
+		params.setHead(head);
+		params.setBody(data.getContent());
+		message.put("params", params);
+		String str = JSON.toJSONString(params);
+		JSONObject obj = JSONObject.fromObject(str);
+		logger.debug("请求报文,request = "+obj.toString());
+		//post请求服务器
+		String resJson = buildRequestJsonPost(HfepayConfig.gateway_uri,obj.toString());
+		logger.debug("响应报文（加密）,response = "+resJson);
+		Map<String, String> response = JSON.parseObject(resJson, Map.class);
+		if(response.get("body")!=null) {
+			HeaderMessage header = JSON.parseObject(response.get("head").toString(), HeaderMessage.class);
+			String content = response.get("body");
+			String sign = header.getSign();
+			String encryptKey = header.getEncryptKey();
+			if (content != null && sign != null && encryptKey != null) {
+				//解密报文
+				response.put("body", EncrypterUtil.decode(content, sign, encryptKey,secretKey.getJoinPublicKey(), secretKey.getJoinPrivateKey()));
+				logger.debug("响应报文（解密）,response = "+JSON.toJSONString(response));
+			}
+		}else {
+			response.put("body","");
+		}
+		return response;
+	}
+	
+	/**
+	 * POST 请求
+	 * @param URL
+	 * @param objectString
+	 * @return
+	 * @throws Exception
+	 */
+	private String buildRequestJsonPost(String URL,String objectString) throws Exception {
+        HttpProtocolHandler httpProtocolHandler = HttpProtocolHandler.getInstance();
+        HttpRequest request = new HttpRequest(HttpResultType.BYTES);
+        //设置编码集
+        request.setMethod("POST");
+        request.setCharset(HfepayConfig.input_charset);
+        request.setUrl(URL);
+        HttpResponse response = httpProtocolHandler.execute(request,objectString,"","");
+        if (response == null) {
+            return null;
+        }
+        
+        String strResult = response.getStringResult();
+
+        return strResult;
+    }
+	
+	
+	/**
+	 * 响应报文处理
+	 * @param response
+	 * @return
+	 */
+	@SuppressWarnings("unchecked")
+	private Map<String, String> responseHandle(Map<String, String> response){
+		Map<String, String> respValue = null;
+		Map<String, String> headMap = JSON.parseObject(JSON.toJSONString(response.get("head")), Map.class);
+		String respCode = headMap.get("respCode");
+		if("000000".equals(respCode)){
+			//如果返回码为交易成功
+			respValue = JSON.parseObject(response.get("body"), Map.class);
+			respValue.put("respCode", respCode);
+			return respValue;
+		}else{
+			respValue = Maps.newMap();
+			respValue.put("respCode", respCode);
+			respValue.put("respDesc", headMap.get("respDesc"));
+			return respValue;
+		}
+	}
+	
+	public void testJoin(){
+		MerchantInfoVo info = new MerchantInfoVo();
+		info.setMerchantNo("2016101817080018");
+		info.setMerchantName("测试商户-谢佩");
+		info.setShortName("测试商户-谢佩");
+		info.setAddress("深圳市南山区高新南七道-测试");
+		info.setSerPhone("18938856957");
+		info.setCategory("2016051000165496");
+		info.setIdCard("432503190911245245");
+		info.setName("唐彪");
+		info.setMerchantLicense("5678568575845450");
+		info.setPhone("18938856957");
+		info.setMobile("18938856957");
+		info.setEmail("souper@163.com");
+		info.setRemark("谢佩-商户");
+		//添加商户账号信息
+		MerchantAccountsVo merchantAccountsVo = new MerchantAccountsVo();
+		merchantAccountsVo.setBankCard("6222521317561250");
+		merchantAccountsVo.setBankCode("301584000506");
+		merchantAccountsVo.setBankName("交通银行");
+		merchantAccountsVo.setAccountName("唐彪");
+		merchantAccountsVo.setIsRealAccount("Y");
+		List<MerchantRateVo> listRate = new ArrayList<MerchantRateVo>();
+		//微信公众号
+		MerchantRateVo merchantRateVo = new MerchantRateVo();
+		merchantRateVo.setPayCode("WXGZHZF");
+		merchantRateVo.setWithdrawAmt("1");//商户体现服务费
+		merchantRateVo.setWithdrawRate("0.0006");//商户体现垫资费
+		merchantRateVo.setTradeRate("0.004");//商户交易费率
+		listRate.add(merchantRateVo);
+		//支付宝扫码
+		MerchantRateVo zfbmerchantRateVo = new MerchantRateVo();
+		zfbmerchantRateVo.setPayCode("ZFBSMZF");
+		zfbmerchantRateVo.setWithdrawAmt("1");
+		zfbmerchantRateVo.setWithdrawRate("0.0005");
+		zfbmerchantRateVo.setTradeRate("0.004");
+		listRate.add(zfbmerchantRateVo);
+		//微信扫码
+		MerchantRateVo wxsmmerchantRateVo = new MerchantRateVo();
+		wxsmmerchantRateVo.setPayCode("WXSMZF");
+		wxsmmerchantRateVo.setWithdrawAmt("1");
+		wxsmmerchantRateVo.setWithdrawRate("0.0005");
+		wxsmmerchantRateVo.setTradeRate("0.004");
+		listRate.add(wxsmmerchantRateVo);
+		
+		MerchantBusinessServiceImpl impl = new MerchantBusinessServiceImpl();
+		try {
+			impl.merchantJoin(info, merchantAccountsVo, listRate);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void testPay(){
+		Map<String, Object> body = new HashMap<String, Object>();
+		body.put("merchantNo", "788323285204078592");
+		body.put("orderAmt", new BigDecimal("0.1"));
+		body.put("payCode", "ZFBSMZF");//支付代码
+		body.put("orderTitle", "测试");
+		body.put("orderDesc", "");
+		body.put("opertorId", "");
+		body.put("notifyUrl", "baidu.com");
+		body.put("returnUrl", "baidu.com");
+		body.put("userOrderNo", System.currentTimeMillis()+"");
+		body.put("storeId", "");
+		body.put("terminalId", "");
+		body.put("remark", "");
+		body.put("ip", "");
+		body.put("appNo", "");
+		String json = JSON.toJSONString(body);
+		MerchantPayInfoVo payInfo = JSON.parseObject(json,MerchantPayInfoVo.class);
+		System.out.println(JSON.toJSON(payInfo));
+		MerchantBusinessServiceImpl impl = new MerchantBusinessServiceImpl();
+		try {
+			impl.merchantOrder(payInfo);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void testBankCardAuth(){
+		BankCardAuthVo vo = new BankCardAuthVo();
+		vo.setBankCard("6225887861330302");
+		vo.setIdCard("431121199003135517");
+		vo.setMobile("18676728087");
+		vo.setRealName("李孟辉");
+		MerchantBusinessServiceImpl impl = new MerchantBusinessServiceImpl();
+		try {
+			impl.bankCardAuthFour(vo);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void testOfficial(){
+		Map<String, Object> body = new HashMap<String, Object>();
+		body.put("merchantNo", "788623230280798208");
+		body.put("orderAmt", new BigDecimal("0.1"));
+		body.put("payCode", "ZFBSMZF");//支付代码
+		body.put("orderTitle", "测试");
+		body.put("orderDesc", "");
+		body.put("opertorId", "");
+		body.put("returnType", "01");
+		body.put("notifyUrl", "baidu.com");
+		body.put("returnUrl", "baidu.com");
+		body.put("userOrderNo", System.currentTimeMillis()+"");
+		body.put("storeId", "");
+		body.put("terminalId", "");
+		body.put("remark", "");
+		body.put("ip", "");
+		body.put("appNo", "");
+		String json = JSON.toJSONString(body);
+		MerchantPayInfoVo payInfo = JSON.parseObject(json,MerchantPayInfoVo.class);
+		System.out.println(JSON.toJSON(payInfo));
+		MerchantBusinessServiceImpl impl = new MerchantBusinessServiceImpl();
+		try {
+			impl.merchantWechatOfficial(payInfo);
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public static void main(String[] args) {
+		MerchantBusinessServiceImpl impl = new MerchantBusinessServiceImpl();
+//		impl.testJoin();
+//		impl.testPay();
+//		impl.testOfficial();
+		impl.testBankCardAuth();
+	}
+
+}

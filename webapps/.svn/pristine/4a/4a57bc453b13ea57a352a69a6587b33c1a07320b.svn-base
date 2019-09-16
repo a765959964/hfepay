@@ -1,0 +1,141 @@
+package com.hfepay.scancode.filter;
+
+import java.io.IOException;
+import java.util.regex.Pattern;
+
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.commons.lang.StringUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.hfepay.commons.utils.Springs;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.entity.ChannelAdmin;
+import com.hfepay.scancode.entity.ChannelInfo;
+import com.hfepay.scancode.service.operator.ChannelInfoService;
+
+/**
+ * 用于检查用户是否登录了系统的过滤器<br>
+ * 创建日期：2016-05-05
+ */
+public class SessionFilter implements Filter {
+ 
+    /** 要检查的 session 的名称 */
+    private String sessionKey;
+     
+    /** 需要排除（不拦截）的URL的正则表达式 */
+    private Pattern excepUrlPattern;
+     
+    /** 检查不通过时，转发的URL */
+    private String forwardUrl;
+    private Logger logger = LoggerFactory.getLogger(SessionFilter.class);
+    
+    private ChannelInfoService channelInfoService = Springs.getBean("channelInfoService");
+ 
+    @Override
+    public void init(FilterConfig cfg) throws ServletException {
+        sessionKey = cfg.getInitParameter("sessionKey");
+ 
+        String excepUrlRegex = cfg.getInitParameter("excepUrlRegex");
+        if (!StringUtils.isBlank(excepUrlRegex)) {
+            excepUrlPattern = Pattern.compile(excepUrlRegex);
+        }
+ 
+        forwardUrl = cfg.getInitParameter("forwardUrl");
+    }
+ 
+    @Override
+    public void doFilter(ServletRequest req, ServletResponse res, FilterChain chain) throws IOException, ServletException {
+    	// 如果 sessionKey 为空，则直接放行
+        if (StringUtils.isBlank(sessionKey)) {
+            chain.doFilter(req, res);
+            return;
+        }
+ 
+        HttpServletRequest request = (HttpServletRequest) req;
+        HttpServletResponse response = (HttpServletResponse) res;
+        String servletPath = request.getServletPath();
+        String channelCode = null;
+        
+        //判断session中的渠道信息是否存在
+        Object obj = request.getSession().getAttribute("currentChannelInfo");
+        if(null == obj){
+        	Object info = null;
+			try {
+				//截取请求渠道code
+				StringBuffer basePath = request.getRequestURL();
+				String path = basePath.substring(0, basePath.indexOf("/", 8));
+				logger.info(path.substring(path.indexOf("//")+2, path.length()));
+				//判断是否为华付的二级域名
+				if(path.indexOf("hfdatas.com") == -1){
+					path = path.substring(path.indexOf("//")+2, path.length());
+					ChannelInfo channelInfo = channelInfoService.findByDomainName(path);
+					if(null != channelInfo){
+						channelCode = channelInfo.getCode();
+					}
+				}else{
+					channelCode = path.substring(path.indexOf("//")+2, path.indexOf("."));
+				}
+				if(null != channelCode){
+					info = channelInfoService.getChannelInfoToRedisByCode(channelCode);
+				}
+				//如果渠道被禁用,则404
+				if(info != null){
+					ChannelInfo channelInfo = (ChannelInfo)info;
+					if(Constants.STATUS_DISABLE.equals(channelInfo.getStatus())){
+						request.getRequestDispatcher("404.jsp").forward(request, response);
+			            return;
+					}else{
+						request.getSession().setAttribute("currentChannelInfo", info);
+					}
+				}else{
+					request.getRequestDispatcher("404.jsp").forward(request, response);
+		            return;
+				}
+				obj = info;
+			} catch (Exception e) {
+				e.printStackTrace();
+				logger.info("*********channelCode:"+channelCode+",渠道信息不存在**********");
+			}
+        }
+        
+        ChannelInfo channel = (ChannelInfo) obj;
+        // 如果请求的路径与forwardUrl相同，或请求的路径是排除的URL时，则直接放行
+        if (servletPath.equals(forwardUrl) || excepUrlPattern.matcher(servletPath).matches()) {
+            chain.doFilter(req, res);
+            return;
+        }
+        
+        if(Constants.FAIL_STATE.equals(channel.getStatus())){
+        	String contextPath = request.getContextPath();
+            response.sendRedirect(contextPath + StringUtils.defaultIfEmpty(forwardUrl, "/"));
+        }
+ 
+        Object sessionObj = request.getSession().getAttribute(sessionKey);
+        // 如果Session为空，则跳转到指定页面
+        if (sessionObj == null) {
+            String contextPath = request.getContextPath();
+            response.sendRedirect(contextPath + StringUtils.defaultIfEmpty(forwardUrl, "/"));
+        } else {
+        	ChannelAdmin user = (ChannelAdmin) sessionObj;
+        	if(channel.getNumber().equalsIgnoreCase(user.getChannelCode())){
+        		chain.doFilter(req, res);
+        	}else{
+        		 String contextPath = request.getContextPath();
+                 response.sendRedirect(contextPath + StringUtils.defaultIfEmpty(forwardUrl, "/"));
+        	}
+        }
+    }
+ 
+    @Override
+    public void destroy() {
+    }
+}

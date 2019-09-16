@@ -1,0 +1,23 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.UserMessage;
+import com.hfepay.scancode.dao.UserMessageDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="userMessageDAO")
+@Generated("2016-11-26 17:49:05")
+public class UserMessageDAOImpl extends MybatisEntityDAO<UserMessage, String> implements UserMessageDAO {
+
+	@Override
+	public UserMessage findByMessageId(String messageId) {
+		return this.getSqlSession().selectOne("findByMessageId",messageId);
+	}
+}

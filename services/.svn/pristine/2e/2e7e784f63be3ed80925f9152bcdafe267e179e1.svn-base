@@ -1,0 +1,12 @@
+package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.dao.SysRoleUserDAO;
+import com.hfepay.scancode.entity.SysRoleUser;
+
+@org.springframework.stereotype.Repository
+@com.hfepay.commons.base.annotation.Generated("2016-04-14 09:43")
+public class SysRoleUserDAOImpl extends MybatisEntityDAO<SysRoleUser, String> implements SysRoleUserDAO {
+
+
+}

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+    http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd"
+	default-lazy-init="true">
+
+	<description>服务配置 </description>
+    <!-- consumer application name -->
+    <dubbo:application name="hfepay-scancode-gateway-webapp"  />
+    <dubbo:consumer timeout="30000" filter="InvocationRpcFilter"></dubbo:consumer>
+    <dubbo:registry address="zookeeper://${zookeeper.addr}" />
+   
+   <dubbo:reference id="scanCodeService" interface="com.hfepay.scancode.service.payway.ScanCodeService" check="false" />
+	<dubbo:reference id="adminService" interface="com.hfepay.scancode.service.channel.ChannelAdminService"  check="false"/>
+</beans>

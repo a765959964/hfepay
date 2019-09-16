@@ -1,0 +1,62 @@
+package com.hfepay.scancode.controller;
+
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.hfepay.scancode.commons.ScanCodeGetWayErrorCode;
+
+/**
+ * 回调
+ * @author Administrator
+ *
+ */
+@Controller
+@RequestMapping("/scancodecallback")
+public class CallbackController {
+	
+	public static final Logger log = LoggerFactory.getLogger(ScanCodeController.class);
+
+	/**
+	 * 支付回调
+	 * @param request
+	 * @param response
+	 * @return returnInfo
+	 */
+	@RequestMapping("/payCallBack")
+	public String scanCodePayCallBack(ModelMap model,HttpServletRequest request){
+		Map<String,String> returnInfo = new HashMap<String,String>();
+		
+		try {
+			//接收参数
+			
+			//校验参数
+			
+			//回调逻辑
+			
+		} catch (Exception e) {
+			log.error("#########系统错误:"+e+"########");
+			e.printStackTrace();
+			returnInfo = returnInfo(ScanCodeGetWayErrorCode.SYSTEM_999999.getCode(), "支付系统错误");
+			return "scancode/paymentResult";
+		}finally {
+			model.addAttribute("returnInfo", returnInfo);
+		}
+		
+		return "scancode/paymentResult";
+	}
+	
+	private Map<String,String> returnInfo(String returnCode,String returnMsg) {
+		Map<String,String> returnInfo = new HashMap<String,String>();
+		returnInfo.put("returnCode", returnCode);
+		returnInfo.put("returnMsg", returnMsg);
+		return returnInfo;
+	}
+}

@@ -1,0 +1,1 @@
+$(function(){$("#query").click(function(){toPage(1)});toPage(1)});function toPage(a){var b=$("#form").serialize();$.ajax({type:"POST",url:"channelbankcard/content?pageNo="+a,data:b,success:function(c){$("#tablec").html(c)}})};

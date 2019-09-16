@@ -1,0 +1,391 @@
+package com.hfepay.scancode.controller;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.hfepay.scancode.bo.OrderBo;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.commons.MerchantStatus;
+import com.hfepay.scancode.commons.OrganStatus;
+import com.hfepay.scancode.commons.QrStatus;
+import com.hfepay.scancode.commons.ScanCodeGetWayErrorCode;
+import com.hfepay.scancode.condition.AgentBaseCondition;
+import com.hfepay.scancode.entity.AgentBase;
+import com.hfepay.scancode.entity.ChannelBase;
+import com.hfepay.scancode.entity.MerchantInfo;
+import com.hfepay.scancode.entity.PlatformQrcode;
+import com.hfepay.scancode.entity.getway.MerchantJoinForm;
+import com.hfepay.scancode.enumeration.ScanCodeErrorCode;
+import com.hfepay.scancode.service.operator.AgentBaseService;
+import com.hfepay.scancode.service.operator.ChannelBaseService;
+import com.hfepay.scancode.service.operator.MerchantInfoService;
+import com.hfepay.scancode.service.payway.ScanCodeService;
+
+import net.sf.json.JSON;
+import net.sf.json.JSONSerializer;
+
+/**
+ * 扫码支付、商户入驻页面
+ * @author Administrator
+ *
+ */
+@Controller
+@RequestMapping("/scan")
+public class ScanCodeController {
+	
+	public static final Logger log = LoggerFactory.getLogger(ScanCodeController.class);
+	
+	@Value("merchant.settled.url")
+	private String merchantSettledUrl;
+	
+	@Autowired
+	private ScanCodeService scanCodeService;
+	
+	@Autowired
+	private MerchantInfoService merchantInfoService;
+	
+	@Autowired
+	private ChannelBaseService channelBaseService;
+	
+	@Autowired
+	private AgentBaseService agentBaseService;
+	
+	@RequestMapping("/paypage")
+	public String paypage(ModelMap model,HttpServletRequest request){
+		return "scancode/payment";
+	}
+	@RequestMapping("/paymentResult")
+	public String paymentpage(ModelMap model,HttpServletRequest request){
+		Map<String,String> returnInfo = new HashMap<String,String>();
+		
+		returnInfo.put("returnCode",ScanCodeGetWayErrorCode.SYSTEM_000000.getCode());
+		returnInfo.put("returnDesc",ScanCodeGetWayErrorCode.SYSTEM_000000.getDesc());
+		
+		model.addAttribute("returnInfo", returnInfo);
+		return "scancode/paymentResult";
+	}
+	/**
+	 * 扫描二维码：
+	 * 第一次扫描二维码时商户还未入驻，直接跳转到入驻页面
+	 * 绑定商户后则进行支付跳转
+	 * @param request
+	 * @param response
+	 * @return returnInfo
+	 */
+	@RequestMapping("/getway")
+	public String scanCodeGetWay(ModelMap model,HttpServletRequest request){
+		Map<String,String> returnInfo = new HashMap<String,String>();
+		
+		try {
+			//判定该二维码是否已经成功绑定商户
+			String qrCode = request.getParameter("qrCode");
+			PlatformQrcode platformQrcode = scanCodeService.findByQrCode(qrCode);
+			if (null == platformQrcode) {
+				returnInfo = returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"该二维码已失效或者不存在");
+			}else {
+				if (platformQrcode.getMerchantNo().equals("")) {
+					//页面重定向到商户入网地址
+					returnInfo.put("merchantSettledUrl", merchantSettledUrl);
+				}
+				//返回二维码信息
+				model.addAttribute("platformQrcode", platformQrcode);
+				
+				returnInfo.put("returnCode",ScanCodeGetWayErrorCode.SYSTEM_000000.getCode());
+				returnInfo.put("returnDesc",ScanCodeGetWayErrorCode.SYSTEM_000000.getDesc());
+			}
+			
+		} catch (Exception e) {
+			log.error("#########系统错误:"+e+"########");
+			e.printStackTrace();
+			returnInfo = returnInfo(ScanCodeGetWayErrorCode.SYSTEM_999999.getCode(),"系统异常");
+			return "scancode/getBrowserType";
+		}finally{
+			model.addAttribute("returnInfo", returnInfo);
+		}
+		
+		return "scancode/getBrowserType";
+	}
+	
+	/**
+	 * 跳转到录入金额页面
+	 * @param request
+	 * @param response
+	 * @return returnInfo
+	 */
+	@RequestMapping("/inputAmt")
+	public String scanCodeInputAmt(ModelMap model,HttpServletRequest request){
+		String qrCode = request.getParameter("qrCode");
+		String paymentType = request.getParameter("paymentType");
+		log.info("########qrCode["+qrCode+"],paymentType["+paymentType+"]跳转到输入金额页面########");
+		
+		PlatformQrcode platformQrcode = scanCodeService.findByQrCode(qrCode);
+		model.addAttribute("platformQrcode", platformQrcode);
+		model.addAttribute("paymentType", paymentType);
+		return "scancode/payment";
+	}
+	
+	/**
+	 * 生成支付订单
+	 * @param request
+	 * @param response
+	 * @return returnInfo
+	 */
+	@RequestMapping("/pay")
+	public String scanCodePay(ModelMap model,HttpServletRequest request,HttpServletResponse response){
+		Map<String,String> returnInfo = new HashMap<String,String>();
+		
+		try {
+			String browerType = request.getHeader("User-Agent").toLowerCase();
+			String payCode = "";
+			//微信
+			if (browerType.toLowerCase().indexOf("micromessenger")!=-1) {
+				payCode = Constants.WXGZHZF;
+			}else {//其他
+				
+			}
+			//接收参数
+			String qrCode = request.getParameter("qrCode");
+			String price = request.getParameter("price");
+			log.info("########pay:{qrCode["+qrCode+"],payCode["+payCode+"],price["+price+"]}########");
+			
+			PlatformQrcode platformQrcode = scanCodeService.findByQrCode(qrCode);
+			
+			//校验参数
+			Map<String, String> checkReturn = verificationPayParams(qrCode,payCode,price,platformQrcode);
+			if(null != checkReturn){
+				log.info("########pay:{qrCode["+qrCode+"],checkReturn["+checkReturn+"]}########");
+				model.addAttribute("returnInfo",checkReturn);
+				return "scancode/paymentResult";
+			}
+			
+			//调用支付逻辑
+			OrderBo orderBo = new OrderBo();
+			orderBo.setQrCode(qrCode);
+			orderBo.setChannelNo(platformQrcode.getChannelNo());
+			orderBo.setAgentNo(platformQrcode.getAgentNo());
+			orderBo.setMerchantNo(platformQrcode.getMerchantNo());
+			orderBo.setPayCode(payCode);
+			orderBo.setPrice(new BigDecimal(price));
+			
+			returnInfo = scanCodeService.pay(orderBo);
+			if (returnInfo.get("returnCode").equals(ScanCodeErrorCode.SYSTEM_000000.getCode())) {
+				response.sendRedirect(returnInfo.get("payStr"));
+			}else {
+				model.addAttribute("returnInfo",returnInfo);
+				return "scancode/paymentResult";
+			}
+			
+		} catch (Exception e) {
+			log.error("#########系统错误:"+e+"########");
+			e.printStackTrace();
+			returnInfo = returnInfo(ScanCodeGetWayErrorCode.SYSTEM_999999.getCode(), "支付系统错误");
+			model.addAttribute("returnInfo",returnInfo);
+			return "scancode/paymentResult";
+		}
+		
+		log.info("#########交易成功########");
+		
+		return "scancode/paymentResult";
+	}
+	
+	/**
+	 * 校验支付请求参数
+	 * @param qrCode
+	 * @param paymentType
+	 * @param platformQrcode
+	 * @param price
+	 */
+	private Map<String, String> verificationPayParams(String qrCode,String paymentType,String price,PlatformQrcode platformQrcode) {
+		
+		if (qrCode.isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"二维码编号不能为空");
+		}
+		
+		if (paymentType.isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"支付渠道类型不能为空");
+		}
+
+		if (price.isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"支付金额不能为空");
+		}
+		
+		if (null == platformQrcode) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"该二维码已失效或者不存在");
+		}
+		if (platformQrcode.getQrStatus().equals(QrStatus.QR_1.getCode())) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),QrStatus.QR_1.getDesc());
+		}
+		
+		//校验商户是否正常
+		MerchantInfo merchantInfo = merchantInfoService.findByMerchantNo(platformQrcode.getMerchantNo());
+		if (null != merchantInfo) {
+			if (merchantInfo.getStatus().equals(MerchantStatus.MERCHANT_3.getCode())) {
+				return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100003.getCode(),ScanCodeGetWayErrorCode.VALIDAT_100003.getDesc());
+			}
+		}
+		
+		//校验代理商是否正常
+		AgentBaseCondition agentBaseCondition = new AgentBaseCondition();
+		agentBaseCondition.setAgentNo(platformQrcode.getAgentNo());
+		List<AgentBase> agentList = agentBaseService.findAll(agentBaseCondition);
+		if (null != agentList) {
+			if (agentList.get(0).getStatus().equals(OrganStatus.ORGAN_0.getCode())) {
+				return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100004.getCode(),ScanCodeGetWayErrorCode.VALIDAT_100004.getDesc());
+			}
+		}
+		
+		//校验渠道上是否正常
+		ChannelBase channelBase = channelBaseService.findByChannelNo(platformQrcode.getChannelNo());
+		if (null != channelBase) {
+			if (channelBase.getStatus().equals(OrganStatus.ORGAN_0.getCode())) {
+				return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100005.getCode(),ScanCodeGetWayErrorCode.VALIDAT_100005.getDesc());
+			}
+		}
+		
+		return null;
+		
+	}
+	
+	
+	
+	/**
+	 * 商户入驻
+	 * @param request
+	 * @param response
+	 * @return returnInfo
+	 */
+	@RequestMapping("/merchantSettled")
+	@ResponseBody
+	public JSON merchantSettled(HttpServletRequest request, HttpServletResponse response){
+		Map<String,String> returnInfo = new HashMap<String,String>();
+		
+		String qrCode = request.getParameter("qrCode");
+		PlatformQrcode platformQrcode = scanCodeService.findByQrCode(qrCode);
+		if (null == platformQrcode) {
+			returnInfo.put(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(), "二维码不存在");
+		}else {
+			if (null != platformQrcode.getMerchantNo() || !platformQrcode.getMerchantNo().equals("")) {
+				returnInfo.put(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(), "该二维码已被其他商户使用");
+				return JSONSerializer.toJSON(returnInfo);
+			}
+			//接收参数
+			MerchantJoinForm joinVo = merchantJoinaPrameterSealed(request);
+			
+			//校验参数
+			Map<String, String> checkReturn = verificationParams(joinVo);
+			if(null != checkReturn){
+				return JSONSerializer.toJSON(checkReturn);
+			}
+			
+			//调用业务逻辑...
+			
+			
+		}
+		
+		return JSONSerializer.toJSON(returnInfo);
+	}
+	
+	/**
+	 * 封装请求参数
+	 * @param request
+	 * @return joinVo
+	 */
+	private MerchantJoinForm merchantJoinaPrameterSealed(HttpServletRequest request) {
+		MerchantJoinForm joinVo = new  MerchantJoinForm();
+		
+		joinVo.setMerchantName(request.getParameter("merchantName"));
+		joinVo.setShortName(request.getParameter("shortName"));
+		joinVo.setAddress(request.getParameter("address"));
+		joinVo.setSerPhone(request.getParameter("serPhone"));
+		joinVo.setCategory(request.getParameter("category"));
+		joinVo.setIdCard(request.getParameter("idCard"));
+		joinVo.setName(request.getParameter("name"));
+		joinVo.setPhone(request.getParameter("phone"));
+		joinVo.setMobile(request.getParameter("mobile"));
+		joinVo.setEmail(request.getParameter("email"));
+		joinVo.setMerchantLicense(request.getParameter("merchantLicense"));
+		joinVo.setBankCode(request.getParameter("bankCode"));
+		joinVo.setBankName(request.getParameter("bankName"));
+		joinVo.setAccountName(request.getParameter("accountName"));
+		joinVo.setBankCard(request.getParameter("bankCard"));
+		joinVo.setIsRealAccount(request.getParameter("isRealAccount"));
+		
+		log.info("#######joinVo:["+joinVo.toString()+"]########");
+		return joinVo;
+	}
+	
+	/**
+	 * 校验商户入驻参数
+	 * @param joinVo
+	 * @return Map<String, String>
+	 */
+	private Map<String, String> verificationParams(MerchantJoinForm joinVo){
+		
+		if (joinVo.getMerchantName().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"商户名称不能为空");
+		}
+		
+		if (joinVo.getShortName().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"商户简称不能为空");
+		}
+		
+		if (joinVo.getAddress().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"商户地址不能为空");
+		}
+		
+		if (joinVo.getSerPhone().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"客服电话不能为空");
+		}
+		
+		if (joinVo.getCategory().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"经营类目不能为空");
+		}
+		
+		if (joinVo.getIdCard().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"身份证号不能为空");
+		}
+		
+		if (joinVo.getName().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"法人姓名不能为空");
+		}
+		
+		if (joinVo.getBankName().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"开户行名称（到支行）不能为空");
+		}
+		
+		if (joinVo.getAccountName().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"持卡人姓名不能为空");
+		}
+		
+		if (joinVo.getBankCard().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"银行卡号不能为空");
+		}
+		
+		if (joinVo.getIsRealAccount().isEmpty()) {
+			return returnInfo(ScanCodeGetWayErrorCode.VALIDAT_100002.getCode(),"是否实时到账不能为空");
+		}
+		
+		return null;
+	}
+
+	private Map<String,String> returnInfo(String returnCode,String returnMsg) {
+		Map<String,String> returnInfo = new HashMap<String,String>();
+		returnInfo.put("returnCode", returnCode);
+		returnInfo.put("returnMsg", returnMsg);
+		return returnInfo;
+	}
+}

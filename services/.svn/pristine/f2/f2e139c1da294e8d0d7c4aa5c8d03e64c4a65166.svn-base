@@ -1,0 +1,15 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao;
+
+import com.hfepay.scancode.entity.MerchantPayway;
+import com.hfepay.commons.dao.EntityDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+@Generated("2016-10-21 10:21:59")
+public interface MerchantPaywayDAO extends EntityDAO<MerchantPayway, String> {
+
+}

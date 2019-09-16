@@ -1,0 +1,51 @@
+package com.hfepay.epay.api.service;
+
+import com.alipay.entity.SingleRefundReqData;
+import com.alipay.entity.WapPayRefundReqData;
+import com.alipay.entity.WapPayReqData;
+import com.hfepay.commons.exception.ServicesException;
+/**
+ * ProjectName： health-service-trade<br>
+ * ClassName： WechatPayService<br>
+ * Description：微信支付接口 <br>
+ * @author pei
+ * @createTime 2015年8月5日
+ * @version 1.0.0
+ */
+public interface IAliPayService{
+
+    
+	/**
+	 * 生成支付宝支付连接
+	 * @param payNo 订单编号
+	 * @param payFee 订单总金额
+	 * @param payTimespam 订单时间
+	 * @param body 订单描述
+	 * @param subject 订单标题
+	 * @return
+	 */
+	public String takeOrderSignatrue(String payNo,Long payFee,Long payTimespam,String body,String subject)throws ServicesException;
+	
+	/**
+	 * 单笔交易支付状态查询
+	 * @param payNo
+	 * @param alipayNo
+	 * @return false 未支付，true 已支付
+	 */
+	public Boolean singleTransactionQueryHandelFunction(String payNo,String alipayNo) throws ServicesException;
+	
+	/**
+	 * 预生成支付宝APP退款链接
+	 */
+	public String takeRefundOrder(SingleRefundReqData singleRefundReqData);
+	
+	/**
+	 * 生成支付宝wap支付链接
+	 */
+	public String taskAlipayWapFunction(WapPayReqData wapPayReqData);
+	
+	/**
+	 * 生成支付宝WAP退款链接
+	 */
+	public String takeWapPayRefundOrder(WapPayRefundReqData wapPayRefundReqData);
+}

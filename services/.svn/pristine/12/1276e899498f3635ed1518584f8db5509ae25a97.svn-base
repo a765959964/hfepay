@@ -1,0 +1,17 @@
+package com.hfepay.scancode.api.service;
+
+import java.util.Map;
+
+public interface MerchantBusinessService{
+
+	
+	/**
+	 * 商户入网
+	 */
+	public Map<String, String> merchantJoin(Map<String, String> map);
+	
+	/**
+	 * 预订单
+	 */
+	public Map<String,String> merchantOrder(Map<String, String> map)throws Exception;
+}

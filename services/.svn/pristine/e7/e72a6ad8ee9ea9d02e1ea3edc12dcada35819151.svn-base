@@ -1,0 +1,18 @@
+package com.hfepay.scancode.enumeration;
+
+public enum IdentityType {
+	Identity_Channel("1"),//渠道
+	Identity_Agent("2"),//代理商
+	Identity_Merchant("3"),//商户
+	Identity_Cashier("4");//收银员
+	
+	private String type;
+	
+	IdentityType(String type){
+		this.type = type;
+	}
+	
+	public String value(){
+		return type;
+	}
+}

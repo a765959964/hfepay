@@ -1,0 +1,96 @@
+package com.hfepay.scancode.controller;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+/**
+ * 页面
+ * @author Administrator
+ *
+ */
+@Controller
+@RequestMapping("/scancode")
+public class WechatController {
+	public static final Logger log = LoggerFactory.getLogger(WechatController.class);
+	
+	/*@RequestMapping("/404")
+	public String _notfound(ModelMap model,HttpServletRequest request){
+		System.out.println("----------");
+		System.out.println("----------");
+		System.out.println("----------");
+		System.out.println("----------");
+		System.out.println("----------");
+		return "scancode/wechat/404";
+	}*/
+	
+	@RequestMapping("/apply1")
+	public String apply1(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/apply1";
+	}
+	@RequestMapping("/apply2")
+	public String apply2(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/apply2";
+	}
+	@RequestMapping("/apply3")
+	public String apply3(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/apply3";
+	}
+	@RequestMapping("/balance")
+	public String balance(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/balance";
+	}
+	@RequestMapping("/balanceSuccess")
+	public String balanceSuccess(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/balanceSuccess";
+	}
+	
+	@RequestMapping("/my")
+	public String my(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/my";
+	}
+	@RequestMapping("/password")
+	public String password(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/password";
+	}
+	
+	@RequestMapping("/progress")
+	public String progress(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/progress";
+	}
+	
+	@RequestMapping("/set")
+	public String set(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/set";
+	}
+	@RequestMapping("/sure")
+	public String sure(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/sure";
+	}
+	@RequestMapping("/test")
+	public String test(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/test";
+	}
+	
+	@RequestMapping("/basic")
+	public String basic(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/basic";
+	}
+	@RequestMapping("/settlement")
+	public String settlement(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/settlement";
+	}
+
+	@RequestMapping("/bill")
+	public String bill(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/bill";
+	}
+	@RequestMapping("/binding")
+	public String binding(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/binding";
+	}
+}

@@ -1,0 +1,269 @@
+package com.hfepay.scancode.service.operator.impl;
+
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.criteria.Order;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.MerchantBankcardCondition;
+import com.hfepay.scancode.dao.MerchantBankcardDAO;
+import com.hfepay.scancode.entity.MerchantBankcard;
+import com.hfepay.scancode.service.operator.MerchantBankcardService;
+
+@Service("merchantBankcardService")
+public class MerchantBankcardServiceImpl implements MerchantBankcardService {
+	
+	@Autowired
+    private MerchantBankcardDAO merchantBankcardDAO;
+    
+    /**
+	 * 列表(分页)
+	 * @param merchantBankcardCondition 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 13:50:11
+	 */
+    @Override
+	public PagingResult<MerchantBankcard> findPagingResult(MerchantBankcardCondition merchantBankcardCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantBankcard.class);
+		if(!Strings.isEmpty(merchantBankcardCondition.getId())){
+			cb.andEQ("id", merchantBankcardCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantBankcardCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getMerchantName())){
+			cb.andLike("merchantName", merchantBankcardCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getIdCard())){
+			cb.andEQ("idCard", merchantBankcardCondition.getIdCard());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getName())){
+			cb.andEQ("name", merchantBankcardCondition.getName());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getBankCode())){
+			cb.andEQ("bankCode", merchantBankcardCondition.getBankCode());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getBankName())){
+			cb.andEQ("bankName", merchantBankcardCondition.getBankName());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getBankCard())){
+			cb.andEQ("bankCard", merchantBankcardCondition.getBankCard());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getMobile())){
+			cb.andEQ("mobile", merchantBankcardCondition.getMobile());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getIsRealAccount())){
+			cb.andEQ("isRealAccount", merchantBankcardCondition.getIsRealAccount());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getStatus())){
+			cb.andEQ("status", merchantBankcardCondition.getStatus());
+		}
+		if(null != merchantBankcardCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantBankcardCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantBankcardCondition.getOperator())){
+			cb.andEQ("operator", merchantBankcardCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantBankcardCondition.getRemark())){
+			cb.andLike("remark", merchantBankcardCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getTemp1())){
+			cb.andEQ("temp1", merchantBankcardCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getTemp2())){
+			cb.andEQ("temp2", merchantBankcardCondition.getTemp2());
+		}
+		cb.orderBy("createTime", Order.DESC);
+		//排序
+		if(!Strings.isEmpty(merchantBankcardCondition.getOrderBy())){
+			if(merchantBankcardCondition.getOrderBy().indexOf(",")>0){
+				String[] orderBys = merchantBankcardCondition.getOrderBy().split(",");
+				String[] orders = merchantBankcardCondition.getOrder().split(",");
+				for(int i=0; i<orderBys.length && i<orders.length; i++){
+					cb.orderBy(orderBys[i], Order.valueOf(orders[i]));
+				}
+			}else{
+				cb.orderBy(merchantBankcardCondition.getOrderBy(), Order.valueOf(merchantBankcardCondition.getOrder()));
+			}
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(merchantBankcardCondition.getFirst()), Long.valueOf(merchantBankcardCondition.getLast()));
+		return merchantBankcardDAO.findPagingResult(buildCriteria);
+	}
+	
+	/**
+	 * 列表
+	 * @param merchantBankcard 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 13:50:11
+	 */
+	@Override
+	public List<MerchantBankcard> findAll(MerchantBankcardCondition merchantBankcardCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantBankcard.class);
+		if(!Strings.isEmpty(merchantBankcardCondition.getId())){
+			cb.andEQ("id", merchantBankcardCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantBankcardCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getMerchantName())){
+			cb.andLike("merchantName", merchantBankcardCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getIdCard())){
+			cb.andEQ("idCard", merchantBankcardCondition.getIdCard());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getName())){
+			cb.andEQ("name", merchantBankcardCondition.getName());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getBankCode())){
+			cb.andEQ("bankCode", merchantBankcardCondition.getBankCode());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getBankName())){
+			cb.andEQ("bankName", merchantBankcardCondition.getBankName());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getBankCard())){
+			cb.andEQ("bankCard", merchantBankcardCondition.getBankCard());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getMobile())){
+			cb.andEQ("mobile", merchantBankcardCondition.getMobile());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getIsRealAccount())){
+			cb.andEQ("isRealAccount", merchantBankcardCondition.getIsRealAccount());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getStatus())){
+			cb.andEQ("status", merchantBankcardCondition.getStatus());
+		}
+		if(null != merchantBankcardCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantBankcardCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantBankcardCondition.getOperator())){
+			cb.andEQ("operator", merchantBankcardCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantBankcardCondition.getRemark())){
+			cb.andLike("remark", merchantBankcardCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getTemp1())){
+			cb.andEQ("temp1", merchantBankcardCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantBankcardCondition.getTemp2())){
+			cb.andEQ("temp2", merchantBankcardCondition.getTemp2());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return merchantBankcardDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 主键查找
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 13:50:11
+	 */
+	@Override
+	public MerchantBankcard findById(String id){
+		return merchantBankcardDAO.get(id);
+	}
+	
+	/**
+	 * 新增
+	 * @param merchantBankcardCondition
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 13:50:11
+	 */
+	@Override
+	public long insert(MerchantBankcardCondition merchantBankcardCondition){
+		MerchantBankcard merchantBankcard = new MerchantBankcard();
+		BeanUtils.copyProperties(merchantBankcardCondition, merchantBankcard);
+		return merchantBankcardDAO.insert(merchantBankcard);
+	}
+
+	/**
+	 * 删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 13:50:11
+	 */
+	@Override
+	public long deleteById(String id){
+		return merchantBankcardDAO.deleteById(id);
+	}
+	
+	/**
+	 * 条件删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 13:50:11
+	 */
+	@Override
+	public long deleteByCriteria(Criteria criteria){
+		return merchantBankcardDAO.deleteByCriteria(criteria);
+	}
+	
+	/**
+	 * 行数汇总
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 13:50:11
+	 */
+	@Override
+	public long countByCriteria(Criteria criteria){
+		return merchantBankcardDAO.countByCriteria(criteria);
+	}
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 13:50:11
+	 */
+	@Override
+	public long update(MerchantBankcardCondition merchantBankcardCondition){
+		MerchantBankcard merchantBankcard = new MerchantBankcard();
+		BeanUtils.copyProperties(merchantBankcardCondition, merchantBankcard);
+		return merchantBankcardDAO.update(merchantBankcard);
+	}
+	
+	/**
+	 * 条件更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 13:50:11
+	 */
+	@Override
+	public long updateByCriteria(MerchantBankcardCondition merchantBankcardCondition,Criteria criteria){
+		MerchantBankcard merchantBankcard = new MerchantBankcard();
+		BeanUtils.copyProperties(merchantBankcardCondition, merchantBankcard);
+		return merchantBankcardDAO.updateByCriteria(merchantBankcard,criteria);
+	}
+	
+	/**
+	 * 状态更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 13:50:11
+	 */
+	@Override
+	public long updateStatus(String id,String status){
+		return merchantBankcardDAO.updateStatus(id,status);
+	}	
+}
+

@@ -1,0 +1,12 @@
+package com.hfepay.scancode.dao.channel;
+
+import java.util.List;
+
+import com.hfepay.scancode.entity.UrlFilter;
+
+
+public interface ChannelUrlFilterDAO {
+	List<UrlFilter> findRoles(String name);
+	
+	List<UrlFilter> findAllUrl();
+}

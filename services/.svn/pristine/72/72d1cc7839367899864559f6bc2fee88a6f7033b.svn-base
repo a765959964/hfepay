@@ -1,0 +1,65 @@
+package com.hfepay.scancode.api.entity.vo;
+
+import java.io.Serializable;
+
+/**
+ * Created by Kevin on 2016/9/12 0012.
+ */
+public class HeaderMessage implements Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8094516946457873664L;
+
+
+	
+	private String version;
+	
+	
+
+	private String msgType;
+	
+	/**
+	 * 请求流水号
+	 */
+	private String userTradeNo;
+	
+	/**
+	 * 请求时间
+	 */
+	private String reqTime;
+
+	public String getVersion() {
+		return version;
+	}
+
+	public void setVersion(String version) {
+		this.version = version;
+	}
+
+	public String getMsgType() {
+		return msgType;
+	}
+
+	public void setMsgType(String msgType) {
+		this.msgType = msgType;
+	}
+	
+	public String getUserTradeNo() {
+		return userTradeNo;
+	}
+
+	public void setUserTradeNo(String userTradeNo) {
+		this.userTradeNo = userTradeNo;
+	}
+
+	public String getReqTime() {
+		return reqTime;
+	}
+
+	public void setReqTime(String reqTime) {
+		this.reqTime = reqTime;
+	}
+	
+}

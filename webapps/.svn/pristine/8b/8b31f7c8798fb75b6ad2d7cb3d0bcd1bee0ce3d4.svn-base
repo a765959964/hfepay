@@ -1,0 +1,15 @@
+# zookeeper 配置信息
+zookeeper.addr=127.0.0.1:2181 
+
+hfepay.fileupload.root=D:/files
+hfepay.filepath.root=http://172.16.2.22:8080
+
+hfepay.userServer.url=http://api.hfdatas.com/superapi/super/means/refresh/userServer
+hfepay.userNum.url=http://api.hfdatas.com/superapi/super/means/refresh/userNum
+hfepay.refresh.key=http://api.hfdatas.com/superapi/super/means/refresh/userPublic
+hfepay.api.url=http://api.hfdatas.com/superapi/super/means/refresh/userApi
+hfepay.dataIsClose.url=http://api.hfdatas.com/superapi/super/means/refresh/dataIsClose
+
+#redis配置
+redis.hostName=172.16.2.201
+redis.port=6379

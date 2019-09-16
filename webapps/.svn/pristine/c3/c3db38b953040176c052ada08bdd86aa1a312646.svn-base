@@ -1,0 +1,45 @@
+package com.hfepay.scancode.commons;
+
+public enum ScanCodeGetWayErrorCode {
+	SYSTEM_000000("交易成功", "000000"),
+	
+	SYSTEM_999999("系统异常", "999999"),
+	
+	//校验类错误码定义：
+	VALIDAT_100001("报文格式不合法", "100001"),
+	VALIDAT_100002("请求参数不能为空", "100002"),
+	
+	VALIDAT_100003("商户已被禁用", "100003"),
+	VALIDAT_100004("代理商已被禁用", "100004"),
+	VALIDAT_100005("渠道已被禁用", "100005"),
+	
+	//交易类错误码定义
+	TRADE_200001("","");
+	
+	// 成员变量  
+    private String desc;  
+    private String code;  
+    // 构造方法  
+    private ScanCodeGetWayErrorCode(String desc, String code) {  
+        this.desc = desc;  
+        this.code = code; 
+    }  
+    //覆盖方法  
+    @Override  
+    public String toString() {  
+        return this.code+"_"+this.desc;  
+    }
+	public String getDesc() {
+		return desc;
+	}
+	public void setDesc(String desc) {
+		this.desc = desc;
+	}
+	public String getCode() {
+		return code;
+	}
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+}

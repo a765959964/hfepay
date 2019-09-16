@@ -1,0 +1,310 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2017
+ */package com.hfepay.scancode.service.operator.impl;
+
+import java.util.Date;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.cache.jedis.RedisKey;
+import com.hfepay.cache.jedis.impl.RedisSharedCache;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.ChannelExpandCondition;
+import com.hfepay.scancode.condition.MessagePushRuleCondition;
+import com.hfepay.scancode.dao.MessagePushRuleDAO;
+import com.hfepay.scancode.entity.MessagePushRule;
+import com.hfepay.scancode.enumeration.RedisKeyEnum;
+import com.hfepay.scancode.service.operator.MessagePushRuleService;
+
+@Service("messagePushRuleService")
+public class MessagePushRuleServiceImpl implements MessagePushRuleService {
+	
+	public static final Logger log = LoggerFactory.getLogger(AdviertisementInfoServiceImpl.class);
+	
+	@Autowired
+    private MessagePushRuleDAO messagePushRuleDAO;
+	@Autowired
+	private RedisSharedCache redisSharedCache;
+    
+    /**
+	 * @Title: findPagingResult
+	 * @Description: 列表(分页)
+	 * @author: Ricky
+	 * @param messagePushRuleCondition
+	 * @return: PagingResult<MessagePushRule>
+	 * @date CreateDate : 2017-02-16 18:11:14
+	 */
+    @Override
+	public PagingResult<MessagePushRule> findPagingResult(MessagePushRuleCondition messagePushRuleCondition){
+		CriteriaBuilder cb = Cnd.builder(MessagePushRule.class);
+		if(!Strings.isEmpty(messagePushRuleCondition.getId())){
+			cb.andEQ("id", messagePushRuleCondition.getId());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getChannelNo())){
+			cb.andEQ("channelNo", messagePushRuleCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getAgentNo())){
+			cb.andEQ("agentNo", messagePushRuleCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getMessageType())){
+			cb.andEQ("messageType", messagePushRuleCondition.getMessageType());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getMessageContent())){
+			cb.andEQ("messageContent", messagePushRuleCondition.getMessageContent());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getPushRule())){
+			cb.andEQ("pushRule", messagePushRuleCondition.getPushRule());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getPushTime())){
+			cb.andEQ("pushTime", messagePushRuleCondition.getPushTime());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getPushAuxiliaryRule())){
+			cb.andEQ("pushAuxiliaryRule", messagePushRuleCondition.getPushAuxiliaryRule());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getPushWay())){
+			cb.andEQ("pushWay", messagePushRuleCondition.getPushWay());
+		}
+		if(null != messagePushRuleCondition.getFirstPushDate()){
+			cb.andEQ("firstPushDate", messagePushRuleCondition.getFirstPushDate());
+		}
+		if(null != messagePushRuleCondition.getNextPushDate()){
+			cb.andEQ("nextPushDate", messagePushRuleCondition.getNextPushDate());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getStatus())){
+			cb.andEQ("status", messagePushRuleCondition.getStatus());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", messagePushRuleCondition.getRecordStatus());
+		}
+		if(null != messagePushRuleCondition.getCreateTime()){
+			cb.andEQ("createTime", messagePushRuleCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(messagePushRuleCondition.getOperator())){
+			cb.andEQ("operator", messagePushRuleCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(messagePushRuleCondition.getRemark())){
+			cb.andLike("remark", messagePushRuleCondition.getRemark());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getTemp1())){
+			cb.andEQ("temp1", messagePushRuleCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getTemp2())){
+			cb.andEQ("temp2", messagePushRuleCondition.getTemp2());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(messagePushRuleCondition.getFirst()), Long.valueOf(messagePushRuleCondition.getLast()));
+		
+		PagingResult<MessagePushRule> page = messagePushRuleDAO.findPagingResult(buildCriteria);
+		for (MessagePushRule messagePushRule : page.getResult()) {			
+			try {
+				if (Strings.isNotEmpty(messagePushRule.getChannelNo())) {
+					ChannelExpandCondition channelExpandCondition = (ChannelExpandCondition) redisSharedCache.getObj(new RedisKey(RedisKeyEnum.CHANNEL_BASE.getGroup(), RedisKeyEnum.CHANNEL_BASE.getKey()+messagePushRule.getChannelNo()));
+					if(channelExpandCondition != null){
+						messagePushRule.setChannelName(channelExpandCondition.getChannelName());
+					}
+				}
+				
+			} catch (Exception e) {
+				log.error("获取redis数据异常："+e.getMessage());
+			}
+		}
+		return page;
+	}
+	
+	/**
+	 * @Title: findAll
+	 * @Description: 列表
+	 * @author: Ricky
+	 * @param messagePushRuleCondition
+	 * @return: List<MessagePushRule>
+	 * @date CreateDate : 2017-02-16 18:11:14
+	 */
+	@Override
+	public List<MessagePushRule> findAll(MessagePushRuleCondition messagePushRuleCondition){
+		CriteriaBuilder cb = Cnd.builder(MessagePushRule.class);
+		if(!Strings.isEmpty(messagePushRuleCondition.getId())){
+			cb.andEQ("id", messagePushRuleCondition.getId());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getChannelNo())){
+			cb.andEQ("channelNo", messagePushRuleCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getAgentNo())){
+			cb.andEQ("agentNo", messagePushRuleCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getMessageType())){
+			cb.andEQ("messageType", messagePushRuleCondition.getMessageType());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getMessageContent())){
+			cb.andEQ("messageContent", messagePushRuleCondition.getMessageContent());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getPushRule())){
+			cb.andEQ("pushRule", messagePushRuleCondition.getPushRule());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getPushTime())){
+			cb.andEQ("pushTime", messagePushRuleCondition.getPushTime());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getPushAuxiliaryRule())){
+			cb.andEQ("pushAuxiliaryRule", messagePushRuleCondition.getPushAuxiliaryRule());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getPushWay())){
+			cb.andEQ("pushWay", messagePushRuleCondition.getPushWay());
+		}
+		if(null != messagePushRuleCondition.getFirstPushDate()){
+			cb.andEQ("firstPushDate", messagePushRuleCondition.getFirstPushDate());
+		}
+		if(null != messagePushRuleCondition.getNextPushDate()){
+			cb.andEQ("nextPushDate", messagePushRuleCondition.getNextPushDate());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getStatus())){
+			cb.andEQ("status", messagePushRuleCondition.getStatus());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", messagePushRuleCondition.getRecordStatus());
+		}
+		if(null != messagePushRuleCondition.getCreateTime()){
+			cb.andEQ("createTime", messagePushRuleCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(messagePushRuleCondition.getOperator())){
+			cb.andEQ("operator", messagePushRuleCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(messagePushRuleCondition.getRemark())){
+			cb.andLike("remark", messagePushRuleCondition.getRemark());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getTemp1())){
+			cb.andEQ("temp1", messagePushRuleCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(messagePushRuleCondition.getTemp2())){
+			cb.andEQ("temp2", messagePushRuleCondition.getTemp2());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return messagePushRuleDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * @Title: findById
+	 * @Description: 主键查找
+	 * @author: Ricky
+	 * @param id
+	 * @return: MessagePushRule
+	 * @date CreateDate : 2017-02-16 18:11:14
+	 */
+	@Override
+	public MessagePushRule findById(String id){
+		return messagePushRuleDAO.get(id);
+	}
+	
+	/**
+	 * @Title: insert
+	 * @Description: 新增
+	 * @author: Ricky
+	 * @param messagePushRuleCondition
+	 * @return: long
+	 * @date CreateDate : 2017-02-16 18:11:14
+	 */
+	@Override
+	public long insert(MessagePushRuleCondition messagePushRuleCondition){
+		MessagePushRule messagePushRule = new MessagePushRule();
+		BeanUtils.copyProperties(messagePushRuleCondition, messagePushRule);
+		return messagePushRuleDAO.insert(messagePushRule);
+	}
+
+	/**
+	 * @Title: deleteById
+	 * @Description: 删除
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2017-02-16 18:11:14
+	 */
+	@Override
+	public long deleteById(String id){
+		return messagePushRuleDAO.deleteById(id);
+	}
+	
+	/**
+	 * @Title: deleteByCriteria
+	 * @Description: 条件删除
+	 * @author: Ricky
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2017-02-16 18:11:14
+	 */
+	@Override
+	public long deleteByCriteria(Criteria criteria){
+		return messagePushRuleDAO.deleteByCriteria(criteria);
+	}
+	
+	/**
+	 * @Title: countByCriteria
+	 * @Description: 行数汇总
+	 * @author: Ricky
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2017-02-16 18:11:14
+	 */
+	@Override
+	public long countByCriteria(Criteria criteria){
+		return messagePushRuleDAO.countByCriteria(criteria);
+	}
+	
+	/**
+	 * @Title: update
+	 * @Description: 更新
+	 * @author: Ricky
+	 * @param messagePushRuleCondition
+	 * @return: long
+	 * @date CreateDate : 2017-02-16 18:11:14
+	 */
+	@Override
+	public long update(MessagePushRuleCondition messagePushRuleCondition){
+		MessagePushRule messagePushRule = new MessagePushRule();
+		BeanUtils.copyProperties(messagePushRuleCondition, messagePushRule);
+		messagePushRule.setUpdateTime(new Date());
+		return messagePushRuleDAO.update(messagePushRule);
+	}
+	
+	/**
+	 * @Title: updateByCriteria
+	 * @Description: 条件更新
+	 * @author: Ricky
+	 * @param messagePushRuleCondition
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2017-02-16 18:11:14
+	 */
+	@Override
+	public long updateByCriteria(MessagePushRuleCondition messagePushRuleCondition,Criteria criteria){
+		MessagePushRule messagePushRule = new MessagePushRule();
+		BeanUtils.copyProperties(messagePushRuleCondition, messagePushRule);
+		return messagePushRuleDAO.updateByCriteria(messagePushRule,criteria);
+	}
+	
+	/**
+	 * @Title: updateStatus
+	 * @Description: 状态更新
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2017-02-16 18:11:14
+	 */
+	@Override
+	public long updateStatus(String id,String status){
+		return messagePushRuleDAO.updateStatus(id,status);
+	}	
+}
+

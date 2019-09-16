@@ -1,0 +1,35 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.vo;
+
+import com.hfepay.commons.base.annotation.Generated;
+import com.hfepay.scancode.entity.MerchantCashierQr;
+
+@Generated("2016-11-10 16:13:31")
+public class MerchantCashierQrVo extends MerchantCashierQr{
+	private static final long serialVersionUID = 1L;
+	
+	private String qrName;
+	private String cashierName;
+
+	public String getQrName() {
+		return qrName;
+	}
+
+	public void setQrName(String qrName) {
+		this.qrName = qrName;
+	}
+	
+	public String getCashierName() {
+		return cashierName;
+	}
+
+	public void setCashierName(String cashierName) {
+		this.cashierName = cashierName;
+	}
+	
+}
+	
+

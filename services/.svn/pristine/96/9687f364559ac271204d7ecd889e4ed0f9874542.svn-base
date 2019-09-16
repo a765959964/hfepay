@@ -1,0 +1,447 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+package com.hfepay.scancode.service.order.impl;
+
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.cache.jedis.RedisKey;
+import com.hfepay.cache.jedis.impl.RedisSharedCache;
+import com.hfepay.commons.base.lang.Dates;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.criteria.Order;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.api.service.MerchantBusinessService;
+import com.hfepay.scancode.condition.AgentBaseCondition;
+import com.hfepay.scancode.condition.ChannelExpandCondition;
+import com.hfepay.scancode.condition.MerchantInfoCondition;
+import com.hfepay.scancode.condition.WithdrawalsCondition;
+import com.hfepay.scancode.dao.WithdrawalsDAO;
+import com.hfepay.scancode.entity.MerchantInfo;
+import com.hfepay.scancode.entity.Withdrawals;
+import com.hfepay.scancode.enumeration.IndexType;
+import com.hfepay.scancode.enumeration.PayCode;
+import com.hfepay.scancode.enumeration.RedisKeyEnum;
+import com.hfepay.scancode.service.operator.MerchantInfoService;
+import com.hfepay.scancode.service.order.WithdrawalsService;
+import com.hfepay.scancode.service.utils.OrderIDUtils;
+
+@Service("withdrawalsService")
+public class WithdrawalsServiceImpl implements WithdrawalsService {
+	
+	@Autowired
+    private WithdrawalsDAO withdrawalsDAO;
+    
+	@Autowired
+	private OrderIDUtils orderUtils;
+	
+	@Autowired
+	private MerchantBusinessService merchantBusinessService;
+	
+	@Autowired
+	private MerchantInfoService merchantInfoService;
+	
+	@Autowired
+	private RedisSharedCache redisSharedCache;
+	
+    /**
+	 * @Title: findPagingResult
+	 * @Description: 列表(分页)
+	 * @author: Ricky
+	 * @param withdrawalsCondition
+	 * @return: PagingResult<Withdrawals>
+     * @throws Exception 
+	 * @date CreateDate : 2016-11-30 09:32:37
+	 */
+    @Override
+	public PagingResult<Withdrawals> findPagingResult(WithdrawalsCondition withdrawalsCondition) throws Exception{
+		CriteriaBuilder cb = Cnd.builder(Withdrawals.class);
+		if(!Strings.isEmpty(withdrawalsCondition.getId())){
+			cb.andEQ("id", withdrawalsCondition.getId());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getTradeNo())){
+			cb.andEQ("tradeNo", withdrawalsCondition.getTradeNo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getChannelNo())){
+			cb.andEQ("channelNo", withdrawalsCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getAgentNo())){
+			cb.andEQ("agentNo", withdrawalsCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", withdrawalsCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getPayCode())){
+			cb.andEQ("payCode", withdrawalsCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getRateDetail())){
+			cb.andEQ("rateDetail", withdrawalsCondition.getRateDetail());
+		}
+		if(null != withdrawalsCondition.getOrderAmt()){
+			cb.andEQ("orderAmt", withdrawalsCondition.getOrderAmt());
+		}
+		if(null != withdrawalsCondition.getDrawFee()){
+			cb.andEQ("drawFee", withdrawalsCondition.getDrawFee());
+		}
+		if(null != withdrawalsCondition.getTradeFee()){
+			cb.andEQ("tradeFee", withdrawalsCondition.getTradeFee());
+		}
+		if(null != withdrawalsCondition.getMerchantCost()){
+			cb.andEQ("merchantCost", withdrawalsCondition.getMerchantCost());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getPayTradeNo())){
+			cb.andEQ("payTradeNo", withdrawalsCondition.getPayTradeNo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getBeginTimeStr())){
+			cb.andGE("beginTime", withdrawalsCondition.getBeginTimeStr());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getEndTimeStr())){
+			cb.andLE("beginTime", withdrawalsCondition.getEndTimeStr()  + " 23:59:59");
+		}
+		if(null != withdrawalsCondition.getEndTime()){
+			cb.andEQ("endTime", withdrawalsCondition.getEndTime());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getSettleTime())){
+			cb.andEQ("settleTime", withdrawalsCondition.getSettleTime());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getSettleMerchant())){
+			cb.andEQ("settleMerchant", withdrawalsCondition.getSettleMerchant());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getRefundStatus())){
+			cb.andEQ("refundStatus", withdrawalsCondition.getRefundStatus());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getBatchId())){
+			cb.andEQ("batchId", withdrawalsCondition.getBatchId());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getResultCode())){
+			cb.andEQ("resultCode", withdrawalsCondition.getResultCode());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getResultInfo())){
+			cb.andEQ("resultInfo", withdrawalsCondition.getResultInfo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getOptCode())){
+			cb.andEQ("optCode", withdrawalsCondition.getOptCode());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", withdrawalsCondition.getRecordStatus());
+		}
+
+		if(!Strings.isEmpty(withdrawalsCondition.getOperator())){
+			cb.andEQ("operator", withdrawalsCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(withdrawalsCondition.getRemark())){
+			cb.andLike("remark", withdrawalsCondition.getRemark());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getTemp1())){
+			cb.andEQ("temp1", withdrawalsCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getTemp2())){
+			cb.andEQ("temp2", withdrawalsCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getTemp3())){
+			cb.andEQ("temp3", withdrawalsCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getTemp4())){
+			cb.andEQ("temp4", withdrawalsCondition.getTemp4());
+		}
+		cb.orderBy("beginTime", Order.DESC);
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(withdrawalsCondition.getFirst()), Long.valueOf(withdrawalsCondition.getLast()));
+		
+		PagingResult<Withdrawals> page = withdrawalsDAO.findPagingResult(buildCriteria);
+		for (Withdrawals withdrawals : page.getResult()) {			
+			ChannelExpandCondition channelExpandCondition = (ChannelExpandCondition) redisSharedCache.getObj(new RedisKey(RedisKeyEnum.CHANNEL_BASE.getGroup(), RedisKeyEnum.CHANNEL_BASE.getKey()+withdrawals.getChannelNo()));
+			if(channelExpandCondition != null){
+				withdrawals.setChannelName(channelExpandCondition.getChannelName());
+			}			
+			AgentBaseCondition agentBaseCondition = (AgentBaseCondition) redisSharedCache.getObj(new RedisKey(RedisKeyEnum.AGENT_BASE.getGroup(), RedisKeyEnum.AGENT_BASE.getKey()+withdrawals.getAgentNo()));
+			if(agentBaseCondition != null){
+				withdrawals.setAgentName(agentBaseCondition.getAgentName());
+			}
+			MerchantInfoCondition merchantInfoCondition = (MerchantInfoCondition) redisSharedCache.getObj(new RedisKey(RedisKeyEnum.MERCHANT_BASE.getGroup(), RedisKeyEnum.MERCHANT_BASE.getKey()+withdrawals.getMerchantNo()));
+			if(merchantInfoCondition != null){
+				withdrawals.setMerchantName(merchantInfoCondition.getMerchantName());
+			}
+		}
+		return page;
+	}
+	
+	/**
+	 * @Title: findAll
+	 * @Description: 列表
+	 * @author: Ricky
+	 * @param withdrawalsCondition
+	 * @return: List<Withdrawals>
+	 * @date CreateDate : 2016-11-30 09:32:37
+	 */
+	@Override
+	public List<Withdrawals> findAll(WithdrawalsCondition withdrawalsCondition){
+		CriteriaBuilder cb = Cnd.builder(Withdrawals.class);
+		if(!Strings.isEmpty(withdrawalsCondition.getId())){
+			cb.andEQ("id", withdrawalsCondition.getId());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getTradeNo())){
+			cb.andEQ("tradeNo", withdrawalsCondition.getTradeNo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getChannelNo())){
+			cb.andEQ("channelNo", withdrawalsCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getAgentNo())){
+			cb.andEQ("agentNo", withdrawalsCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", withdrawalsCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getPayCode())){
+			cb.andEQ("payCode", withdrawalsCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getRateDetail())){
+			cb.andEQ("rateDetail", withdrawalsCondition.getRateDetail());
+		}
+		if(null != withdrawalsCondition.getOrderAmt()){
+			cb.andEQ("orderAmt", withdrawalsCondition.getOrderAmt());
+		}
+		if(null != withdrawalsCondition.getDrawFee()){
+			cb.andEQ("drawFee", withdrawalsCondition.getDrawFee());
+		}
+		if(null != withdrawalsCondition.getTradeFee()){
+			cb.andEQ("tradeFee", withdrawalsCondition.getTradeFee());
+		}
+		if(null != withdrawalsCondition.getMerchantCost()){
+			cb.andEQ("merchantCost", withdrawalsCondition.getMerchantCost());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getPayTradeNo())){
+			cb.andEQ("payTradeNo", withdrawalsCondition.getPayTradeNo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getBeginTimeStr())){
+			cb.andGE("beginTime", withdrawalsCondition.getBeginTimeStr());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getEndTimeStr())){
+			cb.andLE("beginTime", withdrawalsCondition.getEndTimeStr()  + " 23:59:59");
+		}
+		if(null != withdrawalsCondition.getEndTime()){
+			cb.andEQ("endTime", withdrawalsCondition.getEndTime());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getSettleTime())){
+			cb.andEQ("settleTime", withdrawalsCondition.getSettleTime());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getSettleMerchant())){
+			cb.andEQ("settleMerchant", withdrawalsCondition.getSettleMerchant());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getRefundStatus())){
+			cb.andEQ("refundStatus", withdrawalsCondition.getRefundStatus());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getBatchId())){
+			cb.andEQ("batchId", withdrawalsCondition.getBatchId());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getResultCode())){
+			cb.andEQ("resultCode", withdrawalsCondition.getResultCode());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getResultInfo())){
+			cb.andEQ("resultInfo", withdrawalsCondition.getResultInfo());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getOptCode())){
+			cb.andEQ("optCode", withdrawalsCondition.getOptCode());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", withdrawalsCondition.getRecordStatus());
+		}
+
+		if(!Strings.isEmpty(withdrawalsCondition.getOperator())){
+			cb.andEQ("operator", withdrawalsCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(withdrawalsCondition.getRemark())){
+			cb.andLike("remark", withdrawalsCondition.getRemark());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getTemp1())){
+			cb.andEQ("temp1", withdrawalsCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getTemp2())){
+			cb.andEQ("temp2", withdrawalsCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getTemp3())){
+			cb.andEQ("temp3", withdrawalsCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(withdrawalsCondition.getTemp4())){
+			cb.andEQ("temp4", withdrawalsCondition.getTemp4());
+		}
+		cb.orderBy("beginTime", Order.DESC);
+		Criteria buildCriteria = cb.buildCriteria();
+		return withdrawalsDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * @Title: findById
+	 * @Description: 主键查找
+	 * @author: Ricky
+	 * @param id
+	 * @return: Withdrawals
+	 * @date CreateDate : 2016-11-30 09:32:37
+	 */
+	@Override
+	public Withdrawals findById(String id){
+		return withdrawalsDAO.get(id);
+	}
+	
+	/**
+	 * @Title: insert
+	 * @Description: 新增
+	 * @author: Ricky
+	 * @param withdrawalsCondition
+	 * @return: long
+	 * @date CreateDate : 2016-11-30 09:32:37
+	 */
+	@Override
+	public long insert(WithdrawalsCondition withdrawalsCondition){
+		Withdrawals withdrawals = new Withdrawals();
+		BeanUtils.copyProperties(withdrawalsCondition, withdrawals);
+		return withdrawalsDAO.insert(withdrawals);
+	}
+	
+	/**
+	 * @Title: insert
+	 * @Description: 新增
+	 * @author: Ricky
+	 * @param withdrawalsCondition
+	 * @return: long
+	 * @date CreateDate : 2016-11-30 09:32:37
+	 */
+	@Override
+	public Withdrawals createWithdraws(WithdrawalsCondition withdrawalsCondition){
+		Withdrawals withdrawals = new Withdrawals();
+		withdrawalsCondition.setTradeNo(orderUtils.getOrderID(Dates.format(Dates.DF.yyyyMMdd,new Date()), IndexType.Index32.value(), "TX"));
+		withdrawalsCondition.setOrderAmt(new BigDecimal(0));
+		withdrawalsCondition.setDrawFee(new BigDecimal(0));
+		withdrawalsCondition.setTradeFee(new BigDecimal(0));
+		withdrawalsCondition.setMerchantCost(new BigDecimal(0));
+		BeanUtils.copyProperties(withdrawalsCondition, withdrawals);
+		withdrawalsDAO.insert(withdrawals);
+		return withdrawals;
+	}
+
+	/**
+	 * @Title: deleteById
+	 * @Description: 删除
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2016-11-30 09:32:37
+	 */
+	@Override
+	public long deleteById(String id){
+		return withdrawalsDAO.deleteById(id);
+	}
+	
+	/**
+	 * @Title: deleteByCriteria
+	 * @Description: 条件删除
+	 * @author: Ricky
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-11-30 09:32:37
+	 */
+	@Override
+	public long deleteByCriteria(Criteria criteria){
+		return withdrawalsDAO.deleteByCriteria(criteria);
+	}
+	
+	/**
+	 * @Title: countByCriteria
+	 * @Description: 行数汇总
+	 * @author: Ricky
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-11-30 09:32:37
+	 */
+	@Override
+	public long countByCriteria(Criteria criteria){
+		return withdrawalsDAO.countByCriteria(criteria);
+	}
+	
+	/**
+	 * @Title: update
+	 * @Description: 更新
+	 * @author: Ricky
+	 * @param withdrawalsCondition
+	 * @return: long
+	 * @date CreateDate : 2016-11-30 09:32:37
+	 */
+	@Override
+	public long update(WithdrawalsCondition withdrawalsCondition){
+		Withdrawals withdrawals = new Withdrawals();
+		BeanUtils.copyProperties(withdrawalsCondition, withdrawals);
+		return withdrawalsDAO.update(withdrawals);
+	}
+	
+	/**
+	 * @Title: updateByCriteria
+	 * @Description: 条件更新
+	 * @author: Ricky
+	 * @param withdrawalsCondition
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-11-30 09:32:37
+	 */
+	@Override
+	public long updateByCriteria(WithdrawalsCondition withdrawalsCondition,Criteria criteria){
+		Withdrawals withdrawals = new Withdrawals();
+		BeanUtils.copyProperties(withdrawalsCondition, withdrawals);
+		return withdrawalsDAO.updateByCriteria(withdrawals,criteria);
+	}
+
+	@Override
+	public Map<String, String> getWalleInfo(String merchantNo) throws Exception {
+		MerchantInfo merchantInfo = merchantInfoService.findByMerchantNo(merchantNo);
+		Map<String, String> walleMap = merchantBusinessService.merchantWallet(merchantInfo.getPlatformMerchantNo());
+		if (null != walleMap) {
+			
+		}
+		return null;
+	}
+	
+	/** 金额统计 */
+	@Override	
+	public Map<String, BigDecimal> getAmtStatic(List<Withdrawals> withdrawalsList){
+		Map<String, BigDecimal> amtStatic = new HashMap<String, BigDecimal>();
+		BigDecimal txTotalAmt = BigDecimal.ZERO;//提现总金额
+		BigDecimal zfbTotalAmt = BigDecimal.ZERO;//支付宝
+		BigDecimal wxgzhTotalAmt = BigDecimal.ZERO;//微信公众号
+		BigDecimal wxTotalAmt = BigDecimal.ZERO;//微信
+		BigDecimal totalCost = BigDecimal.ZERO;//总成本
+		for (Withdrawals withdrawals : withdrawalsList) {
+			txTotalAmt = txTotalAmt.add(withdrawals.getOrderAmt());
+			if(PayCode.PAYCODE_ZFBSMZF.getCode().equals(withdrawals.getPayCode())){				
+				zfbTotalAmt = zfbTotalAmt.add(withdrawals.getOrderAmt());
+			}else if(PayCode.PAYCODE_WXGZHZF.getCode().equals(withdrawals.getPayCode())){
+				wxgzhTotalAmt = wxgzhTotalAmt.add(withdrawals.getOrderAmt());
+			}else if(PayCode.PAYCODE_WXSMZF.getCode().equals(withdrawals.getPayCode())){
+				wxTotalAmt = wxTotalAmt.add(withdrawals.getOrderAmt());
+			}
+			totalCost = totalCost.add(withdrawals.getMerchantCost());
+		}
+		amtStatic.put("txTotalAmt", txTotalAmt);
+		amtStatic.put("zfbTotalAmt", zfbTotalAmt);
+		amtStatic.put("wxgzhTotalAmt", wxgzhTotalAmt);
+		amtStatic.put("wxTotalAmt", wxTotalAmt);
+		amtStatic.put("totalCost", totalCost);
+		return amtStatic;
+	}
+	
+	
+}
+

@@ -1,0 +1,133 @@
+package com.hfepay.scancode.controller;
+
+import java.net.URLEncoder;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import org.apache.http.NameValuePair;
+import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.hfepay.commons.base.lang.HttpRequestClient;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.condition.ChannelAdminCondition;
+import com.hfepay.scancode.condition.PlatformQrcodeCondition;
+import com.hfepay.scancode.entity.ChannelAdmin;
+import com.hfepay.scancode.entity.PlatformQrcode;
+import com.hfepay.scancode.enumeration.UseStatus;
+import com.hfepay.scancode.service.channel.ChannelAdminService;
+import com.hfepay.scancode.service.commons.ScanCodeConstants;
+import com.hfepay.scancode.service.operator.PlatformQrcodeService;
+
+import net.sf.json.JSONObject;
+
+/**
+ * @ClassName: WechatLoginController
+ * @Description: 微信公众号进入
+ * @author: husain
+ * @date: 2016年10月25日 上午9:53:32
+ */
+@Controller
+@RequestMapping("/user")
+public class WechatLoginController {
+	public static final Logger logger = LoggerFactory.getLogger(WechatLoginController.class);
+	
+	@Autowired
+	private ChannelAdminService channelAdminService;
+	@Autowired
+	private PlatformQrcodeService platformQrcodeService;
+	
+	@RequestMapping("/wechat/in")
+	public String wechatIn(ModelMap model,HttpServletRequest request){
+		String browerType = request.getHeader("User-Agent").toLowerCase();
+		if(browerType.toLowerCase().indexOf("micromessenger")==-1){//注册只能微信浏览器进入
+			request.setAttribute("error", "新用户入驻必须使用微信扫描二维码.");
+			return "scancode/wechat/scan_error";
+		}
+		return "redirect:/user/auth";
+	}
+	
+	//静默授权
+	@RequestMapping(value = "/auth")
+	private void handleAuth(HttpServletResponse response,HttpServletRequest request){
+		try {
+			String backUrl = URLEncoder.encode("http://wx.hfepay.cn/hfepay-scancode-gateway-webapp/user/callback", "UTF-8");
+			String backgo="https://open.weixin.qq.com/connect/oauth2/authorize?appid=APPID&redirect_uri=REDIRECTURL&response_type=code&scope=snsapi_base#wechat_redirect";
+			backgo = backgo.replace("REDIRECTURL", backUrl);
+			backgo = backgo.replace("APPID", Constants.APPID);
+			response.sendRedirect(backgo);
+		}catch(Exception e){
+			e.printStackTrace();
+		}
+	}
+	
+	/**
+	* @Description 微信授权回调
+	* @param
+	* @author husain 
+	* @Date 2016年10月7日 下午7:32:56
+	 */
+	@RequestMapping(value = "/callback")
+	public String callback(HttpServletRequest request){
+//		String qrCode = request.getParameter("state");
+		String code = request.getParameter("code");
+		logger.debug("==========code:"+code+"==========");
+		Map<String, String> sParaTemp = new HashMap<String, String>();
+		sParaTemp.put("appid", Constants.APPID);
+		sParaTemp.put("secret", Constants.SECRET);
+		sParaTemp.put("code", code);
+		sParaTemp.put("grant_type", "authorization_code");
+		try {
+			String resultJson =HttpRequestClient.invoke_http(Constants.WX_GATEWAY_NEW, generatNameValuePair(sParaTemp), "utf-8");
+			JSONObject result= JSONObject.fromObject(resultJson);
+			logger.debug("微信获取openId返回json："+resultJson);
+			logger.debug(resultJson);
+			String openId = result.getString("openid");
+			logger.debug(openId);
+			if(Strings.isNotEmpty(openId)){
+				ChannelAdminCondition condition = new ChannelAdminCondition();
+				condition.setOpenId(openId);
+				ChannelAdmin admin = channelAdminService.findByCondition(condition);
+				if(admin==null){//还没有注册
+					PlatformQrcodeCondition platformQrcodeCondition = new PlatformQrcodeCondition();
+					platformQrcodeCondition.setUseStatus(UseStatus.UNUSE.value());
+					platformQrcodeCondition.setAgentNo(ScanCodeConstants.DEFAULE_AGENTNO);
+					platformQrcodeCondition.setChannelNo(ScanCodeConstants.DEFAULT_CHANNELNO);
+					PlatformQrcode codePlate = platformQrcodeService.findByCondition(platformQrcodeCondition);
+					String qrCode = codePlate.getQrCode();
+					return "redirect:/scan/createMerchant?qrCode="+qrCode+"&openId="+openId;
+				}
+				request.getSession().setAttribute("currentUser",admin);
+			}
+			else{
+				request.setAttribute("error", "系统获取公众号信息失败.");
+				return "scancode/wechat/scan_error";
+			}
+			return "redirect:/scancode/my";
+		} catch (Exception e) {
+			logger.error("获取openId异常", e);
+			request.setAttribute("error", "系统获取公众号信息失败.");
+			return "scancode/wechat/scan_error";
+		}
+	}
+	
+	private static List<NameValuePair> generatNameValuePair(Map<String, String> properties) {
+        List<NameValuePair> list = new ArrayList<NameValuePair>();
+        for (Map.Entry<String, String> entry : properties.entrySet()) {
+        	NameValuePair nameValuePair = new BasicNameValuePair(entry.getKey(),entry.getValue());
+        	list.add(nameValuePair);
+        }
+        return list;
+    }
+}

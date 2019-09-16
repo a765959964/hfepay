@@ -1,0 +1,172 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+package com.hfepay.scancode.controller;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import net.sf.json.JSON;
+import net.sf.json.JSONSerializer;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alibaba.fastjson.JSONObject;
+import com.hfepay.common.web.controller.BaseController;
+import com.hfepay.commons.base.collection.Maps;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.entity.RecordStatus;
+import com.hfepay.commons.utils.Pager;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.condition.AgentBaseCondition;
+import com.hfepay.scancode.condition.AgentPaywayCondition;
+import com.hfepay.scancode.entity.Admin;
+import com.hfepay.scancode.entity.AgentBase;
+import com.hfepay.scancode.entity.AgentPayway;
+import com.hfepay.scancode.service.operator.AgentBaseService;
+import com.hfepay.scancode.service.operator.AgentPaywayService;
+
+@Controller
+@RequestMapping("/adminManage/agentpayway")
+public class AgentPaywayController extends BaseController{
+	
+	@Autowired
+	private AgentPaywayService agentPaywayService;
+	
+	@Autowired
+	private AgentBaseService agentBaseService;
+	
+	/** 列表 */
+	@RequestMapping(method= {RequestMethod.GET,RequestMethod.POST})
+	public String list(HttpServletRequest request) {
+		return "admin/agentpayway/list";
+	}
+	
+	/**
+	 * 列表显示
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/content", method= {RequestMethod.POST})
+	public String listContent(HttpServletRequest request,ModelMap model,AgentPaywayCondition agentPaywayCondition){		
+		PagingResult<AgentPayway> page = agentPaywayService.findPagingResult(agentPaywayCondition);
+		Pager<AgentPayway> pager = new Pager<AgentPayway>();
+		pager.setPageNo(agentPaywayCondition.getPageNo());
+		pager.setPageSize(agentPaywayCondition.getPageSize());
+		pager.setResult(page.getResult());
+		pager.setTotalCount(page.getTotalCount());
+ 		if(pager.getOrder() == null){
+			pager.setOrder("");
+		}
+		model.addAttribute("pager",pager);
+		return "admin/agentpayway/listContent";
+	}
+	
+	/** 列表无分页 */
+	@RequestMapping(value="/list",method=RequestMethod.POST)
+	@ResponseBody
+	public JSONObject list(HttpServletRequest request,AgentPaywayCondition agentPaywayCondition){		
+        List<AgentPayway> list = agentPaywayService.findAll(agentPaywayCondition);
+        JSONObject json = new JSONObject();
+        json.put("objList", list);
+		return json;
+	}
+	
+	/** 进入新增/更新 */
+	@RequestMapping(value="/{id}", method= {RequestMethod.GET})
+	public String show(ModelMap model,@PathVariable String id) throws Exception {
+		if(!"0".equalsIgnoreCase(id)){
+			AgentPayway entity = agentPaywayService.findById(id);
+			 model.addAttribute("Obj", entity);
+		}
+		AgentBaseCondition agentBaseCondition = new AgentBaseCondition();
+		agentBaseCondition.setStatus("1");
+		List<AgentBase> agentList =  agentBaseService.findAll(agentBaseCondition);
+		model.addAttribute("agentList", agentList);
+		return "admin/agentpayway/edit";
+	}
+
+	/** 新增/更新 */
+	@RequestMapping(value="/save", method= {RequestMethod.POST})
+	@ResponseBody
+	public JSON _new(HttpServletRequest request,ModelMap model,AgentPaywayCondition agentPaywayCondition) throws Exception {
+		Map<Object, Object> map = new HashMap<Object, Object>();
+		Admin user = (Admin) request.getSession().getAttribute("currentUser");
+		agentPaywayCondition.setOperator(user.getUserName());
+		try {
+			if(Strings.isEmpty(agentPaywayCondition.getId())){
+				//新增
+				agentPaywayCondition.setCreateTime(new Date());
+				agentPaywayCondition.setId(Strings.getUUID());
+				agentPaywayCondition.setRecordStatus(RecordStatus.ACTIVE);
+				agentPaywayCondition.setStatus(Constants.SUCCESS_STATE);
+				agentPaywayService.insert(agentPaywayCondition);
+			}else{
+				agentPaywayCondition.setUpdateTime(new Date());
+				agentPaywayService.update(agentPaywayCondition);
+			}
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG,"url","/adminManage/agentpayway");
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/** 删除 */
+	@RequestMapping(value="/del",method=RequestMethod.POST)
+	@ResponseBody
+	public JSON del(HttpServletRequest request,AgentPaywayCondition agentPaywayCondition){		
+		Admin user = (Admin) request.getSession().getAttribute("currentUser");
+		agentPaywayCondition.setOperator(user.getUserName());
+		agentPaywayCondition.setRecordStatus(RecordStatus.LOCKED);
+		agentPaywayCondition.setUpdateTime(new Date());
+        Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+			agentPaywayService.update(agentPaywayCondition);
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG);
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}
+	
+	/**
+	 * 状态变更
+	 * @param request
+	 * @return
+	 */
+	@RequestMapping(value = "/updateStatus", method= {RequestMethod.POST})
+	@ResponseBody
+	public JSON updateStatus(HttpServletRequest request,AgentPaywayCondition agentPaywayCondition){		
+        Map<Object, Object> map = new HashMap<Object, Object>();
+		try {
+			agentPaywayService.updateStatus(agentPaywayCondition.getId(),agentPaywayCondition.getStatus());
+			map = Maps.mapByAarray(EXECUTE_STATUS,SUCCESS,VALUES,Constants.SUCCESS_MSG);
+		} catch (Exception e) {
+			map = Maps.mapByAarray(EXECUTE_STATUS,FAILED,VALUES,Constants.FAIL_MSG);
+		}
+		return JSONSerializer.toJSON(map);
+	}	
+	
+	/** 查看详情 */
+	@RequestMapping(value="/detail/{id}", method= {RequestMethod.POST})
+	public String show(HttpServletRequest request,ModelMap model,@PathVariable String id) throws Exception {
+		AgentPayway entity = agentPaywayService.findById(id);
+		model.addAttribute("item",entity);
+		return "admin/agentpayway/detail";
+	}
+}
+

@@ -1,0 +1,284 @@
+package com.hfepay.scancode.api.webank.service.impl;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Service;
+
+import com.alibaba.fastjson.JSON;
+import com.alibaba.fastjson.serializer.ValueFilter;
+import com.hfepay.cache.jedis.RedisKey;
+import com.hfepay.cache.jedis.impl.RedisSharedCache;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.scancode.api.service.config.HfepayConfig;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankGoodsDetailVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantAccountsVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantInfoBaseVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantInfoVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankMerchantRateVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankPreCreateTradeVo;
+import com.hfepay.scancode.api.webank.entity.vo.WeBankRefundVo;
+import com.hfepay.scancode.api.webank.httputil.HttpGetRequest;
+import com.hfepay.scancode.api.webank.httputil.HttpPostRequest;
+import com.hfepay.scancode.api.webank.service.WeBankMerchantBusinessService;
+import com.hfepay.scancode.api.webank.sign.Signature;
+
+import net.sf.json.JSONObject;
+
+@Service
+public class WeBankMerchantBusinessServiceImpl implements WeBankMerchantBusinessService{
+
+	Logger logger = LoggerFactory.getLogger(getClass());
+	
+	@Autowired
+	private RedisSharedCache redisSharedCache;
+	
+	
+	@Value("${version}")
+	private String version;
+	
+	@Value("${app_id}")
+	private String app_id;
+	
+	@Value("${secret}")
+	private String secret;
+	
+	@Value("${grant_type}")
+	private String grant_type;
+	
+	@Value("${access_token_url}")
+	private String access_token_url;
+	
+	@Value("${ticket_url}")
+	private String ticket_url;
+	
+	@Value("${merchant_join_url}")
+	private String merchant_join_url;
+	
+	@Value("${precreate_trade_url}")
+	private String precreate_trade_url;
+	
+	@Value("${query_trade_url}")
+	private String query_trade_url;
+	
+	@Value("${refund_url}")
+	private String refund_url;
+	
+	@Value("${query_refund_url}")
+	private String query_refund_url;
+	
+	@Value("${scan_pay_url}")
+	private String scan_pay_url;
+	
+	@Value("${cancel_url}")
+	private String cancel_url;
+	
+	@Value("${client_cet}")
+	private String client_cet;
+	
+	@Value("${trust_cet}")
+	private String trust_cet;
+	
+	@Value("${key_store_password}")
+	private String key_store_password;
+	
+	@Value("${key_store_trust_password}")
+	private String key_store_trust_password;
+	
+	/**
+	 * 获取access_token,由于有效期只有两个小时，同时一些API的tocken依赖于该tocken，因此在此处将所有的需要借助于
+	 * access_token的其他APItocken也一并获取，保持数据和tocken一致
+	 * @return
+	 */
+	public String getWeBankAccessToken(){
+		String access_token = "";
+		String redisKeyStr = HfepayConfig.ACCESS_TOKEN;  
+		try{
+			RedisKey redisKey = new RedisKey(redisKeyStr, redisKeyStr);
+			access_token = redisSharedCache.get(redisKey);
+			if(Strings.isNotBlank(access_token)){
+				logger.info("从缓存中获取access_token成功,access_token:"+access_token);
+				return access_token;
+			}else{
+				String url = access_token_url;
+				String urlParam = "?app_id="+app_id+"&secret="+secret+"&grant_type="+grant_type+"&version="+version;
+				url = url+urlParam;
+				HttpGetRequest httpGetRequest = new HttpGetRequest();
+				String response = httpGetRequest.httpGet(url,client_cet,trust_cet,key_store_password,key_store_trust_password);
+				Map<String, String> result = JSON.parseObject(response, Map.class);
+				//将access_token保存至缓存中，有效时间7200秒（两小时）
+				access_token = result.get("access_token");
+				if(Strings.isEmpty(access_token)){
+					throw new RuntimeException("access_token is null......");
+				}
+				//将access_token保存至缓存中
+				redisSharedCache.set(redisKey, access_token,HfepayConfig.ACCESS_TOKEN_TIME);
+			}
+		}catch(Exception e){
+			logger.error(e.toString());
+			logger.error("获取access_token异常",e);
+			return null;
+		}
+		logger.info("获取access_token成功:"+access_token);
+		return access_token;
+	}
+	
+	/**
+	 * 获取ticket
+	 * @return
+	 */
+	public String getWeBankTicket(){
+		String access_token = "";
+		try {
+			access_token = getWeBankAccessToken();
+		} catch (Exception e1) {
+			e1.printStackTrace();
+		}
+		
+		//根据tocken获取ticket  不需要放入redis
+		String ticket = "";
+		try {
+			String ticketUrl = ticket_url;
+			String ticketUrlParam = "?app_id="+app_id+"&access_token="+access_token+"&type=SIGN"+"&version="+version;
+			ticketUrl = ticketUrl+ticketUrlParam;
+			HttpGetRequest httpGetRequest = new HttpGetRequest();
+			String ticketResponse = httpGetRequest.httpGet(ticketUrl,client_cet,trust_cet,key_store_password,key_store_trust_password);
+			JSONObject ticketJson = JSONObject.fromObject(ticketResponse);
+			List<JSONObject> ticketList = (List<JSONObject>) ticketJson.get("tickets");
+			JSONObject json = (JSONObject) ticketList.get(0);
+			ticket = (String) json.get("value");
+			
+			logger.info("获取ticket成功,ticket:"+ticket);
+		} catch (Exception e) {
+			e.printStackTrace();
+			return null;
+		}
+		return ticket;
+	}
+
+	private static ValueFilter filter = new ValueFilter() {
+        @Override
+        public Object process(Object obj, String s, Object v) {
+            if (v == null || "".equals(v))
+                return null;
+            return v;
+        }
+    };
+	/**
+	 * 商户入网
+	 */
+	@Override
+	public String merchantJoin(WeBankMerchantInfoBaseVo baseVo,WeBankMerchantInfoVo infoVo,WeBankMerchantAccountsVo accountsVo,List<WeBankMerchantRateVo> rateList) {
+		JSONObject json = new JSONObject();
+		//商户基本信息
+		json.putAll(baseVo.toMap());
+		logger.info("商户基本信息："+ JSON.toJSONString(baseVo,filter));
+		// 商户详细信息
+		json.put("merchantInfo", JSON.toJSONString(infoVo,filter));
+		logger.info("商户详细信息："+JSON.toJSONString(infoVo,filter));
+		// 商户账户信息
+		json.put("merchantAccount", JSON.toJSONString(accountsVo,filter));
+		logger.info("商户账户信息："+JSON.toJSONString(accountsVo,filter));
+		// 商户费率信息
+		json.put("merchantRateList", JSON.toJSONString(rateList,filter));
+		logger.info("商户费率信息："+JSON.toJSONString(rateList,filter));
+		String response = invokeWeBank(json,merchant_join_url);
+		return response;
+	}
+	
+	@Override
+	public String preCreateTrade(WeBankPreCreateTradeVo tradeVo,List<WeBankGoodsDetailVo> goodsList){
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(tradeVo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(tradeVo,filter));
+		// 商品详细信息
+		json.put("goodsDetail", JSON.toJSONString(goodsList,filter));
+		logger.info("商品详细信息："+JSON.toJSONString(goodsList,filter));
+		
+		String response = invokeWeBank(json,precreate_trade_url);
+		return response;
+	}
+
+	@Override
+	public String queryTrade(WeBankRefundVo vo) {
+		
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(vo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(vo,filter));
+		String response = invokeWeBank(json,query_trade_url);
+		return response;
+	}
+
+	@Override
+	public String refund(WeBankRefundVo vo) {
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(vo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(vo,filter));
+		String response = invokeWeBank(json,refund_url);
+		return response;
+	}
+
+	@Override
+	public String queryRefund(WeBankRefundVo vo) {
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(vo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(vo,filter));
+		
+		String response = invokeWeBank(json,query_refund_url);
+		return response;
+	}
+
+	@Override
+	public String scanPay(WeBankPreCreateTradeVo tradeVo,List<WeBankGoodsDetailVo> goodsList) {
+		
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(tradeVo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(tradeVo,filter));
+		// 商品详细信息
+		json.put("goodsDetail", JSON.toJSONString(goodsList,filter));
+		logger.info("商品详细信息："+JSON.toJSONString(goodsList,filter));
+		String response = invokeWeBank(json,scan_pay_url);
+		return response;
+	}
+
+	@Override
+	public String cancel(WeBankRefundVo vo) {
+		JSONObject json = new JSONObject();
+		//商户订单信息
+		json.putAll(vo.toMap());
+		logger.info("商户订单信息："+ JSON.toJSONString(vo,filter));
+		String response = invokeWeBank(json,cancel_url);
+		return response;
+	}
+
+	private String invokeWeBank(JSONObject json,String urlStr) {
+		// 获取ticket
+		String ticket = getWeBankTicket();
+		String nonce = Strings.getUUID();
+		ArrayList<String> values = new ArrayList<String>();
+		values.add(app_id);// app_id
+		values.add(nonce);// 32位随机串
+		values.add(version);// 版本号
+		values.add(ticket);// ticket
+		values.add(json.toString());// 接口参数 json类型
+		String signstr = Signature.sign(values);// 签名
+
+		String urlParam = "?app_id=" + app_id + "&nonce=" + nonce + "&version="+ version + "&sign=" + signstr.toUpperCase();
+		urlStr = urlStr + urlParam;
+		// httpPost请求
+		HttpPostRequest httpPostRequest = new HttpPostRequest();
+		String response = httpPostRequest.httpPost(urlStr, json,client_cet,trust_cet,key_store_password,key_store_trust_password);
+		return response;
+	}
+}

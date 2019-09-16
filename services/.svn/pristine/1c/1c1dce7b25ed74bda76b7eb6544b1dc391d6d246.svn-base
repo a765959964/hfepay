@@ -1,0 +1,595 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.service.operator.impl;
+
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.criteria.Order;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.MerchantQrcodeCondition;
+import com.hfepay.scancode.dao.MerchantQrcodeDAO;
+import com.hfepay.scancode.entity.ChannelAdmin;
+import com.hfepay.scancode.entity.MerchantQrcode;
+import com.hfepay.scancode.service.operator.MerchantQrcodeService;
+import com.hfepay.scancode.service.utils.QRCodeUtil;
+
+@Service("merchantQrcodeService")
+public class MerchantQrcodeServiceImpl implements MerchantQrcodeService {
+	public static final Logger logger = LoggerFactory.getLogger(MerchantQrcodeServiceImpl.class);
+
+	@Autowired
+    private MerchantQrcodeDAO merchantQrcodeDAO;
+    
+    /**
+	 * 列表(分页)
+	 * @param merchantQrcodeCondition 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-24 10:47:29
+	 */
+    @Override
+	public PagingResult<MerchantQrcode> findPagingResult(MerchantQrcodeCondition merchantQrcodeCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantQrcode.class);
+		if(!Strings.isEmpty(merchantQrcodeCondition.getId())){
+			cb.andEQ("id", merchantQrcodeCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantQrcodeCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantQrcodeCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantName())){
+			cb.andLike("merchantName", merchantQrcodeCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantQrcodeCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantQrcodeCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrName())){
+			cb.andLike("qrName", merchantQrcodeCondition.getQrName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrDesc())){
+			cb.andEQ("qrDesc", merchantQrcodeCondition.getQrDesc());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getImage())){
+			cb.andEQ("image", merchantQrcodeCondition.getImage());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreId())){
+			cb.andEQ("storeId", merchantQrcodeCondition.getStoreId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreName())){
+			cb.andLike("storeName", merchantQrcodeCondition.getStoreName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrStatus())){
+			cb.andEQ("qrStatus", merchantQrcodeCondition.getQrStatus());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantQrcodeCondition.getRecordStatus());
+		}
+		if(null != merchantQrcodeCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantQrcodeCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getOperator())){
+			cb.andEQ("operator", merchantQrcodeCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRemark())){
+			cb.andLike("remark", merchantQrcodeCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp1())){
+			cb.andEQ("temp1", merchantQrcodeCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp2())){
+			cb.andEQ("temp2", merchantQrcodeCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp3())){
+			cb.andEQ("temp3", merchantQrcodeCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp4())){
+			cb.andEQ("temp4", merchantQrcodeCondition.getTemp4());
+		}
+		if(merchantQrcodeCondition.getChannelAdmin() != null){
+			ChannelAdmin admin = merchantQrcodeCondition.getChannelAdmin();
+			channelFilter(cb, admin);
+		}
+		cb.orderBy("createTime", Order.DESC);
+		//排序
+		if(!Strings.isEmpty(merchantQrcodeCondition.getOrderBy())){
+			if(merchantQrcodeCondition.getOrderBy().indexOf(",")>0){
+				String[] orderBys = merchantQrcodeCondition.getOrderBy().split(",");
+				String[] orders = merchantQrcodeCondition.getOrder().split(",");
+				for(int i=0; i<orderBys.length && i<orders.length; i++){
+					cb.orderBy(orderBys[i], Order.valueOf(orders[i]));
+				}
+			}else{
+				cb.orderBy(merchantQrcodeCondition.getOrderBy(), Order.valueOf(merchantQrcodeCondition.getOrder()));
+			}
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(merchantQrcodeCondition.getFirst()), Long.valueOf(merchantQrcodeCondition.getLast()));
+		return merchantQrcodeDAO.findPagingResult(buildCriteria);
+	}
+	
+    private void channelFilter(CriteriaBuilder cb, ChannelAdmin admin) {
+		switch (admin.getIdentityFlag()) {
+		case "1":
+			cb.addParam("type", admin.getIdentityFlag());
+			cb.addParam("valueNo", admin.getChannelCode());
+			break;
+		case "2":
+			cb.addParam("type", admin.getIdentityFlag());
+			cb.addParam("valueNo", admin.getAgentNo());
+			break;
+		case "3":
+			cb.andEQ("merchantNo", admin.getMerchantNo());
+			break;
+		default:
+			break;
+		}
+	}
+    
+	/**
+	 * 列表
+	 * @param merchantQrcode 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-24 10:47:29
+	 */
+	@Override
+	public List<MerchantQrcode> findAll(MerchantQrcodeCondition merchantQrcodeCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantQrcode.class);
+		if(!Strings.isEmpty(merchantQrcodeCondition.getId())){
+			cb.andEQ("id", merchantQrcodeCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantQrcodeCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantQrcodeCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantName())){
+			cb.andLike("merchantName", merchantQrcodeCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantQrcodeCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantQrcodeCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrName())){
+			cb.andLike("qrName", merchantQrcodeCondition.getQrName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrDesc())){
+			cb.andEQ("qrDesc", merchantQrcodeCondition.getQrDesc());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getImage())){
+			cb.andEQ("image", merchantQrcodeCondition.getImage());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreId())){
+			cb.andEQ("storeId", merchantQrcodeCondition.getStoreId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreName())){
+			cb.andLike("storeName", merchantQrcodeCondition.getStoreName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrStatus())){
+			cb.andEQ("qrStatus", merchantQrcodeCondition.getQrStatus());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantQrcodeCondition.getRecordStatus());
+		}
+		if(null != merchantQrcodeCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantQrcodeCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getOperator())){
+			cb.andEQ("operator", merchantQrcodeCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRemark())){
+			cb.andLike("remark", merchantQrcodeCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp1())){
+			cb.andEQ("temp1", merchantQrcodeCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp2())){
+			cb.andEQ("temp2", merchantQrcodeCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp3())){
+			cb.andEQ("temp3", merchantQrcodeCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp4())){
+			cb.andEQ("temp4", merchantQrcodeCondition.getTemp4());
+		}
+		if(merchantQrcodeCondition.getChannelAdmin() != null){
+			ChannelAdmin admin = merchantQrcodeCondition.getChannelAdmin();
+			channelFilter(cb, admin);
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return merchantQrcodeDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 主键查找
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-24 10:47:29
+	 */
+	@Override
+	public MerchantQrcode findById(String id){
+		return merchantQrcodeDAO.get(id);
+	}
+	
+	/**
+	 * 新增
+	 * @param merchantQrcodeCondition
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-24 10:47:29
+	 */
+	@Override
+	public long insert(MerchantQrcodeCondition merchantQrcodeCondition,Map<String,String> map){
+		MerchantQrcode merchantQrcode = new MerchantQrcode();
+		BeanUtils.copyProperties(merchantQrcodeCondition, merchantQrcode);
+		
+		try {
+			QRCodeUtil.encode(map.get("temp1"), map.get("temp2"), map.get("temp3"));
+		} catch (Exception e) {
+			e.printStackTrace();
+			logger.info("insert error..."+e);
+		}
+		return merchantQrcodeDAO.insert(merchantQrcode);
+	}
+
+	/**
+	 * 删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-24 10:47:29
+	 */
+	@Override
+	public long deleteById(String id){
+		return merchantQrcodeDAO.deleteById(id);
+	}
+	
+	/**
+	 * 条件删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-24 10:47:29
+	 */
+	@Override
+	public long deleteByCriteria(MerchantQrcodeCondition merchantQrcodeCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantQrcode.class);
+		if(!Strings.isEmpty(merchantQrcodeCondition.getId())){
+			cb.andEQ("id", merchantQrcodeCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantQrcodeCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantQrcodeCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantName())){
+			cb.andEQ("merchantName", merchantQrcodeCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantQrcodeCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantQrcodeCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrName())){
+			cb.andEQ("qrName", merchantQrcodeCondition.getQrName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrDesc())){
+			cb.andEQ("qrDesc", merchantQrcodeCondition.getQrDesc());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getImage())){
+			cb.andEQ("image", merchantQrcodeCondition.getImage());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreId())){
+			cb.andEQ("storeId", merchantQrcodeCondition.getStoreId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreName())){
+			cb.andEQ("storeName", merchantQrcodeCondition.getStoreName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrStatus())){
+			cb.andEQ("qrStatus", merchantQrcodeCondition.getQrStatus());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantQrcodeCondition.getRecordStatus());
+		}
+		if(null != merchantQrcodeCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantQrcodeCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getOperator())){
+			cb.andEQ("operator", merchantQrcodeCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRemark())){
+			cb.andLike("remark", merchantQrcodeCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp1())){
+			cb.andEQ("temp1", merchantQrcodeCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp2())){
+			cb.andEQ("temp2", merchantQrcodeCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp3())){
+			cb.andEQ("temp3", merchantQrcodeCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp4())){
+			cb.andEQ("temp4", merchantQrcodeCondition.getTemp4());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		MerchantQrcode merchantQrcode = new MerchantQrcode();
+		BeanUtils.copyProperties(merchantQrcodeCondition, merchantQrcode);
+		return merchantQrcodeDAO.deleteByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 行数汇总
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-24 10:47:29
+	 */
+	@Override
+	public long countByCriteria(MerchantQrcodeCondition merchantQrcodeCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantQrcode.class);
+		if(!Strings.isEmpty(merchantQrcodeCondition.getId())){
+			cb.andEQ("id", merchantQrcodeCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantQrcodeCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantQrcodeCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantName())){
+			cb.andEQ("merchantName", merchantQrcodeCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantQrcodeCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantQrcodeCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrName())){
+			cb.andEQ("qrName", merchantQrcodeCondition.getQrName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrDesc())){
+			cb.andEQ("qrDesc", merchantQrcodeCondition.getQrDesc());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getImage())){
+			cb.andEQ("image", merchantQrcodeCondition.getImage());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreId())){
+			cb.andEQ("storeId", merchantQrcodeCondition.getStoreId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreName())){
+			cb.andEQ("storeName", merchantQrcodeCondition.getStoreName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrStatus())){
+			cb.andEQ("qrStatus", merchantQrcodeCondition.getQrStatus());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantQrcodeCondition.getRecordStatus());
+		}
+		if(null != merchantQrcodeCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantQrcodeCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getOperator())){
+			cb.andEQ("operator", merchantQrcodeCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRemark())){
+			cb.andLike("remark", merchantQrcodeCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp1())){
+			cb.andEQ("temp1", merchantQrcodeCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp2())){
+			cb.andEQ("temp2", merchantQrcodeCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp3())){
+			cb.andEQ("temp3", merchantQrcodeCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp4())){
+			cb.andEQ("temp4", merchantQrcodeCondition.getTemp4());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		MerchantQrcode merchantQrcode = new MerchantQrcode();
+		BeanUtils.copyProperties(merchantQrcodeCondition, merchantQrcode);
+		return merchantQrcodeDAO.countByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-24 10:47:29
+	 */
+	@Override
+	public long update(MerchantQrcodeCondition merchantQrcodeCondition){
+		MerchantQrcode merchantQrcode = new MerchantQrcode();
+		BeanUtils.copyProperties(merchantQrcodeCondition, merchantQrcode);
+		return merchantQrcodeDAO.update(merchantQrcode);
+	}
+	
+	/**
+	 * 条件更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-24 10:47:29
+	 */
+	@Override
+	public long updateByCriteria(MerchantQrcodeCondition merchantQrcodeCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantQrcode.class);
+		if(!Strings.isEmpty(merchantQrcodeCondition.getId())){
+			cb.andEQ("id", merchantQrcodeCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantQrcodeCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantQrcodeCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantName())){
+			cb.andEQ("merchantName", merchantQrcodeCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantQrcodeCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantQrcodeCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrName())){
+			cb.andEQ("qrName", merchantQrcodeCondition.getQrName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrDesc())){
+			cb.andEQ("qrDesc", merchantQrcodeCondition.getQrDesc());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getImage())){
+			cb.andEQ("image", merchantQrcodeCondition.getImage());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreId())){
+			cb.andEQ("storeId", merchantQrcodeCondition.getStoreId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreName())){
+			cb.andEQ("storeName", merchantQrcodeCondition.getStoreName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrStatus())){
+			cb.andEQ("qrStatus", merchantQrcodeCondition.getQrStatus());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantQrcodeCondition.getRecordStatus());
+		}
+		if(null != merchantQrcodeCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantQrcodeCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getOperator())){
+			cb.andEQ("operator", merchantQrcodeCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRemark())){
+			cb.andLike("remark", merchantQrcodeCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp1())){
+			cb.andEQ("temp1", merchantQrcodeCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp2())){
+			cb.andEQ("temp2", merchantQrcodeCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp3())){
+			cb.andEQ("temp3", merchantQrcodeCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp4())){
+			cb.andEQ("temp4", merchantQrcodeCondition.getTemp4());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		MerchantQrcode merchantQrcode = new MerchantQrcode();
+		BeanUtils.copyProperties(merchantQrcodeCondition, merchantQrcode);
+		return merchantQrcodeDAO.updateByCriteria(merchantQrcode,buildCriteria);
+	}
+	
+	@Override
+	public MerchantQrcode findQrcodeByIdentityNo(String identityNo) {
+		// TODO Auto-generated method stub
+		return merchantQrcodeDAO.findQrcodeByIdentityNo(identityNo);
+	}
+	
+	@Override
+	public List<MerchantQrcode> findAllMerchantQrcode(MerchantQrcodeCondition merchantQrcodeCondition) {
+		CriteriaBuilder cb = Cnd.builder(MerchantQrcode.class);
+		if(!Strings.isEmpty(merchantQrcodeCondition.getId())){
+			cb.andEQ("id", merchantQrcodeCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantQrcodeCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantQrcodeCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getMerchantName())){
+			cb.andLike("merchantName", merchantQrcodeCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantQrcodeCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantQrcodeCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrName())){
+			cb.andLike("qrName", merchantQrcodeCondition.getQrName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrDesc())){
+			cb.andEQ("qrDesc", merchantQrcodeCondition.getQrDesc());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getImage())){
+			cb.andEQ("image", merchantQrcodeCondition.getImage());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreId())){
+			cb.andEQ("storeId", merchantQrcodeCondition.getStoreId());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getStoreName())){
+			cb.andLike("storeName", merchantQrcodeCondition.getStoreName());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getQrStatus())){
+			cb.andEQ("qrStatus", merchantQrcodeCondition.getQrStatus());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", merchantQrcodeCondition.getRecordStatus());
+		}
+		if(null != merchantQrcodeCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantQrcodeCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getOperator())){
+			cb.andEQ("operator", merchantQrcodeCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantQrcodeCondition.getRemark())){
+			cb.andLike("remark", merchantQrcodeCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp1())){
+			cb.andEQ("temp1", merchantQrcodeCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp2())){
+			cb.andEQ("temp2", merchantQrcodeCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp3())){
+			cb.andEQ("temp3", merchantQrcodeCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantQrcodeCondition.getTemp4())){
+			cb.andEQ("temp4", merchantQrcodeCondition.getTemp4());
+		}
+		if(merchantQrcodeCondition.getChannelAdmin() != null){
+			ChannelAdmin admin = merchantQrcodeCondition.getChannelAdmin();
+			channelFilter(cb, admin);
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return merchantQrcodeDAO.findAllMerchantQrcode(buildCriteria);
+	}
+	
+}
+

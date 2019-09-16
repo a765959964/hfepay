@@ -1,0 +1,30 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao;
+
+import com.hfepay.scancode.entity.PlatformQrcode;
+import com.hfepay.commons.dao.EntityDAO;
+
+import java.util.Map;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+@Generated("2016-10-14 16:27:56")
+public interface PlatformQrcodeDAO extends EntityDAO<PlatformQrcode, String> {
+	
+	/**
+	 * 条件取当前代理商没有用过的二维码
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	public PlatformQrcode findPlatformQrcode(String id);
+	
+	/**
+	 * 生成编码
+	 * @param map
+	 */
+	public void getQrcodeCode(Map<String, String> map);
+}

@@ -1,0 +1,36 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.OrganWallet;
+import com.hfepay.scancode.condition.OrganWalletCondition;
+import com.hfepay.scancode.dao.OrganWalletDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="organWalletDAO")
+@Generated("2016-12-20 11:30:02")
+public class OrganWalletDAOImpl extends MybatisEntityDAO<OrganWallet, String> implements OrganWalletDAO {
+
+	@Override
+	public long updateBalance(OrganWalletCondition organWalletCondition) {
+		return this.getSqlSession().update(sqlId("updateBalance"),organWalletCondition);
+	}
+
+	@Override
+	public long updateBalanceToWallet(String date) {
+		return this.getSqlSession().update(sqlId("updateBalanceToWallet"),date);
+	}
+
+	@Override
+	public long updateBalanceToChannel(String date) {
+		return this.getSqlSession().update(sqlId("updateBalanceToChannel"),date);
+	}
+}

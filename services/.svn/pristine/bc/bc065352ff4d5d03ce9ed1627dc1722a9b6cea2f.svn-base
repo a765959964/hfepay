@@ -1,0 +1,84 @@
+package com.hfepay.epay.api.service.impl;
+
+import org.springframework.stereotype.Service;
+
+import com.alipay.entity.AppPayReqData;
+import com.alipay.entity.SingleRefundReqData;
+import com.alipay.entity.WapPayRefundReqData;
+import com.alipay.entity.WapPayReqData;
+import com.alipay.util.AlipaySubmit;
+import com.exceptions.ServiceException;
+import com.hfepay.commons.exception.ServicesException;
+import com.hfepay.epay.api.service.IAliPayService;
+import com.utils.PaymentConstants;
+
+@Service
+public class AliPayServiceImpl implements IAliPayService{
+
+	/**
+	 * 预生成支付宝APP支付链接
+	 */
+	@Override
+	public String takeOrderSignatrue(String payNo, Long payFee, Long payTimespam, String body, String subject)
+			throws ServicesException {
+		
+		  try {
+			   AppPayReqData appPayReqData = new AppPayReqData(payNo, payFee.intValue(), body, subject, payTimespam);
+			   String payLinkParam =  appPayReqData.toPayToLinkString();
+			   //TODO 打印支付宝支付日志
+			   //LoggerUtils.printPayLog(payLinkParam, Integer.valueOf(payNo), LoggerUtils.PayType.param);
+			   return  payLinkParam;
+		   }catch(Exception ex) {
+			   throw new ServicesException(PaymentConstants.ORDER_ERROR_10007,"生成签名失败!");
+		   }
+	}
+
+	/**
+	 * 查询支付宝单笔交易状态
+	 */
+	public Boolean singleTransactionQueryHandelFunction(String payNo, String alipayNo) throws ServicesException {
+		try {
+			return AlipaySubmit.doaliPayQueryLoop(3,payNo,alipayNo);
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ServicesException(PaymentConstants.ORDER_ERROR_20001,"订单状态失败!");
+		}
+	}
+
+	/**
+	 * 生成支付宝APP退款链接
+	 */
+	public String takeRefundOrder(SingleRefundReqData singleRefundReqData) {
+		   try {
+			  return  AlipaySubmit.buildRequestGet(singleRefundReqData.toMap());
+		   }catch(Exception ex) {
+			   ex.printStackTrace();
+			   throw new ServiceException("请求支付宝有密退款失败！");
+		   }
+	}
+
+	/**
+	 * 生成支付宝wap支付链接
+	 */
+	public String taskAlipayWapFunction(WapPayReqData wapPayReqData) {
+		try {
+			return AlipaySubmit.buildRequest(wapPayReqData.toMap(),"get");
+		} catch (Exception e) {
+			e.printStackTrace();
+			throw new ServiceException("请求支付宝手机wap支付失败！");
+		}
+	}
+	
+	/**
+	 * 生成支付宝WAP退款链接
+	 */
+	public String takeWapPayRefundOrder(WapPayRefundReqData wapPayRefundReqData) {
+		   try {
+			  return  AlipaySubmit.buildRequestGet(wapPayRefundReqData.toMap());
+		   }catch(Exception ex) {
+			   ex.printStackTrace();
+			   throw new ServiceException("请求支付宝有密退款失败！");
+		   }
+	}
+	
+}

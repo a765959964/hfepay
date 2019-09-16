@@ -1,0 +1,42 @@
+package com.hfepay.scancode.api.entity.message;
+
+/**
+ * 支付成功推送消息
+ * @author lemon
+ *
+ */
+@SuppressWarnings("serial")
+public class PaySuccessMessage extends PushMessage{
+
+	private String orderName;//商品名称
+	
+	private String orderNo;//订单编号
+	
+	private String orderAmt;//支付金额
+
+	public String getOrderName() {
+		return orderName;
+	}
+
+	public void setOrderName(String orderName) {
+		this.orderName = orderName;
+	}
+
+	public String getOrderNo() {
+		return orderNo;
+	}
+
+	public void setOrderNo(String orderNo) {
+		this.orderNo = orderNo;
+	}
+
+	public String getOrderAmt() {
+		return orderAmt;
+	}
+
+	public void setOrderAmt(String orderAmt) {
+		this.orderAmt = orderAmt;
+	}
+	
+	
+}

@@ -1,0 +1,339 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+package com.hfepay.scancode.service.operator.impl;
+
+import java.math.BigDecimal;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.criteria.Order;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.MerchantCostCondition;
+import com.hfepay.scancode.dao.MerchantCostDAO;
+import com.hfepay.scancode.entity.MerchantCost;
+import com.hfepay.scancode.enumeration.PayCode;
+import com.hfepay.scancode.enumeration.TradeType;
+import com.hfepay.scancode.service.operator.MerchantCostService;
+
+@Service("merchantCostService")
+public class MerchantCostServiceImpl implements MerchantCostService {
+	
+	@Autowired
+    private MerchantCostDAO merchantCostDAO;
+    
+    /**
+	 * @Title: findPagingResult
+	 * @Description: 列表(分页)
+	 * @author: Ricky
+	 * @param merchantCostCondition
+	 * @return: PagingResult<MerchantCost>
+	 * @date CreateDate : 2016-11-10 13:59:57
+	 */
+    @Override
+	public PagingResult<MerchantCost> findPagingResult(MerchantCostCondition merchantCostCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantCost.class);
+		if(!Strings.isEmpty(merchantCostCondition.getId())){
+			cb.andEQ("id", merchantCostCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getTradeNo())){
+			cb.andEQ("tradeNo", merchantCostCondition.getTradeNo());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantCostCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantCostCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getAgentLevel())){
+			cb.andEQ("agentLevel", merchantCostCondition.getAgentLevel());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantCostCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantCostCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getPayCode())){
+			cb.andEQ("payCode", merchantCostCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getType())){
+			cb.andEQ("type", merchantCostCondition.getType());
+		}
+		if(null != merchantCostCondition.getAmount()){
+			cb.andEQ("amount", merchantCostCondition.getAmount());
+		}
+		if(null != merchantCostCondition.getMerchantRate()){
+			cb.andEQ("merchantRate", merchantCostCondition.getMerchantRate());
+		}
+		if(null != merchantCostCondition.getFixedAmount()){
+			cb.andEQ("fixedAmount", merchantCostCondition.getFixedAmount());
+		}
+		if(null != merchantCostCondition.getMerchantCost()){
+			cb.andEQ("merchantCost", merchantCostCondition.getMerchantCost());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getStatus())){
+			cb.andEQ("status", merchantCostCondition.getStatus());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getBeginTimeStr())){
+			cb.andGE("createTime", merchantCostCondition.getBeginTimeStr());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getEndTimeStr())){
+			cb.andLE("createTime", merchantCostCondition.getEndTimeStr()  + " 23:59:59");
+		}
+
+		if(!Strings.isEmpty(merchantCostCondition.getRemark())){
+			cb.andLike("remark", merchantCostCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getTemp1())){
+			cb.andEQ("temp1", merchantCostCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getTemp2())){
+			cb.andEQ("temp2", merchantCostCondition.getTemp2());
+		}
+		cb.orderBy("createTime", Order.DESC);
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(merchantCostCondition.getFirst()), Long.valueOf(merchantCostCondition.getLast()));
+		return merchantCostDAO.findPagingResult(buildCriteria);
+	}
+	
+	/**
+	 * @Title: findAll
+	 * @Description: 列表
+	 * @author: Ricky
+	 * @param merchantCostCondition
+	 * @return: List<MerchantCost>
+	 * @date CreateDate : 2016-11-10 13:59:57
+	 */
+	@Override
+	public List<MerchantCost> findAll(MerchantCostCondition merchantCostCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantCost.class);
+		if(!Strings.isEmpty(merchantCostCondition.getId())){
+			cb.andEQ("id", merchantCostCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getTradeNo())){
+			cb.andEQ("tradeNo", merchantCostCondition.getTradeNo());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantCostCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantCostCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getAgentLevel())){
+			cb.andEQ("agentLevel", merchantCostCondition.getAgentLevel());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantCostCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantCostCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getPayCode())){
+			cb.andEQ("payCode", merchantCostCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getType())){
+			cb.andEQ("type", merchantCostCondition.getType());
+		}
+		if(null != merchantCostCondition.getAmount()){
+			cb.andEQ("amount", merchantCostCondition.getAmount());
+		}
+		if(null != merchantCostCondition.getMerchantRate()){
+			cb.andEQ("merchantRate", merchantCostCondition.getMerchantRate());
+		}
+		if(null != merchantCostCondition.getFixedAmount()){
+			cb.andEQ("fixedAmount", merchantCostCondition.getFixedAmount());
+		}
+		if(null != merchantCostCondition.getMerchantCost()){
+			cb.andEQ("merchantCost", merchantCostCondition.getMerchantCost());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getStatus())){
+			cb.andEQ("status", merchantCostCondition.getStatus());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getBeginTimeStr())){
+			cb.andGE("createTime", merchantCostCondition.getBeginTimeStr());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getEndTimeStr())){
+			cb.andLE("createTime", merchantCostCondition.getEndTimeStr()  + " 23:59:59");
+		}
+
+		if(!Strings.isEmpty(merchantCostCondition.getRemark())){
+			cb.andLike("remark", merchantCostCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getTemp1())){
+			cb.andEQ("temp1", merchantCostCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantCostCondition.getTemp2())){
+			cb.andEQ("temp2", merchantCostCondition.getTemp2());
+		}
+		cb.orderBy("createTime", Order.DESC);
+		Criteria buildCriteria = cb.buildCriteria();
+		return merchantCostDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * @Title: findById
+	 * @Description: 主键查找
+	 * @author: Ricky
+	 * @param id
+	 * @return: MerchantCost
+	 * @date CreateDate : 2016-11-10 13:59:57
+	 */
+	@Override
+	public MerchantCost findById(String id){
+		return merchantCostDAO.get(id);
+	}
+	
+	/**
+	 * @Title: insert
+	 * @Description: 新增
+	 * @author: Ricky
+	 * @param merchantCostCondition
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 13:59:57
+	 */
+	@Override
+	public long insert(MerchantCostCondition merchantCostCondition){
+		MerchantCost merchantCost = new MerchantCost();
+		BeanUtils.copyProperties(merchantCostCondition, merchantCost);
+		return merchantCostDAO.insert(merchantCost);
+	}
+
+	/**
+	 * @Title: deleteById
+	 * @Description: 删除
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 13:59:57
+	 */
+	@Override
+	public long deleteById(String id){
+		return merchantCostDAO.deleteById(id);
+	}
+	
+	/**
+	 * @Title: deleteByCriteria
+	 * @Description: 条件删除
+	 * @author: Ricky
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 13:59:57
+	 */
+	@Override
+	public long deleteByCriteria(Criteria criteria){
+		return merchantCostDAO.deleteByCriteria(criteria);
+	}
+	
+	/**
+	 * @Title: countByCriteria
+	 * @Description: 行数汇总
+	 * @author: Ricky
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 13:59:57
+	 */
+	@Override
+	public long countByCriteria(Criteria criteria){
+		return merchantCostDAO.countByCriteria(criteria);
+	}
+	
+	/**
+	 * @Title: update
+	 * @Description: 更新
+	 * @author: Ricky
+	 * @param merchantCostCondition
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 13:59:57
+	 */
+	@Override
+	public long update(MerchantCostCondition merchantCostCondition){
+		MerchantCost merchantCost = new MerchantCost();
+		BeanUtils.copyProperties(merchantCostCondition, merchantCost);
+		return merchantCostDAO.update(merchantCost);
+	}
+	
+	/**
+	 * @Title: updateByCriteria
+	 * @Description: 条件更新
+	 * @author: Ricky
+	 * @param merchantCostCondition
+	 * @param Criteria
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 13:59:57
+	 */
+	@Override
+	public long updateByCriteria(MerchantCostCondition merchantCostCondition,Criteria criteria){
+		MerchantCost merchantCost = new MerchantCost();
+		BeanUtils.copyProperties(merchantCostCondition, merchantCost);
+		return merchantCostDAO.updateByCriteria(merchantCost,criteria);
+	}
+	
+	/**
+	 * @Title: updateStatus
+	 * @Description: 状态更新
+	 * @author: Ricky
+	 * @param id
+	 * @return: long
+	 * @date CreateDate : 2016-11-10 13:59:57
+	 */
+	@Override
+	public long updateStatus(String id,String status){
+		return merchantCostDAO.updateStatus(id,status);
+	}	
+		
+	/**
+	 * 金额统计
+	 * @param merchantCosts
+	 * @param type 进出账类型，01:提现、02:支付
+	 * @return
+	 */
+	@Override	
+	public Map<String, BigDecimal> getAmtStatic(List<MerchantCost> merchantCosts,String type){
+		Map<String, BigDecimal> amtStatic = new HashMap<String, BigDecimal>();
+		BigDecimal orderTotalAmt = BigDecimal.ZERO;//交易总金额
+		BigDecimal txTotalAmt = BigDecimal.ZERO;//提现总金额
+		BigDecimal zfbTotalAmt = BigDecimal.ZERO;//支付宝
+		BigDecimal wxgzhTotalAmt = BigDecimal.ZERO;//微信公众号
+		BigDecimal wxTotalAmt = BigDecimal.ZERO;//微信
+		BigDecimal totalCost = BigDecimal.ZERO;//总成本
+		for (MerchantCost merchantCost : merchantCosts) {
+			if(TradeType.TRADE_TYPE_PAY.getCode().equals(merchantCost.getType())){				
+				orderTotalAmt = orderTotalAmt.add(merchantCost.getAmount());
+			}else if(TradeType.TRADE_TYPE_WITHDRAW.getCode().equals(merchantCost.getType())){
+				txTotalAmt = txTotalAmt.add(merchantCost.getAmount());
+			}
+			if(PayCode.PAYCODE_ZFBSMZF.getCode().equals(merchantCost.getPayCode()) && 
+					(type == null || Strings.equals(type, merchantCost.getType()))){				
+				zfbTotalAmt = zfbTotalAmt.add(merchantCost.getAmount());
+			}else if(PayCode.PAYCODE_WXGZHZF.getCode().equals(merchantCost.getPayCode()) && 
+					(type == null || Strings.equals(type, merchantCost.getType()))){
+				wxgzhTotalAmt = wxgzhTotalAmt.add(merchantCost.getAmount());
+			}else if(PayCode.PAYCODE_WXSMZF.getCode().equals(merchantCost.getPayCode()) && 
+					(type == null || Strings.equals(type, merchantCost.getType()))){
+				wxTotalAmt = wxTotalAmt.add(merchantCost.getAmount());
+			}
+			totalCost = totalCost.add(merchantCost.getMerchantCost());
+		}
+		amtStatic.put("orderTotalAmt", orderTotalAmt);
+		amtStatic.put("txTotalAmt", txTotalAmt);
+		amtStatic.put("zfbTotalAmt", zfbTotalAmt);
+		amtStatic.put("wxgzhTotalAmt", wxgzhTotalAmt);
+		amtStatic.put("wxTotalAmt", wxTotalAmt);
+		amtStatic.put("totalCost", totalCost);
+		return amtStatic;
+	}
+	
+}
+

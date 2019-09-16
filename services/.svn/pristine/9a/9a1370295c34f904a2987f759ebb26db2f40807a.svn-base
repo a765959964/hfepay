@@ -1,0 +1,131 @@
+package com.hfepay.scancode.service.payway.impl;
+
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSON;
+import com.hfepay.scancode.api.entity.message.PaySuccessMessage;
+import com.hfepay.scancode.api.service.MerchantBusinessService;
+import com.hfepay.scancode.bo.PayBackBo;
+import com.hfepay.scancode.condition.OrderPayCondition;
+import com.hfepay.scancode.condition.OrderPaymentCondition;
+import com.hfepay.scancode.entity.ChannelAdmin;
+import com.hfepay.scancode.entity.OrderPay;
+import com.hfepay.scancode.entity.OrderPayment;
+import com.hfepay.scancode.enumeration.OrderResultCode;
+import com.hfepay.scancode.enumeration.OrderStatus;
+import com.hfepay.scancode.enumeration.PayStatus;
+import com.hfepay.scancode.enumeration.ScanCodeErrorCode;
+import com.hfepay.scancode.service.channel.ChannelAdminService;
+import com.hfepay.scancode.service.order.OrderPayService;
+import com.hfepay.scancode.service.order.OrderPaymentService;
+import com.hfepay.scancode.service.payway.CallBackService;
+
+@Service
+public class CallBackServiceImpl implements CallBackService{
+	
+	public static final Logger log = LoggerFactory.getLogger(ScanCodeServiceImpl.class);
+	
+	@Autowired
+	private OrderPayService orderPayService;
+	
+	@Autowired
+	private OrderPaymentService orderPaymentService;
+	
+	@Autowired
+	private MerchantBusinessService merchantBusinessService;
+	
+	@Autowired
+	private ChannelAdminService channelAdminService;
+
+	@Override
+	public Map<String, String> payCallBack(PayBackBo bo) throws Exception {
+		Map<String, String> returnMap = new HashMap<>();
+		
+		//获取原交易订单信息
+		OrderPaymentCondition orderPaymentCondition = new OrderPaymentCondition();
+		orderPaymentCondition.setTradeNo(bo.getUserOrderNo());
+		List<OrderPayment> orderPayMentList = orderPaymentService.findAll(orderPaymentCondition);
+		if (null == orderPayMentList) {
+			returnMap.put("returnCode", ScanCodeErrorCode.TRADE_200004.getCode());
+			returnMap.put("returnMsg", ScanCodeErrorCode.TRADE_200004.getDesc());
+			return returnMap;
+		}else {
+			OrderPayCondition orderPayCondition = new OrderPayCondition();
+			orderPayCondition.setTradeNo(bo.getUserOrderNo());
+			List<OrderPay> orderPayList = orderPayService.findAll(orderPayCondition);
+			if (null == orderPayList) {
+				returnMap.put("returnCode", ScanCodeErrorCode.TRADE_200005.getCode());
+				returnMap.put("returnMsg", ScanCodeErrorCode.TRADE_200005.getDesc());
+				log.error("#########原交易订单不存在:"+JSON.toJSONString(orderPayList)+"########");
+				return returnMap;
+			}else {
+				//商户订单
+				BeanUtils.copyProperties(orderPayMentList.get(0), orderPaymentCondition);
+				if (bo.getStatus().equals(PayStatus.PAYSTATUS_SUCCESS.getCode())) {
+					orderPaymentCondition.setOrderStatus(OrderStatus.ORDER_SUCCESS.getCode());
+					orderPaymentCondition.setResultCode(OrderResultCode.PAY_SUCCESS.getCode());
+					returnMap.put("returnCode", ScanCodeErrorCode.SYSTEM_000000.getCode());
+				}else {
+					orderPaymentCondition.setOrderStatus(OrderStatus.ORDER_FAIL.getCode());
+					orderPaymentCondition.setResultCode(OrderResultCode.PAY_FAIL.getCode());
+					returnMap.put("returnCode", ScanCodeErrorCode.TRADE_300002.getCode());
+					returnMap.put("returnMsg", ScanCodeErrorCode.TRADE_300002.getDesc());
+				}
+				orderPaymentCondition.setEndTime(new Date());
+				orderPaymentCondition.setResultInfo(bo.getErrorMsg());
+				orderPaymentService.update(orderPaymentCondition);
+				
+				//支付订单
+				BeanUtils.copyProperties(orderPayList.get(0), orderPayCondition);
+				orderPayCondition.setPayStatus(bo.getStatus());
+				orderPayCondition.setPayTradeNo(bo.getOrderNo());
+				orderPayCondition.setEndTime(new Date());
+				orderPayCondition.setErrorMsg(bo.getErrorMsg());
+				orderPayService.update(orderPayCondition);
+			}
+		}
+		
+		//支付成功消息推送
+		PushMessage(bo, orderPayMentList);
+		
+		return returnMap;
+	}
+
+	/**
+	 * 交易成功消息推送
+	 * @param bo
+	 * @param orderPayMentList
+	 * @throws Exception
+	 */
+	private void PushMessage(PayBackBo bo, List<OrderPayment> orderPayMentList) throws Exception {
+		//获取商户的OPENID
+		ChannelAdmin channelAdmin = channelAdminService.findByMerchantNo(orderPayMentList.get(0).getMerchantNo());
+		
+		//推送支付信息给商户
+		PaySuccessMessage message = new PaySuccessMessage();
+		message.setOrderNo(orderPayMentList.get(0).getTradeNo());
+		message.setTouser(channelAdmin.getOpenId());
+		if (bo.getStatus().equals(PayStatus.PAYSTATUS_SUCCESS.getCode())) {
+			message.setTitle("支付成功");
+			message.setRemark("你购买的商品已支付成功");
+		}else {
+			message.setTitle("支付失败");
+			message.setRemark("你购买的商品已支付失败，请联系商户");
+		}
+		
+		message.setUrl("");
+		message.setOrderName(orderPayMentList.get(0).getProductName());
+		message.setOrderAmt(String.valueOf(orderPayMentList.get(0).getOrderAmt()));
+		merchantBusinessService.pushPaySuccess(message);
+	}
+
+}

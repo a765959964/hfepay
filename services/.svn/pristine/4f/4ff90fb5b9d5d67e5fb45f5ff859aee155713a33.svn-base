@@ -1,0 +1,51 @@
+package com.hfepay.scancode.enumeration;
+
+public enum ScanCodeErrorCode {
+	SYSTEM_000000("交易成功", "000000"),
+	
+	SYSTEM_999999("系统异常", "999999"),
+	
+	//校验类错误码定义：
+	VALIDAT_100001("报文格式不合法", "100001"),
+	VALIDAT_100002("请求参数不能为空", "100002"),
+	VALIDAT_100003("请求参数不合法", "100003"),
+	
+	//交易类错误码定义
+	TRADE_200001("支付方式已被禁用，不能支付","200001"),
+	TRADE_200002("未配置支付方式，不能支付","200002"),
+	TRADE_200003("支付方式已被禁用，不能支付","200003"),
+	TRADE_200004("原交易订单不存在","200004"),
+	TRADE_200005("原支付订单不存在","200005"),
+	
+	TRADE_300001("渠道支付异常","300001"),
+	TRADE_300002("渠道支付失败","300002"),
+	TRADE_300003("支付渠道暂不支付","300003");
+	
+	
+	// 成员变量  
+    private String desc;  
+    private String code;  
+    // 构造方法  
+    private ScanCodeErrorCode(String desc, String code) {  
+        this.desc = desc;  
+        this.code = code; 
+    }  
+    //覆盖方法  
+    @Override  
+    public String toString() {  
+        return this.code+"_"+this.desc;  
+    }
+	public String getDesc() {
+		return desc;
+	}
+	public void setDesc(String desc) {
+		this.desc = desc;
+	}
+	public String getCode() {
+		return code;
+	}
+	public void setCode(String code) {
+		this.code = code;
+	}
+
+}

@@ -1,0 +1,18 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.ParamsInfo;
+import com.hfepay.scancode.dao.ParamsInfoDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="paramsInfoDAO")
+@Generated("2016-12-02 13:42:35")
+public class ParamsInfoDAOImpl extends MybatisEntityDAO<ParamsInfo, String> implements ParamsInfoDAO {
+}

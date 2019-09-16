@@ -1,0 +1,14 @@
+package com.hfepay.epay.api.service;
+
+import com.hfepay.commons.exception.ServicesException;
+import com.hfepay.epay.api.entity.refund.OrderRefundForm;
+
+public interface IRefundPaymentService {
+	/**
+	 * 退款服务接口
+	 * @param orderRefundForm
+	 * @return
+	 * @throws ServicesException
+	 */
+	public Object refundPayment(OrderRefundForm orderRefundForm)  throws ServicesException;
+}

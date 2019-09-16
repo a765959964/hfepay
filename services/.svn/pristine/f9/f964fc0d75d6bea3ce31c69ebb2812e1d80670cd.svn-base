@@ -1,0 +1,10 @@
+package com.hfepay.scancode.dao;
+
+import com.hfepay.commons.dao.EntityDAO;
+import com.hfepay.scancode.entity.SysRoleUser;
+
+
+@com.hfepay.commons.base.annotation.Generated("2016-04-14 09:43")
+public interface SysRoleUserDAO extends EntityDAO<SysRoleUser, String> {
+
+}

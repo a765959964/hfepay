@@ -1,0 +1,239 @@
+package com.hfepay.scancode.service.operator.impl;
+
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.criteria.Order;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.AuditLogCondition;
+import com.hfepay.scancode.dao.AuditLogDAO;
+import com.hfepay.scancode.entity.AuditLog;
+import com.hfepay.scancode.service.operator.AuditLogService;
+
+@Service("auditLogService")
+public class AuditLogServiceImpl implements AuditLogService {
+	
+	@Autowired
+    private AuditLogDAO auditLogDAO;
+    
+    /**
+	 * 列表(分页)
+	 * @param auditLogCondition 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-19 10:14:46
+	 */
+    @Override
+	public PagingResult<AuditLog> findPagingResult(AuditLogCondition auditLogCondition){
+		CriteriaBuilder cb = Cnd.builder(AuditLog.class);
+		if(!Strings.isEmpty(auditLogCondition.getId())){
+			cb.andEQ("id", auditLogCondition.getId());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getAuditId())){
+			cb.andEQ("auditId", auditLogCondition.getAuditId());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getAuditType())){
+			cb.andEQ("auditType", auditLogCondition.getAuditType());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", auditLogCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getMerchantName())){
+			cb.andEQ("merchantName", auditLogCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getAuditStatus())){
+			cb.andEQ("auditStatus", auditLogCondition.getAuditStatus());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getReason())){
+			cb.andEQ("reason", auditLogCondition.getReason());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getOperatorOrganizations())){
+			cb.andEQ("operatorOrganizations", auditLogCondition.getOperatorOrganizations());
+		}
+		if(null != auditLogCondition.getCreateTime()){
+			cb.andEQ("createTime", auditLogCondition.getCreateTime());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getOperator())){
+			cb.andEQ("operator", auditLogCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(auditLogCondition.getRemark())){
+			cb.andLike("remark", auditLogCondition.getRemark());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getTemp1())){
+			cb.andEQ("temp1", auditLogCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getTemp2())){
+			cb.andEQ("temp2", auditLogCondition.getTemp2());
+		}
+		cb.orderBy("createTime", Order.DESC);
+		//排序
+		if(!Strings.isEmpty(auditLogCondition.getOrderBy())){
+			if(auditLogCondition.getOrderBy().indexOf(",")>0){
+				String[] orderBys = auditLogCondition.getOrderBy().split(",");
+				String[] orders = auditLogCondition.getOrder().split(",");
+				for(int i=0; i<orderBys.length && i<orders.length; i++){
+					cb.orderBy(orderBys[i], Order.valueOf(orders[i]));
+				}
+			}else{
+				cb.orderBy(auditLogCondition.getOrderBy(), Order.valueOf(auditLogCondition.getOrder()));
+			}
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(auditLogCondition.getFirst()), Long.valueOf(auditLogCondition.getLast()));
+		return auditLogDAO.findPagingResult(buildCriteria);
+	}
+	
+	/**
+	 * 列表
+	 * @param auditLog 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-19 10:14:46
+	 */
+	@Override
+	public List<AuditLog> findAll(AuditLogCondition auditLogCondition){
+		CriteriaBuilder cb = Cnd.builder(AuditLog.class);
+		if(!Strings.isEmpty(auditLogCondition.getId())){
+			cb.andEQ("id", auditLogCondition.getId());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getAuditId())){
+			cb.andEQ("auditId", auditLogCondition.getAuditId());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getAuditType())){
+			cb.andEQ("auditType", auditLogCondition.getAuditType());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", auditLogCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getMerchantName())){
+			cb.andEQ("merchantName", auditLogCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getAuditStatus())){
+			cb.andEQ("auditStatus", auditLogCondition.getAuditStatus());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getReason())){
+			cb.andEQ("reason", auditLogCondition.getReason());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getOperatorOrganizations())){
+			cb.andEQ("operatorOrganizations", auditLogCondition.getOperatorOrganizations());
+		}
+		if(null != auditLogCondition.getCreateTime()){
+			cb.andEQ("createTime", auditLogCondition.getCreateTime());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getOperator())){
+			cb.andEQ("operator", auditLogCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(auditLogCondition.getRemark())){
+			cb.andLike("remark", auditLogCondition.getRemark());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getTemp1())){
+			cb.andEQ("temp1", auditLogCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(auditLogCondition.getTemp2())){
+			cb.andEQ("temp2", auditLogCondition.getTemp2());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return auditLogDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 主键查找
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-19 10:14:46
+	 */
+	@Override
+	public AuditLog findById(String id){
+		return auditLogDAO.get(id);
+	}
+	
+	/**
+	 * 新增
+	 * @param auditLogCondition
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-19 10:14:46
+	 */
+	@Override
+	public long insert(AuditLogCondition auditLogCondition){
+		AuditLog auditLog = new AuditLog();
+		BeanUtils.copyProperties(auditLogCondition, auditLog);
+		return auditLogDAO.insert(auditLog);
+	}
+
+	/**
+	 * 删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-19 10:14:46
+	 */
+	@Override
+	public long deleteById(String id){
+		return auditLogDAO.deleteById(id);
+	}
+	
+	/**
+	 * 条件删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-19 10:14:46
+	 */
+	@Override
+	public long deleteByCriteria(Criteria criteria){
+		return auditLogDAO.deleteByCriteria(criteria);
+	}
+	
+	/**
+	 * 行数汇总
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-19 10:14:46
+	 */
+	@Override
+	public long countByCriteria(Criteria criteria){
+		return auditLogDAO.countByCriteria(criteria);
+	}
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-19 10:14:46
+	 */
+	@Override
+	public long update(AuditLogCondition auditLogCondition){
+		AuditLog auditLog = new AuditLog();
+		BeanUtils.copyProperties(auditLogCondition, auditLog);
+		return auditLogDAO.update(auditLog);
+	}
+	
+	/**
+	 * 条件更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-19 10:14:46
+	 */
+	@Override
+	public long updateByCriteria(AuditLogCondition auditLogCondition,Criteria criteria){
+		AuditLog auditLog = new AuditLog();
+		BeanUtils.copyProperties(auditLogCondition, auditLog);
+		return auditLogDAO.updateByCriteria(auditLog,criteria);
+	}
+	
+}
+

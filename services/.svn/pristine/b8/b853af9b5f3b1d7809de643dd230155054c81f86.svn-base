@@ -1,0 +1,376 @@
+package com.hfepay.epay.api.service.impl;
+
+import java.io.UnsupportedEncodingException;
+import java.math.BigDecimal;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.alipay.entity.WapPayReqData;
+import com.hfepay.common.web.enums.PayChannelsEnum;
+import com.hfepay.commons.base.enums.PaymentErrorEnum;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.exception.ServicesException;
+import com.hfepay.epay.api.entity.merchant.MerChantAppVo;
+import com.hfepay.epay.api.entity.order.OrderForm;
+import com.hfepay.epay.api.entity.order.OrderRefundResVO;
+import com.hfepay.epay.api.entity.order.OrderResVO;
+import com.hfepay.epay.api.entity.order.PaymentForm;
+import com.hfepay.epay.api.entity.pay.QrcodePayForm;
+import com.hfepay.epay.api.entity.pay.QueryPayForm;
+import com.hfepay.epay.api.entity.refund.OrderRefundForm;
+import com.hfepay.epay.api.service.IAliPayService;
+import com.hfepay.epay.api.service.IGatewayPaymentService;
+import com.hfepay.epay.api.service.IWechatPayService;
+
+import com.hfepay.merchant.entity.vo.MerchantAppInfoVo;
+import com.hfepay.merchant.service.MerchantAppInfoService;
+import com.hfepay.order.bo.OrderPayBo;
+import com.hfepay.order.bo.OrderPaymentBo;
+import com.hfepay.order.bo.OrderRefundBo;
+import com.hfepay.order.enumeration.orderpay.PayStatus;
+import com.hfepay.order.service.OrderPayService;
+import com.hfepay.order.service.OrderPaymentService;
+import com.hfepay.order.service.OrderRefundService;
+import com.hfepay.order.service.exceptions.OrderRefundException;
+import com.hfepay.scancode.entity.condition.MerchantQrcodePaywaySettingCondition;
+import com.hfepay.scancode.entity.vo.MerchantQrcodePaywaySettingVo;
+import com.hfepay.scancode.service.MerchantQrcodePaywaySettingService;
+import com.hfepay.system.entity.PaySetting;
+import com.hfepay.system.entity.condition.ChannelLogCondition;
+import com.hfepay.system.entity.condition.PaySettingCondition;
+import com.hfepay.system.service.ChannelLogService;
+import com.hfepay.system.service.PaySettingService;
+import com.unionpay.acp.config.Config;
+import com.unionpay.acp.entity.ConsumeReqData;
+import com.unionpay.acp.sdk.SDKConfig;
+import com.unionpay.acp.service.ConsumeService;
+
+import net.sf.json.JSONException;
+import net.sf.json.JSONObject;
+
+
+/**
+ * 网关支付实现类
+ * @author parry.xie
+ *
+ */
+@Service
+public class GatewayPaymentServiceImpl implements IGatewayPaymentService{
+	
+	public static final Logger log = LoggerFactory.getLogger(GatewayPaymentServiceImpl.class);
+	//导入订单实体类
+	@Autowired
+	MerchantAppInfoService merchantAppInfoService;
+	
+	@Autowired
+	private OrderPaymentService orderPaymentService;
+	
+	@Autowired
+	private OrderPayService orderPayService;
+	
+	@Autowired
+	IWechatPayService wechatPayService;
+	
+	
+	@Autowired
+	OrderRefundService orderRefundService;
+	
+	@Autowired
+	IAliPayService aliPayService;
+	
+	@Autowired
+	MerchantQrcodePaywaySettingService  paywaySettingService;
+	
+	@Autowired
+	PaySettingService paySettingService;
+	
+	@Autowired
+	ChannelLogService channelLogService;
+	/**
+	 * 1.初始化订单参数
+	 * 根据渠道调不同的支付渠道
+	 */
+	public Object unifiedorder(OrderForm orderForm) {
+		
+		//TODO 订单交易记录添加 返回订单号
+		OrderPaymentBo orderPaymentVo = new OrderPaymentBo();
+		
+		orderPaymentVo.setBeginTime(new Date(Long.valueOf(orderForm.getAdd_date())));
+		//订单金额
+		orderPaymentVo.setOrderAmt(Long.valueOf(orderForm.getTotal_fee())); 
+		//商户订单号
+		orderPaymentVo.setBusinessSn(orderForm.getOrder_no());
+		
+		orderPaymentVo.setBusinessType("1");
+		//商品名称
+		orderPaymentVo.setProductName(orderForm.getTitle());
+		//商品详情
+		orderPaymentVo.setDetail(orderForm.getDetail());
+		
+		orderPaymentVo.setWebUrl(orderForm.getWeb_url());
+		
+		//商家应用ID
+		orderPaymentVo.setMerchantAppId(orderForm.getApp_id());
+		//商户编号
+		orderPaymentVo.setMerchantId(orderForm.getMech_no());
+		
+		//平台费
+		orderPaymentVo.setPlatformRate("1");
+		
+		orderPaymentVo.setPaymentType("02");
+		//根据聚道编号生成渠道
+		orderPaymentVo.setChannelRate("01");
+		orderPaymentVo.setInvokemode(orderForm.getReturn_url());
+		log.info("预约订单"+orderPaymentVo.toString());
+		
+		try {
+			OrderPaymentBo orderResult = orderPaymentService.saveOrderPayment(orderPaymentVo);
+			OrderResVO respvo = new OrderResVO();
+			respvo.setApp_id(orderForm.getApp_id());
+			respvo.setChannel(orderForm.getChannel());
+			respvo.setPrepay_no(orderResult.getTradeId());
+			respvo.setTimestamp(System.currentTimeMillis()+"");
+			respvo.setSgin("sige签名加密数据");
+			return respvo;
+			
+		}catch(Exception e) {
+			e.fillInStackTrace();
+			throw new ServicesException("预处理订单失败!");
+		}
+		
+		
+	}
+		
+		
+	public Object payment(PaymentForm paymentForm) throws ServicesException {
+		
+		log.info("paymentForm["+paymentForm.getChannle()+","+paymentForm.getAppId()+","+PayChannelsEnum.WX_JSAPI.getDesc()+"]");
+		
+		//保存支付数据
+		OrderPayBo orderPayBo = new OrderPayBo();
+		orderPayBo.setTradeId(paymentForm.getPrepayNo());
+		orderPayBo.setPayType(paymentForm.getChannle());
+		orderPayBo.setMerchantId(paymentForm.getMerchantId());
+		orderPayBo.setNotifyUrl(paymentForm.getNotify_url());
+		OrderPayBo payBo = orderPayService.saveOrderPay(orderPayBo);
+		
+		String merchantPaySwitch = paymentForm.getMerchantPaySwitch();//渠道开关
+		
+		PaySettingCondition paySettingCondition = new PaySettingCondition();
+		paySettingCondition.setChannelCode(paymentForm.getChannle());
+		List<PaySetting> paySetList = paySettingService.findAll(paySettingCondition);
+		String paySwitch = "";//平台开关
+		if (paySetList != null && paySetList.size() > 0){
+			paySwitch = paySetList.get(0).getPaySwitch();
+		}
+		if(paySwitch.equals("N")){
+			String errorMsg = "平台支付渠道已关闭";
+			return updateErrorMsg(payBo,errorMsg);
+		}else{
+			if(merchantPaySwitch.equals("N")){
+				String errorMsg = "商户支付渠道已关闭";
+				return updateErrorMsg(payBo,errorMsg);
+			}
+		}
+		
+
+		
+		/*
+		 * 调用商户的服务，根据商户号查询商户的配置信息
+		 * Param  paymentForm.getMerchantId()
+		 */
+		String appid="";
+		String merchidWx="";
+		String key="";
+		if(paymentForm.getMerchantId() != null){
+			JSONObject object = (JSONObject) getSettingConfig(paymentForm.getMerchantId(),paymentForm.getChannle());
+			try {
+				appid = (String) object.get("appid");
+				merchidWx = (String)object.get("merchantWx");
+				key = (String)object.get("key");
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
+		
+		//生成支付数据
+		//订单号，订单金额，商品名称，商品描述
+		if(paymentForm.getChannle().equals(PayChannelsEnum.ALI_APP.getDesc())) {
+			return aliPayService.takeOrderSignatrue(payBo.getTradeId(), Long.valueOf(1), System.currentTimeMillis(), "测试商品", "测试商品"); 
+		}else if(paymentForm.getChannle().equals(PayChannelsEnum.WX_APP.getDesc())){
+			return wechatPayService.wxAppPayHandleFunction(payBo.getTradeId(), "1", "测试商品", "测试商品", "APP");
+		}else if(paymentForm.getChannle().equals(PayChannelsEnum.WX_JSAPI.getDesc())){
+			//插入支付流水
+			ChannelLogCondition channelLogCondition = new ChannelLogCondition();
+			channelLogCondition.setTradeId(payBo.getTradeId());
+			channelLogCondition.setChannelId(paymentForm.getChannle());
+			channelLogCondition.setMerchantAppId(paymentForm.getMerchantAppId());
+			channelLogCondition.setMerchantId(paymentForm.getMerchantId());
+			channelLogCondition.setCreateTime(new Date());
+			channelLogCondition.setId(Strings.getUUID());
+			channelLogService.insert(channelLogCondition);
+			
+			return wechatPayService.wxJSApiPayHandleFunction(appid,merchidWx,paymentForm.getOpenId(), payBo.getTradeId(), paymentForm.getPayFee(), paymentForm.getBody(),paymentForm.getDetail(), "JSAPI",key);
+		}else if(paymentForm.getChannle().equals(PayChannelsEnum.UN_APP.getDesc())) {
+			ConsumeReqData reqData = new ConsumeReqData("1", payBo.getTradeId(), Config.getCurrentTime());
+			ConsumeService consumeService = new ConsumeService(SDKConfig.getConfig().getAppRequestUrl(), reqData.signtrue());
+			return consumeService.businessHandle();
+		}else if(paymentForm.getChannle().equals(PayChannelsEnum.ALI_WAP.getDesc())){
+			WapPayReqData wapPayReqData = null;
+			try {
+				wapPayReqData = new WapPayReqData(payBo.getTradeId(),paymentForm.getPayFee(),paymentForm.getBody(),paymentForm.getDetail(),paymentForm.getTimestamp(),paymentForm.getShow_url());
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
+			return aliPayService.taskAlipayWapFunction(wapPayReqData);
+		}else {
+			throw new ServicesException("不支持"+paymentForm.getChannle()+"支付渠道");
+		}
+	}
+
+
+	private Object updateErrorMsg(OrderPayBo payBo,String errorMsg) {
+		OrderPayBo orderbo = new OrderPayBo();
+		orderbo.setPayId(payBo.getPayId());
+		orderbo.setPayStatus(PayStatus.PayFailed.value());
+		orderbo.setErrorCode(PaymentErrorEnum.SYSTEM_CHANNEL_CODE.getValue()+"");
+		orderbo.setErrorMsg(errorMsg);
+		orderPayService.updateOrderStatus(orderbo);
+		Map<String,Object> jsonMap = new HashMap<String,Object>();
+		jsonMap.put("resultCode", PaymentErrorEnum.SYSTEM_CHANNEL_CODE.getValue());
+		jsonMap.put("resultMsg", errorMsg);
+		//JSONObject jsonObject = JSONObject.fromObject(jsonMap);
+		return jsonMap;
+	}
+
+
+	public Object qrcodePaymet(QrcodePayForm qrcodePayFrom) throws ServicesException {
+		
+		OrderPaymentBo orderPaymentVo = new OrderPaymentBo();
+		orderPaymentVo.setBeginTime(new Date(System.currentTimeMillis()));
+		//订单金额
+		orderPaymentVo.setOrderAmt(Long.valueOf(qrcodePayFrom.getPayFee()));
+		//商户订单号
+		String orderNo = orderPaymentService.saveGenerateQrcodeByOrderNo("QR");
+		
+		orderPaymentVo.setBusinessSn(orderNo);
+		orderPaymentVo.setBusinessType(qrcodePayFrom.getBusinessType());
+		//商品名称
+		orderPaymentVo.setProductName(qrcodePayFrom.getProductName());
+		//商家应用ID
+		orderPaymentVo.setMerchantAppId(qrcodePayFrom.getQrcodeId());
+		//商户编号
+		orderPaymentVo.setMerchantId(qrcodePayFrom.getMchNo());
+		//平台费
+		orderPaymentVo.setPlatformRate(qrcodePayFrom.getPlatformRate());
+		
+		orderPaymentVo.setChannelRate(qrcodePayFrom.getChannelRate());
+		
+		orderPaymentVo.setProductBody(qrcodePayFrom.getProductBody());//商品详情
+		
+		orderPaymentVo.setPlatformDiscount(qrcodePayFrom.getPlatformDiscount());//平台折扣率
+		
+		orderPaymentVo.setChannelDiscount(qrcodePayFrom.getChannelDiscount());//渠道折扣率
+		
+		if(qrcodePayFrom.getChannel().equals(PayChannelsEnum.WX_JSAPI.getDesc())){
+			orderPaymentVo.setPaymentType("03");
+		}else{
+			orderPaymentVo.setPaymentType("02");
+		}
+		
+		orderPaymentVo.setInvokemode("");
+		//添加预约订单
+		log.info("预约订单"+orderPaymentVo.toString());
+		OrderPaymentBo orderResult = orderPaymentService.saveOrderPayment(orderPaymentVo);
+		
+		
+		//生成支付数据
+		PaymentForm paymentForm = new PaymentForm();
+		paymentForm.setChannle(qrcodePayFrom.getChannel());//渠道类型
+		paymentForm.setPrepayNo(orderResult.getTradeId());//支付订单号
+		paymentForm.setOpenId(qrcodePayFrom.getOpenId());
+		paymentForm.setMerchantId(orderResult.getMerchantId());//商户ID
+		paymentForm.setPayFee(qrcodePayFrom.getPayFee());//支付金额
+		paymentForm.setBody(qrcodePayFrom.getProductBody());//商品描述
+		paymentForm.setDetail(qrcodePayFrom.getProductDetail());//商品详情
+		paymentForm.setNotify_url(qrcodePayFrom.getNotify_url());//商户回调地址
+		paymentForm.setShow_url(qrcodePayFrom.getShow_url());//商品展示页面
+		paymentForm.setMerchantPaySwitch(qrcodePayFrom.getMerchantPaySwitch());
+		paymentForm.setMerchantAppId(orderResult.getMerchantAppId());
+		return payment(paymentForm);
+		
+	}
+
+	public Object queryPayment(QueryPayForm queryPayForm) throws ServicesException {
+		
+		if(queryPayForm.getChannle().equals(PayChannelsEnum.WX_JSAPI.getDesc())){
+			return wechatPayService.singleTransactionQueryHandelFunction("","","",queryPayForm.getOrderNo(), queryPayForm.getTransId());
+		}else {
+			throw new ServicesException("不支持"+queryPayForm.getChannle()+"支付渠道");
+		}
+	}
+	
+
+	public MerChantAppVo queryMerchantDitel(String appid,String mech_no) throws ServicesException {
+			MerchantAppInfoVo merchantAppInfoVo = merchantAppInfoService.getAppInfoByAppCode(mech_no,appid);
+			
+			MerChantAppVo merchantAppVo = new MerChantAppVo();
+			BeanUtils.copyProperties(merchantAppInfoVo, merchantAppVo);
+			return merchantAppVo;
+	}
+
+	public Object refund(OrderRefundForm orderRefundForm) throws ServicesException {
+		
+		OrderRefundBo orderRefundBo = new OrderRefundBo();
+		//orderRefundBo.setChannelTradeNo(orderRefundForm.getChannel());
+		orderRefundBo.setMerTradeNo(orderRefundForm.getOrder_no());
+		orderRefundBo.setOutPlatTradeNo(orderRefundForm.getParpay_no());
+		orderRefundBo.setRefundFee(Long.parseLong(orderRefundForm.getRefund_fee()));
+		orderRefundBo.setRefundReason(orderRefundForm.getRefund_remak());
+		orderRefundBo.setNotifyUrl(orderRefundForm.getRefund_url());
+		
+		try {
+			log.info("############### channelTradeNo="+orderRefundBo.getChannelTradeNo()
+			+" &mertradeNo="+orderRefundBo.getMerTradeNo()+" &OutPlatTradeNo="+orderRefundBo.getOutPlatTradeNo()+
+			" &RefundFee="+orderRefundBo.getRefundFee());
+			
+			orderRefundService.saveRefundOrder(orderRefundBo);
+		} catch (OrderRefundException e) {
+			e.printStackTrace();
+		}
+		
+		OrderRefundResVO refundResVO = new OrderRefundResVO();
+		refundResVO.setChannel(orderRefundBo.getChannelTradeNo());
+		refundResVO.setParpay_no(orderRefundBo.getOutPlatTradeNo());
+		refundResVO.setRefund_fee(orderRefundBo.getRefundFee().toString());
+		refundResVO.setRefund_remak(orderRefundBo.getRefundReason());
+		refundResVO.setRefund_url(orderRefundBo.getNotifyUrl());
+		
+		return refundResVO;
+	}
+
+	public JSONObject getSettingConfig(String mch_id,String channel) {
+		MerchantQrcodePaywaySettingCondition merchantQrcodePaywaySettingCondition = new MerchantQrcodePaywaySettingCondition();
+		merchantQrcodePaywaySettingCondition.setMerchantId(mch_id);
+		merchantQrcodePaywaySettingCondition.setPayWay(channel);
+		MerchantQrcodePaywaySettingVo merchantQrcodePaywaySettingVo = paywaySettingService.findAllByPayWay(merchantQrcodePaywaySettingCondition);
+		JSONObject object = null;
+		
+		try {
+			object = JSONObject.fromObject(merchantQrcodePaywaySettingVo.getSettingConfig());
+		} catch (JSONException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return object;
+	} 
+}

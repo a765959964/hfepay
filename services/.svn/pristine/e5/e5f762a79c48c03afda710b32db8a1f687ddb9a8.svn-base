@@ -1,0 +1,228 @@
+package com.hfepay.scancode.service.payway.impl;
+
+import java.util.Date;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+
+import com.alibaba.dubbo.config.annotation.Service;
+import com.alibaba.fastjson.JSON;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.scancode.api.condition.ApiLogCondition;
+import com.hfepay.scancode.api.entity.message.PaySuccessMessage;
+import com.hfepay.scancode.api.service.ApiLogService;
+import com.hfepay.scancode.api.service.MerchantBusinessService;
+import com.hfepay.scancode.bo.MerchantNotifyMessage;
+import com.hfepay.scancode.condition.MerchantCashierCondition;
+import com.hfepay.scancode.condition.MerchantCostCondition;
+import com.hfepay.scancode.condition.MerchantPaywayCondition;
+import com.hfepay.scancode.condition.OrderPayCondition;
+import com.hfepay.scancode.condition.OrderPaymentCondition;
+import com.hfepay.scancode.entity.ChannelAdmin;
+import com.hfepay.scancode.entity.MerchantBankcard;
+import com.hfepay.scancode.entity.MerchantCashier;
+import com.hfepay.scancode.entity.MerchantPayway;
+import com.hfepay.scancode.entity.OrderPay;
+import com.hfepay.scancode.entity.OrderPayment;
+import com.hfepay.scancode.enumeration.OrderResultCode;
+import com.hfepay.scancode.enumeration.OrderStatus;
+import com.hfepay.scancode.enumeration.PayCode;
+import com.hfepay.scancode.enumeration.PayStatus;
+import com.hfepay.scancode.enumeration.RateType;
+import com.hfepay.scancode.service.channel.ChannelAdminService;
+import com.hfepay.scancode.service.operator.MerchantBankcardService;
+import com.hfepay.scancode.service.operator.MerchantCashierService;
+import com.hfepay.scancode.service.operator.MerchantCostService;
+import com.hfepay.scancode.service.operator.MerchantPaywayService;
+import com.hfepay.scancode.service.order.OrderPayService;
+import com.hfepay.scancode.service.order.OrderPaymentService;
+import com.hfepay.scancode.service.payway.CallBackService;
+
+import net.sf.json.JSONObject;
+
+@Service
+public class CallBackServiceImpl implements CallBackService{
+	
+	public static final Logger log = LoggerFactory.getLogger(ScanCodeServiceImpl.class);
+	
+	@Autowired
+	private OrderPayService orderPayService;
+	
+	@Autowired
+	private OrderPaymentService orderPaymentService;
+	
+	@Autowired
+	private MerchantBusinessService merchantBusinessService;
+	
+	@Autowired
+	private ChannelAdminService channelAdminService;
+	
+	@Autowired
+	private ApiLogService apiLogService;
+	
+	@Autowired
+	private MerchantCashierService merchantCashierService;
+	
+//	@Autowired
+//	private OrganProfitService organProfitService;
+	
+	@Autowired
+	private MerchantCostService merchantCostService;
+	
+	@Autowired
+	private MerchantPaywayService merchantPaywayService;
+	
+	@Autowired
+	private MerchantBankcardService merchantBankcardService;
+	
+	@Override
+	public void payCallBack(MerchantNotifyMessage bo) throws Exception {
+		//记录日志
+		ApiLogCondition apiLogCondition = new ApiLogCondition();
+		apiLogCondition.setNotifyParams(JSON.toJSONString(bo));
+		apiLogCondition.setNotifyTime(new Date());
+		
+		apiLogService.updateByTradeNo(apiLogCondition);
+		
+		//获取原交易订单信息
+		OrderPaymentCondition orderPaymentCondition = new OrderPaymentCondition();
+		orderPaymentCondition.setTradeNo(bo.getUserOrderNo());
+		List<OrderPayment> orderPayMentList = orderPaymentService.findAll(orderPaymentCondition);
+		
+		OrderPayCondition orderPayCondition = new OrderPayCondition();
+		orderPayCondition.setTradeNo(bo.getUserOrderNo());
+		List<OrderPay> orderPayList = orderPayService.findAll(orderPayCondition);
+		if(null != orderPayMentList && orderPayMentList.size()>0){
+			//商户订单
+			BeanUtils.copyProperties(orderPayMentList.get(0), orderPaymentCondition);
+			if (bo.getStatus().equals(PayStatus.PAYSTATUS_SUCCESS.getCode())) {
+				orderPaymentCondition.setOrderStatus(OrderStatus.ORDER_SUCCESS.getCode());
+				orderPaymentCondition.setResultCode(OrderResultCode.PAY_SUCCESS.getCode());
+				
+				OrderPay orderPay = orderPayList.get(0);
+				
+				//创建商户成本记录
+				MerchantCostCondition merchantCostCondition = createMerchantCost(bo, orderPay);
+				orderPaymentCondition.setMerchantCost(merchantCostCondition.getMerchantCost());
+				orderPayCondition.setMerchantCost(merchantCostCondition.getMerchantCost());
+				//支付成功，计算各机构平台收益
+			}else {
+				orderPaymentCondition.setOrderStatus(OrderStatus.ORDER_FAIL.getCode());
+				orderPaymentCondition.setResultCode(OrderResultCode.PAY_FAIL.getCode());
+			}
+			orderPaymentCondition.setEndTime(new Date());
+			orderPaymentCondition.setResultInfo(bo.getErrorMsg());
+			orderPaymentCondition.setUpdateTime(new Date());
+			orderPaymentService.update(orderPaymentCondition);
+			
+			//支付订单
+			BeanUtils.copyProperties(orderPayList.get(0), orderPayCondition);
+			orderPayCondition.setPayStatus(bo.getStatus());
+			orderPayCondition.setPayTradeNo(bo.getOrderNo());
+			orderPayCondition.setEndTime(new Date());
+			orderPayCondition.setErrorMsg(bo.getErrorMsg());
+			orderPayCondition.setUpdateTime(new Date());
+			orderPayService.update(orderPayCondition);
+		}
+		
+		//支付成功消息推送
+		PushMessage(bo, orderPayMentList);
+	}
+
+	/**
+	 * 创建商户成本记录
+	 * @param bo
+	 * @param orderPay
+	 */
+	private MerchantCostCondition createMerchantCost(MerchantNotifyMessage bo, OrderPay orderPay) {
+		//获取费率信息
+		MerchantPaywayCondition merchantPaywayCondition = new MerchantPaywayCondition();
+		merchantPaywayCondition.setPayCode(orderPay.getPayCode());
+		merchantPaywayCondition.setMerchantNo(orderPay.getMerchantNo());
+		List<MerchantPayway> merchantList = merchantPaywayService.findAll(merchantPaywayCondition);
+		MerchantPayway merchantPayway = merchantList.get(0);
+		
+		MerchantBankcard merchantBankcard = merchantBankcardService.findByMerchantNo(orderPay.getMerchantNo());
+		
+		//支付成功，记录商户成本
+		MerchantCostCondition merchantCostCondition = new MerchantCostCondition();
+		merchantCostCondition.setId(Strings.getUUID());
+		merchantCostCondition.setTradeNo(orderPay.getTradeNo());
+		merchantCostCondition.setChannelNo(orderPay.getChannelNo());
+		merchantCostCondition.setMerchantNo(orderPay.getMerchantNo());
+		merchantCostCondition.setQrCode(orderPay.getQrCode());
+		merchantCostCondition.setPayCode(orderPay.getPayCode());
+		merchantCostCondition.setType(orderPay.getTradeType());
+		merchantCostCondition.setAmount(orderPay.getOrderAmt());
+		
+		//实时到账：商户成本= T1交易费率 + T0垫资成本 + 提现手续费(元)
+		if (merchantBankcard.getIsRealAccount().equals("Y")) {
+			merchantCostCondition.setRateType(RateType.RATE_TYPE_T0.getCode());
+			merchantCostCondition.setMerchantRate(merchantPayway.getT0Rate());
+			merchantCostCondition.setMerchantCost(orderPay.getOrderAmt().multiply(merchantPayway.getT0Rate().add(merchantPayway.getT1Rate())).add(merchantPayway.getRate()));
+		}else {
+			merchantCostCondition.setRateType(RateType.RATE_TYPE_T1.getCode());
+			merchantCostCondition.setMerchantRate(merchantPayway.getT1Rate());
+			merchantCostCondition.setMerchantCost(orderPay.getOrderAmt().multiply(merchantPayway.getT1Rate()).add(merchantPayway.getRate()));
+		}
+		merchantCostCondition.setFixedAmount(merchantPayway.getRate());
+		merchantCostCondition.setCreateTime(new Date());
+		merchantCostService.insert(merchantCostCondition);
+		
+		return merchantCostCondition;
+	}
+
+	/**
+	 * 交易成功消息推送
+	 * @param bo
+	 * @param orderPayMentList
+	 * @throws Exception
+	 */
+	private void PushMessage(MerchantNotifyMessage bo, List<OrderPayment> orderPayMentList) throws Exception {
+		log.info("#########PushMessage["+orderPayMentList.get(0).getMerchantNo()+"]########");
+		//推送支付信息给商户
+		PaySuccessMessage message = new PaySuccessMessage();
+				
+		//消息默认推送给收银员
+		MerchantCashierCondition merchantCashierCondition = new MerchantCashierCondition();
+		merchantCashierCondition.setCashierNo(orderPayMentList.get(0).getCashierNo());
+		MerchantCashier merchantCashier = merchantCashierService.findByCondition(merchantCashierCondition);
+		if (null != merchantCashier) {
+			message.setTouser(merchantCashier.getOpenId());
+		}else {
+			//获取商户的OPENID
+			ChannelAdmin channelAdmin = channelAdminService.findByMerchantNo(orderPayMentList.get(0).getMerchantNo());
+			message.setTouser(channelAdmin.getOpenId());
+		}
+		
+		message.setOrderNo(orderPayMentList.get(0).getTradeNo());
+		message.setChannelNo(orderPayMentList.get(0).getChannelNo());
+		if (bo.getStatus().equals(PayStatus.PAYSTATUS_SUCCESS.getCode())) {
+			message.setTitle("支付成功");
+			message.setRemark("你购买的商品已支付成功");
+		}else {
+			message.setTitle("支付失败");
+			message.setRemark("你购买的商品已支付失败，请联系商户");
+		}
+		
+		message.setUrl("");
+		message.setOrderName(orderPayMentList.get(0).getProductName());
+		message.setOrderAmt(String.valueOf(orderPayMentList.get(0).getOrderAmt()));
+		message.setBeginTime(orderPayMentList.get(0).getBeginTime());
+		if (orderPayMentList.get(0).getPayCode().equals(PayCode.PAYCODE_ZFBSMZF.getCode())) {
+			message.setPayCode(PayCode.PAYCODE_ZFBSMZF.getDesc());
+		}else if(orderPayMentList.get(0).getPayCode().equals(PayCode.PAYCODE_WXSMZF.getCode())){
+			message.setPayCode(PayCode.PAYCODE_WXSMZF.getDesc());
+		}else if(orderPayMentList.get(0).getPayCode().equals(PayCode.PAYCODE_WXGZHZF.getCode())){
+			message.setPayCode(PayCode.PAYCODE_WXGZHZF.getDesc());
+		}
+		
+		log.info("#########message["+JSONObject.fromObject(message)+"]########");
+		
+		merchantBusinessService.pushPaySuccess(message);
+	}
+
+}

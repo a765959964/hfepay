@@ -1,0 +1,24 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.PlatformQrcode;
+import com.hfepay.scancode.dao.PlatformQrcodeDAO;
+import com.hfepay.commons.base.annotation.Generated;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="platformQrcodeDAO")
+@Generated("2016-10-14 16:27:56")
+public class PlatformQrcodeDAOImpl extends MybatisEntityDAO<PlatformQrcode, String> implements PlatformQrcodeDAO {
+
+	@Override
+	public PlatformQrcode findPlatformQrcode(String id) {
+		return getSqlSession().selectOne(sqlId("findPlatformQrcode"),id);
+	}
+	
+	
+}

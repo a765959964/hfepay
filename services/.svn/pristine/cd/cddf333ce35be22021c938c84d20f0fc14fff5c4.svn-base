@@ -1,0 +1,9 @@
+package com.hfepay.scancode.service.order;
+
+public interface ProfitService {
+
+	void doSaveProfit();
+	
+	void showRedisRateDiff();
+	
+}

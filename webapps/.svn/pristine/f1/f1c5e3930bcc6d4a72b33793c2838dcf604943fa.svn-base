@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:dubbo="http://code.alibabatech.com/schema/dubbo"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-3.2.xsd 
+    http://code.alibabatech.com/schema/dubbo http://code.alibabatech.com/schema/dubbo/dubbo.xsd"
+	default-lazy-init="true">
+
+	<description>服务配置 </description>
+    <!-- consumer application name -->
+    <dubbo:application name="hfepay-scancode-gateway-webapp"  />
+    <dubbo:consumer timeout="30000" filter="InvocationRpcFilter"></dubbo:consumer>
+    <dubbo:registry address="zookeeper://${zookeeper.addr}" />
+   
+   <dubbo:reference id="scanCodeService" interface="com.hfepay.scancode.service.payway.ScanCodeService" check="false" retries="0"/>
+	<dubbo:reference id="adminService" interface="com.hfepay.scancode.service.channel.ChannelAdminService"  check="false" retries="0"/>
+	<!-- 商户信息 -->
+	<dubbo:reference id="merchantInfoService" interface="com.hfepay.scancode.service.operator.MerchantInfoService" check="false" retries="0"/>
+	<!-- 流水查询-->
+	<dubbo:reference id="orderPayService" interface="com.hfepay.scancode.service.order.OrderPayService" check="false"  retries="0"/>
+	
+	<dubbo:reference id="merchantWalletService" interface="com.hfepay.scancode.service.operator.MerchantWalletService" check="false" retries="0" />
+	
+	<dubbo:reference id="merchantBankcardService" interface="com.hfepay.scancode.service.operator.MerchantBankcardService" check="false"  retries="0" />
+	<!-- 门店信息 -->
+	<dubbo:reference id="merchantStoreService" interface="com.hfepay.scancode.service.operator.MerchantStoreService" check="false" retries="0" />
+	
+	<dubbo:reference id="platformQrcodeService" interface="com.hfepay.scancode.service.operator.PlatformQrcodeService" check="false"  retries="0"/>
+	
+	<dubbo:reference id="channelExpandService" interface="com.hfepay.scancode.service.operator.ChannelExpandService" check="false"  retries="0"/>
+	
+	<dubbo:reference id="channelBaseService" interface="com.hfepay.scancode.service.operator.ChannelBaseService" check="false"  retries="0"/>
+	
+	<dubbo:reference id="agentBaseService" interface="com.hfepay.scancode.service.operator.AgentBaseService" check="false"  retries="0"/>
+	
+	<dubbo:reference id="callBackService" interface="com.hfepay.scancode.service.payway.CallBackService"  check="false"  retries="0"/>
+	
+	<dubbo:reference id="remitBankInfoService" interface="com.hfepay.scancode.service.operator.RemitBankInfoService"  check="false"  retries="0"/>
+
+	<dubbo:reference id="idCreateService" interface="com.hfepay.scancode.service.operator.IdCreateService"  check="false"  retries="0"/>
+	
+	<dubbo:reference id="merchantBusinessService" interface="com.hfepay.scancode.api.service.MerchantBusinessService"  check="false"  retries="0"/>
+
+</beans>

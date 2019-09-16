@@ -1,0 +1,85 @@
+package com.hfepay.scancode.api.service;
+
+import java.util.List;
+import java.util.Map;
+
+import com.hfepay.scancode.api.entity.message.PaySuccessMessage;
+import com.hfepay.scancode.api.entity.message.RegistSuccessMessage;
+import com.hfepay.scancode.api.entity.vo.BankCardAuthVo;
+import com.hfepay.scancode.api.entity.vo.MerchantAccountsVo;
+import com.hfepay.scancode.api.entity.vo.MerchantInfoVo;
+import com.hfepay.scancode.api.entity.vo.MerchantPayInfoVo;
+import com.hfepay.scancode.api.entity.vo.MerchantRateVo;
+import com.hfepay.scancode.api.entity.vo.MerchantUpdateCardVo;
+
+public interface MerchantBusinessService{
+
+	
+	/**
+	 * 商户入网
+	 * @param info 商户基本信息
+	 * @param accounts 商户账户信息
+	 * @param payTypes 商户费率信息列表
+	 * @return
+	 * @throws Exception
+	 * @author lemon
+	 */
+	public Map<String, String> merchantJoin(MerchantInfoVo info, MerchantAccountsVo accounts, List<MerchantRateVo> payTypes) throws Exception;
+	
+	/**
+	 * 预订单（扫码付）
+	 * @param payInfo 订单信息
+	 * @return
+	 * @throws Exception
+	 * @author lemons
+	 */
+	public Map<String,String> merchantOrder(MerchantPayInfoVo payInfo) throws Exception;
+	
+	/**
+	 * 微信公众号支付
+	 * @param payInfo 订单信息
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, String> merchantWechatOfficial(MerchantPayInfoVo payInfo) throws Exception;
+	
+	/**
+	 * 银行卡四要素
+	 * @param bankCard
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, String> bankCardAuthFour(BankCardAuthVo bankCard) throws Exception;
+	
+	/**
+	 * 商户结算账户信息变更
+	 * @param updateCardVo
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, String> merchantUpdateCard(MerchantUpdateCardVo updateCardVo) throws Exception;
+	
+	/**
+	 * 商户钱包查询
+	 * @param merchantNo
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, String> merchantWallet(String merchantNo) throws Exception;
+	
+	/**
+	 * 推送注册成功消息
+	 * @param message
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, String> pushRegistSuccess(RegistSuccessMessage message) throws Exception;
+	
+	/**
+	 * 推送支付成功消息
+	 * @param message
+	 * @return
+	 * @throws Exception
+	 */
+	public Map<String, String> pushPaySuccess(PaySuccessMessage message) throws Exception;
+}

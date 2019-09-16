@@ -1,0 +1,296 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd" >
+
+<mapper namespace="PlatformQrcode">
+	<resultMap id="BaseResultMap" type="com.hfepay.scancode.entity.PlatformQrcode">
+		<result property="id" column="A_ID" />
+		<result property="qrCode" column="A_QR_CODE" />
+		<result property="channelNo" column="A_CHANNEL_NO" />
+		<result property="channelName" column="A_CHANNEL_NAME" />
+		<result property="agentNo" column="A_AGENT_NO" />
+		<result property="agentName" column="A_AGENT_NAME" />
+		<result property="merchantNo" column="A_MERCHANT_NO" />
+		<result property="merchantName" column="A_MERCHANT_NAME" />
+		<result property="qrName" column="A_QR_NAME" />
+		<result property="image" column="A_IMAGE" />
+		<result property="qrDesc" column="A_QR_DESC" />
+		<result property="storeId" column="A_STORE_ID" />
+		<result property="storeName" column="A_STORE_NAME" />
+		<result property="useStatus" column="A_use_status" />
+		<result property="qrStatus" column="A_QR_STATUS" />
+		<result property="recordStatus" column="A_RECORD_STATUS" />
+		<result property="createTime" column="A_CREATE_TIME" />
+		<result property="updateTime" column="A_UPDATE_TIME" />
+		<result property="operator" column="A_OPERATOR" />
+		<result property="remark" column="A_REMARK" />
+		<result property="temp1" column="A_TEMP_1" />
+		<result property="temp2" column="A_TEMP_2" />
+	</resultMap>
+
+	<sql id="Base_Column_List">
+	    <![CDATA[
+		A.ID as A_ID,A.QR_CODE as A_QR_CODE,A.CHANNEL_NO as A_CHANNEL_NO,A.CHANNEL_NAME as A_CHANNEL_NAME,A.AGENT_NO as A_AGENT_NO,A.AGENT_NAME as A_AGENT_NAME,A.MERCHANT_NO as A_MERCHANT_NO,A.MERCHANT_NAME as A_MERCHANT_NAME,A.QR_NAME as A_QR_NAME,A.IMAGE as A_IMAGE,A.QR_DESC as A_QR_DESC,A.STORE_ID as A_STORE_ID,A.STORE_NAME as A_STORE_NAME,A.use_status as A_use_status,A.QR_STATUS as A_QR_STATUS,A.RECORD_STATUS as A_RECORD_STATUS,A.CREATE_TIME as A_CREATE_TIME,A.UPDATE_TIME as A_UPDATE_TIME,A.OPERATOR as A_OPERATOR,A.REMARK as A_REMARK,A.TEMP_1 as A_TEMP_1,A.TEMP_2 as A_TEMP_2
+	    ]]>
+	</sql>
+
+	<select id="findByCriteria" parameterType="com.hfepay.commons.criteria.Criteria"
+		resultMap="BaseResultMap">
+		select
+		<include refid="Base_Column_List" />
+		from t_platform_qrcode A
+		<if test="_parameter != null and _parameter != '' ">
+			<where>
+				<include refid="Global.Where_Clause" />
+			</where>
+		</if>
+		<if test="hasOrderBy">
+			order by
+			<foreach collection="orderBys" item="orderBy" separator=",">
+				${orderBy} </foreach>
+		</if>
+	</select>
+	<select resultMap="BaseResultMap" parameterType="java.lang.String"
+		id="findById">
+		select
+		<include refid="Base_Column_List" />
+		from t_platform_qrcode A
+		where A.ID = #{id}
+	</select>
+	<delete parameterType="java.lang.String" id="deleteById">
+		delete from t_platform_qrcode
+		where ID = #{id}
+	</delete>
+	<delete id="deleteByCriteria" parameterType="com.hfepay.commons.criteria.Criteria">
+		delete A from t_platform_qrcode A
+		<if test="_parameter != null and _parameter != '' ">
+			<where>
+				<include refid="Global.Where_Clause" />
+			</where>
+		</if>
+	</delete>
+	<insert id="insert" parameterType="com.hfepay.scancode.entity.PlatformQrcode">
+		insert into t_platform_qrcode (
+		ID,
+		QR_CODE,
+		CHANNEL_NO,
+		CHANNEL_NAME,
+		AGENT_NO,
+		AGENT_NAME,
+		MERCHANT_NO,
+		MERCHANT_NAME,
+		QR_NAME,
+		IMAGE,
+		QR_DESC,
+		STORE_ID,
+		STORE_NAME,
+		use_status,
+		QR_STATUS,
+		RECORD_STATUS,
+		CREATE_TIME,
+		UPDATE_TIME,
+		OPERATOR,
+		REMARK,
+		TEMP_1,
+		TEMP_2
+		)
+		values (UUID(),
+		#{qrCode},
+		#{channelNo},
+		#{channelName},
+		#{agentNo},
+		#{agentName},
+		#{merchantNo},
+		#{merchantName},
+		#{qrName},
+		#{image},
+		#{qrDesc},
+		#{storeId},
+		#{storeName},
+		#{useStatus},
+		#{qrStatus},
+		#{recordStatus},
+		#{createTime},
+		#{updateTime},
+		#{operator},
+		#{remark},
+		#{temp1},
+		#{temp2}
+		)
+	</insert>
+	<select id="countByCriteria" parameterType="com.hfepay.commons.criteria.Criteria"
+		resultType="java.lang.Integer">
+		select count(*) from t_platform_qrcode A
+		<if test="_parameter != null and _parameter != '' ">
+			<where>
+				<include refid="Global.Where_Clause" />
+			</where>
+		</if>
+	</select>
+	<update id="updateByCriteria" parameterType="map">
+		update t_platform_qrcode A
+		<set>
+			<if test="record.id != null and record.id != '' ">
+				A.ID = #{record.id},
+			</if>
+			<if test="record.qrCode != null and record.qrCode != '' ">
+				A.QR_CODE = #{record.qrCode},
+			</if>
+			<if test="record.channelNo != null and record.channelNo != '' ">
+				A.CHANNEL_NO = #{record.channelNo},
+			</if>
+			<if test="record.channelName != null and record.channelName != '' ">
+				A.CHANNEL_NAME = #{record.channelName},
+			</if>
+			<if test="record.agentNo != null and record.agentNo != '' ">
+				A.AGENT_NO = #{record.agentNo},
+			</if>
+			<if test="record.agentName != null and record.agentName != '' ">
+				A.AGENT_NAME = #{record.agentName},
+			</if>
+			<if test="record.merchantNo != null and record.merchantNo != '' ">
+				A.MERCHANT_NO = #{record.merchantNo},
+			</if>
+			<if test="record.merchantName != null and record.merchantName != '' ">
+				A.MERCHANT_NAME = #{record.merchantName},
+			</if>
+			<if test="record.qrName != null and record.qrName != '' ">
+				A.QR_NAME = #{record.qrName},
+			</if>
+			<if test="record.image != null and record.image != '' ">
+				A.IMAGE = #{record.image},
+			</if>
+			<if test="record.qrDesc != null and record.qrDesc != '' ">
+				A.QR_DESC = #{record.qrDesc},
+			</if>
+			<if test="record.storeId != null and record.storeId != '' ">
+				A.STORE_ID = #{record.storeId},
+			</if>
+			<if test="record.storeName != null and record.storeName != '' ">
+				A.STORE_NAME = #{record.storeName},
+			</if>
+			<if test="record.useStatus != null and record.useStatus != '' ">
+				A.use_status = #{record.useStatus},
+			</if>
+			<if test="record.qrStatus != null and record.qrStatus != '' ">
+				A.QR_STATUS = #{record.qrStatus},
+			</if>
+			<if test="record.recordStatus != null and record.recordStatus != '' ">
+				A.RECORD_STATUS = #{record.recordStatus},
+			</if>
+			<if test="record.createTime != null and record.createTime != '' ">
+				A.CREATE_TIME = #{record.createTime},
+			</if>
+			<if test="record.updateTime != null and record.updateTime != '' ">
+				A.UPDATE_TIME = #{record.updateTime},
+			</if>
+			<if test="record.operator != null and record.operator != '' ">
+				A.OPERATOR = #{record.operator},
+			</if>
+			<if test="record.remark != null and record.remark != '' ">
+				A.REMARK = #{record.remark},
+			</if>
+			<if test="record.temp1 != null and record.temp1 != '' ">
+				A.TEMP_1 = #{record.temp1},
+			</if>
+			<if test="record.temp2 != null and record.temp2 != '' ">
+				A.TEMP_2 = #{record.temp2},
+			</if>
+		</set>
+		<if test="_parameter != null and _parameter != '' ">
+			<where>
+				<include refid="Global.Where_Clause" />
+			</where>
+		</if>
+	</update>
+	<update id="update" parameterType="com.hfepay.scancode.entity.PlatformQrcode">
+		update t_platform_qrcode A
+		<set>
+			<if test="id != null and id != '' ">
+				A.ID = #{id},
+			</if>
+			<if test="qrCode != null and qrCode != '' ">
+				A.QR_CODE = #{qrCode},
+			</if>
+			<if test="channelNo != null and channelNo != '' ">
+				A.CHANNEL_NO = #{channelNo},
+			</if>
+			<if test="channelName != null and channelName != '' ">
+				A.CHANNEL_NAME = #{channelName},
+			</if>
+			<if test="agentNo != null and agentNo != '' ">
+				A.AGENT_NO = #{agentNo},
+			</if>
+			<if test="agentName != null and agentName != '' ">
+				A.AGENT_NAME = #{agentName},
+			</if>
+			<if test="merchantNo != null and merchantNo != '' ">
+				A.MERCHANT_NO = #{merchantNo},
+			</if>
+			<if test="merchantName != null and merchantName != '' ">
+				A.MERCHANT_NAME = #{merchantName},
+			</if>
+			<if test="qrName != null and qrName != '' ">
+				A.QR_NAME = #{qrName},
+			</if>
+			<if test="image != null and image != '' ">
+				A.IMAGE = #{image},
+			</if>
+			<if test="qrDesc != null and qrDesc != '' ">
+				A.QR_DESC = #{qrDesc},
+			</if>
+			<if test="storeId != null and storeId != '' ">
+				A.STORE_ID = #{storeId},
+			</if>
+			<if test="storeName != null and storeName != '' ">
+				A.STORE_NAME = #{storeName},
+			</if>
+			<if test="useStatus != null and useStatus != '' ">
+				A.use_status = #{useStatus},
+			</if>
+			<if test="qrStatus != null and qrStatus != '' ">
+				A.QR_STATUS = #{qrStatus},
+			</if>
+			<if test="recordStatus != null and recordStatus != '' ">
+				A.RECORD_STATUS = #{recordStatus},
+			</if>
+			<if test="createTime != null and createTime != '' ">
+				A.CREATE_TIME = #{createTime},
+			</if>
+			<if test="updateTime != null and updateTime != '' ">
+				A.UPDATE_TIME = #{updateTime},
+			</if>
+			<if test="operator != null and operator != '' ">
+				A.OPERATOR = #{operator},
+			</if>
+			<if test="remark != null and remark != '' ">
+				A.REMARK = #{remark},
+			</if>
+			<if test="temp1 != null and temp1 != '' ">
+				A.TEMP_1 = #{temp1},
+			</if>
+			<if test="temp2 != null and temp2 != '' ">
+				A.TEMP_2 = #{temp2},
+			</if>
+		</set>
+		where A.ID = #{id}
+	</update>
+
+    <select resultMap="BaseResultMap" parameterType="java.lang.String" id="findPlatformQrcode" >
+	    select 
+	    <include refid="Base_Column_List" />
+	    from t_platform_qrcode A 
+	    where A.AGENT_NO = #{id}
+	    and A.QR_STATUS = 0
+	    and A.MERCHANT_NO =''
+	    limit 0,1
+	</select>
+	<parameterMap type="java.util.Map" id="qrcodeCode">		
+        <parameter property="namePre" mode="IN" jdbcType="CHAR"/>
+        <parameter property="newNo" mode="OUT" jdbcType="VARCHAR"/>
+	 </parameterMap>
+	  
+	 <select id="getQrcodeCode" parameterMap="qrcodeCode" statementType="CALLABLE">	 	
+	  	CALL generate_superNextNo(?,'t_platform_qrcode','qr_code',?)
+	 </select>
+</mapper>
+

@@ -1,0 +1,133 @@
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
+    <wb-module deploy-name="hfepay-epay-notify-webapp">
+        <wb-resource deploy-path="/" source-path="/target/m2e-wtp/web-resources"/>
+        <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
+        <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/resources"/>
+        <dependent-module archiveName="hfepay-commons-exception-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-commons-exception/hfepay-commons-exception">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-commons-base-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-commons-base/hfepay-commons-base">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-commons-dao-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-commons-dao/hfepay-commons-dao">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-commons-web-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-commons-web/hfepay-commons-web">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-commons-pay-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-commons-pay/hfepay-commons-pay">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-service-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-service-impl/hfepay-epay-service-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-service-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-service/hfepay-epay-service">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-entity-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-entity/hfepay-epay-entity">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-dao-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-dao-impl/hfepay-epay-dao-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-dao-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-dao/hfepay-epay-dao">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-api-service-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-api-service-impl/hfepay-epay-api-service-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-api-service-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-api-service/hfepay-epay-api-service">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-api-entity-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-api-entity/hfepay-epay-api-entity">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-api-dao-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-api-dao-impl/hfepay-epay-api-dao-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-api-dao-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-api-dao/hfepay-epay-api-dao">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-merchant-service-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-merchant-service-impl/hfepay-merchant-service-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-merchant-service-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-merchant-service/hfepay-merchant-service">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-merchant-entity-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-merchant-entity/hfepay-merchant-entity">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-merchant-dao-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-merchant-dao-impl/hfepay-merchant-dao-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-merchant-dao-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-merchant-dao/hfepay-merchant-dao">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-scancode-service-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-scancode-service-impl/hfepay-scancode-service-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-scancode-service-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-scancode-service/hfepay-scancode-service">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-scancode-entity-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-scancode-entity/hfepay-scancode-entity">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-scancode-dao-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-scancode-dao-impl/hfepay-scancode-dao-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-scancode-dao-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-scancode-dao/hfepay-scancode-dao">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-system-service-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-system-service-impl/hfepay-system-service-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-system-service-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-system-service/hfepay-system-service">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-system-entity-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-system-entity/hfepay-system-entity">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-system-dao-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-system-dao-impl/hfepay-system-dao-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-system-dao-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-system-dao/hfepay-system-dao">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-order-service-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-order-service-impl/hfepay-order-service-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-commons-cache-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-commons-cache/hfepay-commons-cache">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-order-service-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-order-service/hfepay-order-service">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-order-dao-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-order-dao-impl/hfepay-order-dao-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-order-dao-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-order-dao/hfepay-order-dao">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-channel-service-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-channel-service-impl/hfepay-epay-channel-service-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-channel-service-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-channel-service/hfepay-epay-channel-service">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-channel-dao-impl-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-channel-dao-impl/hfepay-epay-channel-dao-impl">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-channel-dao-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-channel-dao/hfepay-epay-channel-dao">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-epay-channel-entity-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-epay-channel-entity/hfepay-epay-channel-entity">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="hfepay-order-entity-1.0.0.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/hfepay-order-entity/hfepay-order-entity">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <property name="context-root" value="hfepay-epay-notify-webapp"/>
+        <property name="java-output-path" value="/hfepay-epay-notify-webapp/target/classes"/>
+    </wb-module>
+</project-modules>

@@ -1,0 +1,26 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.dao.impl;
+
+import com.hfepay.commons.dao.impl.MybatisEntityDAO;
+import com.hfepay.scancode.entity.OrderPay;
+import com.hfepay.scancode.dao.OrderPayDAO;
+
+import com.hfepay.commons.base.annotation.Generated;
+
+import java.math.BigDecimal;
+
+import org.springframework.stereotype.Repository;
+
+@Repository(value="orderPayDAO")
+@Generated("2016-10-17 11:37:40")
+public class OrderPayDAOImpl extends MybatisEntityDAO<OrderPay, String> implements OrderPayDAO {
+
+	@Override
+	public BigDecimal getTotalMoney(String date) {
+		// TODO Auto-generated method stub
+		return this.getSqlSession().selectOne(sqlId("getTotalMoney"), date);
+	}
+}

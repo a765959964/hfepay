@@ -1,0 +1,320 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2017
+ */
+package com.hfepay.scancode.controller;
+
+import java.util.List;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.alibaba.fastjson.JSONObject;
+import com.hfepay.common.web.controller.BaseController;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.utils.Pager;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.commons.condition.ClearingT0ErrCondition;
+import com.hfepay.scancode.commons.condition.OrderPayCondition;
+import com.hfepay.scancode.commons.condition.OrderPaymentCondition;
+import com.hfepay.scancode.commons.condition.WithdrawalsCondition;
+import com.hfepay.scancode.commons.contants.CheckFlag;
+import com.hfepay.scancode.commons.contants.OrderPayStatus;
+import com.hfepay.scancode.commons.contants.OrderPaymentStatus;
+import com.hfepay.scancode.commons.contants.PayCode;
+import com.hfepay.scancode.commons.contants.ProcessingStatus;
+import com.hfepay.scancode.commons.contants.WithdrawsStatus;
+import com.hfepay.scancode.commons.entity.ClearingT0Err;
+import com.hfepay.scancode.commons.entity.OrderPay;
+import com.hfepay.scancode.commons.entity.OrderPayment;
+import com.hfepay.scancode.commons.entity.Withdrawals;
+import com.hfepay.scancode.service.operator.ClearingT0ErrService;
+import com.hfepay.scancode.service.order.OrderPayService;
+import com.hfepay.scancode.service.order.OrderPaymentService;
+import com.hfepay.scancode.service.order.WithdrawalsService;
+
+@Controller
+@RequestMapping("/adminManage/clearingt0err")
+public class ClearingT0ErrController extends BaseController{
+
+	@Autowired
+	private ClearingT0ErrService clearingT0ErrService;
+
+	@Autowired
+	private WithdrawalsService  withdrawalsService;
+
+	@Autowired
+	private OrderPaymentService orderPaymentService;
+
+	@Autowired
+	private OrderPayService orderPayService;
+
+	private final String LIST_ACTION = "redirect:/clearingt0err";
+
+	/**
+	 * @Title: saveOrUpdateById
+	 * @Description: 查询列表
+	 * @author: Ricky
+	 * @param 
+	 * @return: String
+	 * @date CreateDate : 2017-03-20 09:55:50
+	 */
+	@RequestMapping(method= {RequestMethod.GET,RequestMethod.POST})
+	public String list() {
+		return "admin/clearingt0err/list";
+	}
+
+	/**
+	 * @Title: listContent
+	 * @Description: 列表查询
+	 * @author: Ricky
+	 * @param ClearingT0ErrCondition
+	 * @return: String
+	 * @date CreateDate : 2017-03-20 09:55:50
+	 */
+	@RequestMapping(value = "/content", method= {RequestMethod.POST})
+	public String listContent(ModelMap model,ClearingT0ErrCondition clearingT0ErrCondition){		
+		PagingResult<ClearingT0Err> page = clearingT0ErrService.findPagingResult(clearingT0ErrCondition);
+		Pager<ClearingT0Err> pager = new Pager<ClearingT0Err>();
+		pager.setPageNo(clearingT0ErrCondition.getPageNo());
+		pager.setPageSize(clearingT0ErrCondition.getPageSize());
+		pager.setResult(page.getResult());
+		pager.setTotalCount(page.getTotalCount());
+		if(pager.getOrder() == null){
+			pager.setOrder("");
+		}
+		model.addAttribute("pager",pager);
+		return "admin/clearingt0err/listContent";
+	}
+
+
+	/**
+	 * @Title: list
+	 * @Description: 列表查询，无分页
+	 * @author: Ricky
+	 * @param ClearingT0ErrCondition
+	 * @return: JSONObject
+	 * @date CreateDate : 2017-03-20 09:55:50
+	 */
+	@RequestMapping(value="/list",method=RequestMethod.POST)
+	@ResponseBody
+	public JSONObject list(HttpServletRequest request,ClearingT0ErrCondition clearingT0ErrCondition){		
+		List<ClearingT0Err> list = clearingT0ErrService.findAll(clearingT0ErrCondition);
+		JSONObject json = new JSONObject();
+		json.put("objList", list);
+		return json;
+	}
+
+
+	/**
+	 * @Title: saveOrUpdateById
+	 * @Description: 新增/更新
+	 * @author: Ricky
+	 * @param ClearingT0ErrCondition
+	 * @return: String
+	 * @date CreateDate : 2017-03-20 09:55:50
+	 */
+	@RequestMapping(value="/save", method= {RequestMethod.POST})
+	public String saveOrUpdateById(ModelMap model,ClearingT0ErrCondition clearingT0ErrCondition) throws Exception {
+		long flag = 0;
+		if(Strings.isEmpty(clearingT0ErrCondition.getId())){
+			//新增
+			flag = clearingT0ErrService.insert(clearingT0ErrCondition);
+		}else{
+			flag = clearingT0ErrService.update(clearingT0ErrCondition);
+		}
+
+		if(flag > 0){
+			return LIST_ACTION;
+		}
+		return "admin/clearingt0err/edit";
+	}
+
+	/**
+	 * @Title: show
+	 * @Description: 查询单个实体
+	 * @author: Ricky
+	 * @param id
+	 * @return: String
+	 * @date CreateDate : 2017-03-20 09:55:50
+	 */
+	@RequestMapping(value="/{id}", method= {RequestMethod.GET})
+	public String show(ModelMap model,@PathVariable String id) throws Exception {
+		if(!"0".equalsIgnoreCase(id)){
+			ClearingT0Err entity = clearingT0ErrService.findById(id);
+			model.addAttribute("Obj", entity);
+		}
+		return "admin/clearingt0err/edit";
+	}
+
+	/**
+	 * @Title: saveOrUpdateById
+	 * @Description: 删除
+	 * @author: Ricky
+	 * @param ClearingT0ErrCondition
+	 * @return: JSONObject
+	 * @date CreateDate : 2017-03-20 09:55:50
+	 */
+	@RequestMapping(value="/del",method=RequestMethod.POST)
+	@ResponseBody
+	public JSONObject del(HttpServletRequest request,ClearingT0ErrCondition clearingT0ErrCondition){		
+		long flag = clearingT0ErrService.deleteById(clearingT0ErrCondition.getId());
+		JSONObject json = new JSONObject();
+		if(flag == 0){
+			json.put("message", Constants.FAIL_MSG);
+			json.put("status", Constants.FAIL_STATE);
+		}else{
+			json.put("message", Constants.SUCCESS_MSG);
+			json.put("status", Constants.SUCCESS_STATE);
+		}
+		return json;
+	}
+
+
+	/**
+	 * 
+	 * @author liushuyu
+	 * Desc 查看交易订单详情
+	 * @return
+	 */
+	@RequestMapping(value="/detail/{id}")
+	public String showDetail(@PathVariable("id")String id,Model model){
+		ClearingT0Err t0 = clearingT0ErrService.findById(id);
+		String tradeNo=t0.getTradeNo();
+		Withdrawals withdrawals=new Withdrawals();
+		withdrawals.setTradeNo(tradeNo);
+		Withdrawals entity=withdrawalsService.queryWithdrawals(withdrawals);
+		model.addAttribute("item",entity);
+		return "admin/clearingt0err/detail";
+	}
+
+	/**
+	 * 
+	 * @author liushuyu
+	 * Desc 调账
+	 * @return
+	 */
+	@RequestMapping(value="/update",method=RequestMethod.POST)
+	@ResponseBody
+	public JSONObject update(String id,String checkFlag){
+		String tradeNo=null;
+		boolean flag=true;
+		long count=0;
+		try{
+			tradeNo=clearingT0ErrService.findById(id).getTradeNo();
+			//修改t0对账表的状态
+			ClearingT0ErrCondition clearingT0ErrCondition=new ClearingT0ErrCondition();
+			clearingT0ErrCondition.setId(id);
+			clearingT0ErrCondition.setProcessingStatus(ProcessingStatus.STATUS_CLCG.getCode());
+			count=clearingT0ErrService.update(clearingT0ErrCondition);
+			if(count==0){
+				flag=false;
+				return getJson(flag);
+			}
+		}catch(Exception e){
+			flag=false;
+			return getJson(flag);
+		}
+		//对方有本地无
+		if(CheckFlag.STATUS_BDWDFY.getCode().equals(checkFlag)){
+			try{
+				//修改订单表状态
+				OrderPayCondition orderPayCondition=new OrderPayCondition();
+				orderPayCondition.setTradeNo(tradeNo);
+				String orderPayId=orderPayService.findAll(orderPayCondition).get(0).getId();
+				orderPayCondition.setId(orderPayId);
+				orderPayCondition.setPayStatus(OrderPayStatus.STATUS_ZFCG.getCode());
+				count=orderPayService.update(orderPayCondition);
+				if(count==0){
+					flag=false;
+					return getJson(flag);
+				}
+				//修改提现表状态
+				WithdrawalsCondition withdrawalsCondition=new WithdrawalsCondition();
+				withdrawalsCondition.setTradeNo(tradeNo);
+				String withdrawalsId=withdrawalsService.findAll(withdrawalsCondition).get(0).getId();
+				withdrawalsCondition.setId(withdrawalsId);
+				withdrawalsCondition.setResultCode(WithdrawsStatus.WD_STATUS_SUCCESS.getCode());
+				count=withdrawalsService.update(withdrawalsCondition);
+				if(count==0){
+					flag=false;
+					return getJson(flag);
+				}
+			}catch(Exception e){
+				flag=false;
+				return getJson(flag);
+			}
+		}
+		//本地有对方无
+		if(CheckFlag.STATUS_BDYDFW.getCode().equals(checkFlag)){
+			try{
+				//修改订单表状态
+				OrderPayCondition orderPayCondition=new OrderPayCondition();
+				orderPayCondition.setTradeNo(tradeNo);
+				String orderPayId=orderPayService.findAll(orderPayCondition).get(0).getId();
+				orderPayCondition.setId(orderPayId);
+				orderPayCondition.setPayStatus(OrderPayStatus.STATUS_ZFSB.getCode());
+				count=orderPayService.update(orderPayCondition);
+				if(count==0){
+					flag=false;
+					return getJson(flag);
+				}
+				//修改交易表状态
+				OrderPaymentCondition orderPaymentCondition=new OrderPaymentCondition();
+				orderPaymentCondition.setTradeNo(tradeNo);
+				String orderPaymentId=orderPaymentService.findAll(orderPaymentCondition).get(0).getId();
+				orderPaymentCondition.setId(orderPaymentId);
+				orderPaymentCondition.setResultCode(OrderPaymentStatus.STATUS_JYSB.getCode());
+				count=orderPaymentService.update(orderPaymentCondition);
+				if(count==0){
+					flag=false;
+					return getJson(flag);
+				}
+			}catch(Exception e){
+				flag=false;
+			}
+		}
+		//双方不一致
+		if(CheckFlag.STATUS_SFBYZ.getCode().equals(checkFlag)){
+			//暂时不处理
+			flag=false;
+			return getJson(flag);
+		}
+		return getJson(flag);
+	}
+	
+	/**
+	 * 
+	 * @author liushuyu
+	 * Desc 如果flag获取一个成功的json
+	 * @param flag
+	 * @return
+	 */
+	private JSONObject getJson(boolean flag){
+		JSONObject json = new JSONObject();
+		if(flag){ 
+			json.put("message", Constants.SUCCESS_MSG);
+			json.put("status", Constants.SUCCESS_STATE);
+		}else{
+			json.put("message", Constants.FAIL_MSG);
+			json.put("status", Constants.FAIL_STATE);
+		}
+		
+		return json;
+	}
+
+}
+

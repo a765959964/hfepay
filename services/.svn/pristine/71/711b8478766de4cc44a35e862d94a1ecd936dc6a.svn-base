@@ -1,0 +1,230 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.pay.service.impl;
+
+import java.util.Date;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.cache.jedis.impl.RedisSharedCache;
+import com.hfepay.commons.base.lang.Dates;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.pay.service.PayOrderPaymentService;
+import com.hfepay.pay.utils.OrderIDUtils;
+import com.hfepay.scancode.commons.condition.OrderPaymentCondition;
+import com.hfepay.scancode.commons.contants.IndexType;
+import com.hfepay.scancode.commons.dao.OrderPaymentDAO;
+import com.hfepay.scancode.commons.entity.OrderPayment;
+
+@Service
+public class PayOrderPaymentServiceImpl implements PayOrderPaymentService {
+	
+	public static final Logger log = LoggerFactory.getLogger(PayOrderPaymentServiceImpl.class);
+	
+	@Autowired
+    private OrderPaymentDAO orderPaymentDAO;
+	
+	@Autowired
+	private OrderIDUtils orderUtils;
+	
+	@Autowired
+	private RedisSharedCache redisSharedCache;
+    
+   
+	
+	/**
+	 * 列表
+	 * @param orderPayment 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:55
+	 */
+	@Override
+	public List<OrderPayment> findAll(OrderPaymentCondition orderPaymentCondition){
+		CriteriaBuilder cb = Cnd.builder(OrderPayment.class);
+		if(!Strings.isEmpty(orderPaymentCondition.getId())){
+			cb.andEQ("id", orderPaymentCondition.getId());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getTradeNo())){
+			cb.andEQ("tradeNo", orderPaymentCondition.getTradeNo());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getChannelNo())){
+			cb.andEQ("channelNo", orderPaymentCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getAgentNo())){
+			cb.andEQ("agentNo", orderPaymentCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", orderPaymentCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getQrCode())){
+			cb.andEQ("qrCode", orderPaymentCondition.getQrCode());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getPayCode())){
+			cb.andEQ("payCode", orderPaymentCondition.getPayCode());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getBusinessType())){
+			cb.andEQ("businessType", orderPaymentCondition.getBusinessType());
+		}
+//		if(null != orderPaymentCondition.getOrderAmt()){
+//			cb.andEQ("orderAmt", orderPaymentCondition.getOrderAmt());
+//		}
+		if(null != orderPaymentCondition.getQueryStartAmt()){
+			cb.andGE("orderAmt", orderPaymentCondition.getQueryStartAmt());
+		}
+		if(null != orderPaymentCondition.getQueryEndAmt()){
+			cb.andLE("orderAmt", orderPaymentCondition.getQueryEndAmt());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getProductName())){
+			cb.andEQ("productName", orderPaymentCondition.getProductName());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getProductDesc())){
+			cb.andEQ("productDesc", orderPaymentCondition.getProductDesc());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getBuyerId())){
+			cb.andEQ("buyerId", orderPaymentCondition.getBuyerId());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getBuyerAccount())){
+			cb.andEQ("buyerAccount", orderPaymentCondition.getBuyerAccount());
+		}
+		if(null != orderPaymentCondition.getTotalAmount()){
+			cb.andEQ("totalAmount", orderPaymentCondition.getTotalAmount());
+		}
+		if(null != orderPaymentCondition.getBuyerPayAmount()){
+			cb.andEQ("buyerPayAmount", orderPaymentCondition.getBuyerPayAmount());
+		}
+		if(null != orderPaymentCondition.getPointAmount()){
+			cb.andEQ("pointAmount", orderPaymentCondition.getPointAmount());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getFeeStatus())){
+			cb.andEQ("feeStatus", orderPaymentCondition.getFeeStatus());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getFeeType())){
+			cb.andEQ("feeType", orderPaymentCondition.getFeeType());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getPaymentInfo())){
+			cb.andEQ("paymentInfo", orderPaymentCondition.getPaymentInfo());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getBatchId())){
+			cb.andEQ("batchId", orderPaymentCondition.getBatchId());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getResultCode())){
+			cb.andEQ("resultCode", orderPaymentCondition.getResultCode());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getResultInfo())){
+			cb.andEQ("resultInfo", orderPaymentCondition.getResultInfo());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getPayTradeNo())){
+			cb.andEQ("payTradeNo", orderPaymentCondition.getPayTradeNo());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getPaymentType())){
+			cb.andEQ("paymentType", orderPaymentCondition.getPaymentType());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getNotifyUrl())){
+			cb.andEQ("notifyUrl", orderPaymentCondition.getNotifyUrl());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getReturnUrl())){
+			cb.andEQ("returnUrl", orderPaymentCondition.getReturnUrl());
+		}
+		if(null != orderPaymentCondition.getBeginTime()){
+			cb.andGE("beginTime", orderPaymentCondition.getBeginTime());
+		}
+		if(null != orderPaymentCondition.getEndTime()){
+			cb.andLE("beginTime", orderPaymentCondition.getEndTime());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getSettleTime())){
+			cb.andEQ("settleTime", orderPaymentCondition.getSettleTime());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getSettleMerchant())){
+			cb.andEQ("settleMerchant", orderPaymentCondition.getSettleMerchant());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getRefundStatus())){
+			cb.andEQ("refundStatus", orderPaymentCondition.getRefundStatus());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getOrderStatus())){
+			cb.andEQ("orderStatus", orderPaymentCondition.getOrderStatus());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getOptCode())){
+			cb.andEQ("optCode", orderPaymentCondition.getOptCode());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getRecordStatus())){
+			cb.andEQ("recordStatus", orderPaymentCondition.getRecordStatus());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getCashierNo())){
+			cb.andEQ("cashier_no", orderPaymentCondition.getCashierNo());
+		}
+		if(null != orderPaymentCondition.getMerchantCost()){
+			cb.andEQ("merchant_cost", orderPaymentCondition.getMerchantCost());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getOperator())){
+			cb.andEQ("operator", orderPaymentCondition.getOperator());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getStoreNo())){
+			cb.andEQ("store_no", orderPaymentCondition.getStoreNo());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getRemark())){
+			cb.andLike("remark", orderPaymentCondition.getRemark());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getTemp1())){
+			cb.andEQ("temp1", orderPaymentCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getTemp2())){
+			cb.andEQ("temp2", orderPaymentCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getTemp3())){
+			cb.andEQ("temp3", orderPaymentCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getTemp4())){
+			cb.andEQ("temp4", orderPaymentCondition.getTemp4());
+		}
+		if(orderPaymentCondition.getOrganNoList() !=null && !orderPaymentCondition.getOrganNoList().isEmpty()){
+			cb.andIn("agentNo", orderPaymentCondition.getOrganNoList());
+		}
+		if(!Strings.isEmpty(orderPaymentCondition.getAccountType())){
+			if(orderPaymentCondition.getAccountType().equals("2")){
+				cb.andEQ("accountType", orderPaymentCondition.getAccountType());
+			}else{
+				cb.andNotEQ("accountType", "2");
+			}
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return orderPaymentDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:55
+	 */
+	@Override
+	public long update(OrderPaymentCondition orderPaymentCondition){
+		OrderPayment orderPayment = new OrderPayment();
+		BeanUtils.copyProperties(orderPaymentCondition, orderPayment);
+		return orderPaymentDAO.update(orderPayment);
+	}
+	
+
+	//保存交易订单
+	@Override
+	public OrderPayment saveOrderPayment(OrderPaymentCondition orderPaymentCondition) {
+		//生成交易订单编号
+		orderPaymentCondition.setTradeNo(orderUtils.getOrderID(Dates.format(Dates.DF.yyyyMMdd,new Date()), IndexType.Index32.value(), "ZF"));
+		
+		OrderPayment orderPayment = new OrderPayment();
+		BeanUtils.copyProperties(orderPaymentCondition, orderPayment);
+		orderPaymentDAO.insert(orderPayment);
+		return orderPayment;
+	}
+}
+

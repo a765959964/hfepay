@@ -1,0 +1,152 @@
+package com.hfepay.epay.api.entity.order;
+
+public class PaymentForm implements java.io.Serializable{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	
+	
+	
+	private String appId;//应用ID
+	
+	private String partnerNo;//商户编号
+	
+	private String channle;//支付渠道
+	
+	private String prepayNo;//支付业务代码
+	
+	private Long timestamp;//时间戳
+	
+	private String openId;
+	
+	private String merchantId;//商户号
+	
+	private String payFee;//支付金额
+	
+	private String body;//商品或支付单简要描述
+	
+	private String detail;//商品详细列表，使用Json格式;可为空
+	
+	private String notify_url; //商户回调地址
+	
+	private String show_url;//商品显示界面
+	
+	private String merchantPaySwitch;//商户支付开关
+	
+	private String merchantAppId;//商户应用编号
+	
+	public String getOpenId() {
+		return openId;
+	}
+
+	public void setOpenId(String openId) {
+		this.openId = openId;
+	}
+
+	public String getChannle() {
+		return channle;
+	}
+
+	public void setChannle(String channle) {
+		this.channle = channle;
+	}
+
+	public String getAppId() {
+		return appId;
+	}
+
+	public void setAppId(String appId) {
+		this.appId = appId;
+	}
+
+	public String getPartnerNo() {
+		return partnerNo;
+	}
+
+	public void setPartnerNo(String partnerNo) {
+		this.partnerNo = partnerNo;
+	}
+
+	public String getPrepayNo() {
+		return prepayNo;
+	}
+
+	public void setPrepayNo(String prepayNo) {
+		this.prepayNo = prepayNo;
+	}
+
+	public Long getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(Long timestamp) {
+		this.timestamp = timestamp;
+	}
+
+	public String getMerchantId() {
+		return merchantId;
+	}
+
+	public void setMerchantId(String merchantId) {
+		this.merchantId = merchantId;
+	}
+
+	public String getPayFee() {
+		return payFee;
+	}
+
+	public void setPayFee(String payFee) {
+		this.payFee = payFee;
+	}
+
+	public String getBody() {
+		return body;
+	}
+
+	public void setBody(String body) {
+		this.body = body;
+	}
+
+	public String getDetail() {
+		return detail;
+	}
+
+	public void setDetail(String detail) {
+		this.detail = detail;
+	}
+
+	public String getNotify_url() {
+		return notify_url;
+	}
+
+	public void setNotify_url(String notify_url) {
+		this.notify_url = notify_url;
+	}
+
+	public String getShow_url() {
+		return show_url;
+	}
+
+	public void setShow_url(String show_url) {
+		this.show_url = show_url;
+	}
+
+	public String getMerchantPaySwitch() {
+		return merchantPaySwitch;
+	}
+
+	public void setMerchantPaySwitch(String merchantPaySwitch) {
+		this.merchantPaySwitch = merchantPaySwitch;
+	}
+
+	public String getMerchantAppId() {
+		return merchantAppId;
+	}
+
+	public void setMerchantAppId(String merchantAppId) {
+		this.merchantAppId = merchantAppId;
+	}
+	
+}

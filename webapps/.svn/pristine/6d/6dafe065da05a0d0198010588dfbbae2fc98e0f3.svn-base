@@ -1,0 +1,117 @@
+$(function(){
+	toPage(startNo);
+	$("#list").delegate(".weui_cell","click",function(){
+		var spans = $(this).find(".detailMsg span");
+		$.each(spans,function(i,item){
+			var classAtt = $(item).attr("class");
+			var val = $(item).text();
+			$("#details ."+classAtt).text(val);
+		});
+		$(this).addClass("open-popup");
+	})
+});
+
+var loading = false;
+var startNo = 1;//其实页
+var totalNum =0;//页码总数
+var timer;//当前定时器
+var lastTimer;//上一个定时器
+$(document.body).infinite().on("infinite", function() {
+	if(loading) return;
+	loading = true;
+	if(lastTimer){
+		clearTimeout(lastTimer);
+	}
+	lastTimer = timer;
+	timer = setTimeout(function() {
+		startNo++;
+		toPage(startNo);
+	  loading = false;
+	  if(startNo>=totalNum){
+		  loading=true;
+		  if(timer){
+			  clearTimeout(timer);
+		  }
+		  $(".weui-infinite-scroll").hide();
+	  }
+	}, 2000);
+});
+
+
+function toPage(pageNumber){
+	$.ajax({
+		   type: "POST",
+		   url: basePath+"/scancode/billContent?pageNo="+pageNumber,
+		   dataType:"json",
+		   success: function(msg){
+			   totalNum = msg.totalPages;
+			   if(totalNum==0){
+				   $(".weui-infinite-scroll").hide();
+				   $("#list").append("<span style='text-align:center;color:#666;padding:20px;display:block'>暂无数据</span>");
+			   }
+			   if(totalNum==1){
+				   $(".weui-infinite-scroll").hide();
+			   }
+			   var content=msg.result;
+			   if(content){
+				   var length=content.length;
+				   $.each(content,function(i,item){
+					   $("#list").append(setContent(item));
+				   });
+			   }
+			   
+		   }
+		});
+}
+
+function setContent(obj){
+	return '<a class="weui_cell" href="javascript:;" data-target="#details">'+
+	'<div class="weui_cell_bd weui_cell_primary">'+
+		'<p>'+tranPayType(obj.payType)+'</p><p class="billData">'+transStatus(obj.payStatus)+'</p><p class="billData">'+new Date(obj.beginTime).Format("yyyy-MM-dd hh:mm:ss")+'</p>'+
+	'</div>'+
+	'<div class="weui_cell_ft">&yen; '+obj.orderAmt+'</div>'+
+	'<div style="display:none;" class="detailMsg">'+
+	'<span class="orderAmt">&yen;'+obj.orderAmt+'</span>'+
+	'<span class="merchantRate">&yen;'+(obj.orderAmt*obj.merchantRate).toFixed(2)+'</span><span class="updateTime">'+new Date(obj.beginTime).Format("yyyy-MM-dd hh:mm:ss")+'</span>'+
+	'<span class="payNo">'+obj.tradeNo+'</span><span class="payType">'+tranPayType(obj.payType)+'</span><span class="payStatus">'+transStatus(obj.payStatus)+'</span>'+
+	'</div>'+
+	'</a>';
+}
+
+//00：支付成功、01：支付失败、02：渠道处理中、03：记账处理中
+function transStatus(obj){
+	var objRe='';
+	if(obj=='00'){
+		objRe='等待支付'
+	}
+	else if(obj=='01'){
+		objRe='渠道支付中'
+	}
+	else if(obj=='02'){
+		objRe='支付成功'
+	}
+	else if(obj=='03'){
+		objRe='支付失败'
+	}
+	return objRe;
+}
+//0000：钱包支付（默认）、0001：支付宝支付、0002：微信支付、0003：银联支付
+function tranPayType(obj){
+	var objRe='';
+	if(obj=='0000'){
+		objRe='钱包支付'
+	}
+	else if(obj=='0001'){
+		objRe='支付宝支付'
+	}
+	else if(obj=='0002'){
+		objRe='微信支付'
+	}
+	else if(obj=='0003'){
+		objRe='银联支付'
+	}
+	else if(obj=='0004'){
+		objRe='微信公众号支付'
+	}
+	return objRe;
+}

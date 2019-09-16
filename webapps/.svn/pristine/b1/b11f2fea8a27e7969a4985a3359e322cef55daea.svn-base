@@ -1,0 +1,49 @@
+package com.hfepay.scancode.commons;
+
+public class Constants {
+	/**
+	 * 验证手机--找回密码
+	 */
+	public static String VALIDATE_PHONE_TYPE_FORGET = "1";
+	/**
+	 * 验证手机--注册
+	 */
+	public static String VALIDATE_PHONE_TYPE_REGISTER = "0";
+	
+	
+	/**微信公众号的appid，从微信提供的后台获取**/
+	public static final String APPID = "wx8aea7001a9cc84e8";
+	
+	/**微信公众号的key，从微信提供的后台获取**/
+	public static final String SECRET = "b186679ce5425eb59b0f428f1d60fcf6";
+	
+	/**
+	 * 路径分隔符
+	 */
+	public static final String  SPT = "/";
+	
+	/**
+	 * 上传文件路径
+	 */
+	public static final String FILE_UPLOAD_ROOT_PATH = "/data/files";
+	/**
+	 * 微信授权地址
+	 */
+	public static final String WX_GATEWAY_NEW = "https://api.weixin.qq.com/sns/oauth2/access_token?";
+	
+	/**
+	 * 状态--禁用
+	 */
+	public static final String FAIL_STATE = "0";
+	
+	/**
+	 * 状态--禁用
+	 */
+	public static String STATUS_DISABLE = "0";
+	
+	
+	/**
+	 * 微信公众号支付
+	 */
+	public static String WXGZHZF = "WXGZHZF";
+}

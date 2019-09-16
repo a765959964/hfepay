@@ -1,0 +1,92 @@
+package com.hfepay.epay.api.entity.refund;
+
+public class OrderRefundForm implements java.io.Serializable{
+		
+	
+	private static final long serialVersionUID = -9034282002123192282L;
+
+	private String parpay_no;
+	
+	private String channel;
+	
+	private String order_no;
+	
+	private String refund_url;
+	
+	private String refund_fee;
+	
+	private String refund_remak;
+	
+	private String mechno;
+	
+	private String merchantPaySwitch;
+	
+	public String getMerchantPaySwitch() {
+		return merchantPaySwitch;
+	}
+
+	public void setMerchantPaySwitch(String merchantPaySwitch) {
+		this.merchantPaySwitch = merchantPaySwitch;
+	}
+
+	public String getMechno() {
+		return mechno;
+	}
+
+	public void setMechno(String mechno) {
+		this.mechno = mechno;
+	}
+
+	public String getRefund_remak() {
+		return refund_remak;
+	}
+
+	public void setRefund_remak(String refund_remak) {
+		this.refund_remak = refund_remak;
+	}
+
+	public String getRefund_fee() {
+		return refund_fee;
+	}
+
+	public void setRefund_fee(String refund_fee) {
+		this.refund_fee = refund_fee;
+	}
+
+
+	public String getOrder_no() {
+		return order_no;
+	}
+
+	public void setOrder_no(String order_no) {
+		this.order_no = order_no;
+	}
+
+	public String getRefund_url() {
+		return refund_url;
+	}
+
+	public void setRefund_url(String refund_url) {
+		this.refund_url = refund_url;
+	}
+
+	public String getParpay_no() {
+		return parpay_no;
+	}
+
+	public void setParpay_no(String parpay_no) {
+		this.parpay_no = parpay_no;
+	}
+
+	public String getChannel() {
+		return channel;
+	}
+
+	public void setChannel(String channel) {
+		this.channel = channel;
+	}
+	
+	
+	
+	
+}

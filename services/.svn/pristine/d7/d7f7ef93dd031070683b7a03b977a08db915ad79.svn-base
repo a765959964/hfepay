@@ -1,0 +1,58 @@
+package com.hfepay.scancode.api.entity.vo;
+
+import java.lang.reflect.Field;
+import java.util.HashMap;
+import java.util.Map;
+
+public class MerchantRateVo {
+	
+	private String payCode;//通道编号
+	private String withdrawRate;//通道编号
+	private String tradeRate;//交易手续费率
+	private String withdrawAmt;//提现服务费
+	public String getPayCode() {
+		return payCode;
+	}
+	public void setPayCode(String payCode) {
+		this.payCode = payCode;
+	}
+	public String getWithdrawRate() {
+		return withdrawRate;
+	}
+	public void setWithdrawRate(String withdrawRate) {
+		this.withdrawRate = withdrawRate;
+	}
+	public String getTradeRate() {
+		return tradeRate;
+	}
+	public void setTradeRate(String tradeRate) {
+		this.tradeRate = tradeRate;
+	}
+	public String getWithdrawAmt() {
+		return withdrawAmt;
+	}
+	public void setWithdrawAmt(String withdrawAmt) {
+		this.withdrawAmt = withdrawAmt;
+	}
+	
+	public Map<String,String> toMap(){
+        Map<String,String> map = new HashMap<String, String>();
+        Field[] fields = this.getClass().getDeclaredFields();
+        for (Field field : fields) {
+            Object obj;
+            try {
+                obj = field.get(this);
+                if(obj!=null){
+                    map.put(field.getName(), String.valueOf(obj));
+                }
+            } catch (IllegalArgumentException e) {
+                e.printStackTrace();
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return map;
+    }
+	
+	
+}

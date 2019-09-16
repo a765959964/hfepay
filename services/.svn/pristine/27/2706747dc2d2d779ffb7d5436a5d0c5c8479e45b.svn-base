@@ -1,0 +1,103 @@
+package com.hfepay.scancode.service.operator;
+
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.utils.PagingResult;
+
+import com.hfepay.scancode.entity.PlatformQrcode;
+import com.hfepay.scancode.condition.PlatformQrcodeCondition;
+
+import java.util.List;
+
+public interface PlatformQrcodeService {
+	
+	/**
+	 * 列表(分页)
+	 * @param platformQrcodeCondition 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	public PagingResult<PlatformQrcode> findPagingResult(PlatformQrcodeCondition platformQrcodeCondition);
+	
+	/**
+	 * 列表
+	 * @param platformQrcode 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	public List<PlatformQrcode> findAll(PlatformQrcodeCondition platformQrcodeCondition);
+	
+	/**
+	 * 主键查找
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	PlatformQrcode findById(String id);
+	
+	/**
+	 * 新增
+	 * @param platformQrcodeCondition
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	long insert(PlatformQrcodeCondition platformQrcodeCondition);
+
+	/**
+	 * 删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	long deleteById(String id);
+	
+	/**
+	 * 条件删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	long deleteByCriteria(Criteria criteria);
+	
+	/**
+	 * 行数汇总
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	long countByCriteria(Criteria criteria);
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	long update(PlatformQrcodeCondition platformQrcodeCondition);
+	
+	/**
+	 * 条件更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	long updateByCriteria(PlatformQrcodeCondition platformQrcodeCondition,Criteria criteria);
+	
+	/**
+	 * 条件取当前代理商没有用过的二维码
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-14 16:27:56
+	 */
+	PlatformQrcode findPlatformQrcode(String id);
+	
+}
+

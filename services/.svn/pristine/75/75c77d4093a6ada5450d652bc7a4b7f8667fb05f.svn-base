@@ -1,0 +1,250 @@
+package com.hfepay.epay.api.service.impl;
+
+
+import java.util.Date;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.commons.base.enums.PaymentErrorEnum;
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.exception.ServicesException;
+import com.hfepay.epay.api.service.IWechatPayService;
+import com.hfepay.order.bo.OrderPayBo;
+import com.hfepay.order.service.OrderPayService;
+import com.hfepay.system.entity.ChannelLog;
+import com.hfepay.system.entity.condition.ChannelLogCondition;
+import com.hfepay.system.service.ChannelLogService;
+import com.tencent.WXPay;
+import com.tencent.business.ScanJSPayQueryBusiness.ResultListener;
+import com.tencent.common.Signature;
+import com.tencent.common.Util;
+import com.tencent.protocol.js_pay_protocol.AppJSPayReqData;
+import com.tencent.protocol.js_pay_protocol.UnifiedOrderJSPayReqData;
+import com.tencent.protocol.js_pay_protocol.UnifiedOrderJSPayResData;
+import com.tencent.protocol.pay_protocol.AppPayReqData;
+import com.tencent.protocol.pay_protocol.UnifiedOrderPayReqData;
+import com.tencent.protocol.pay_protocol.UnifiedOrderPayResData;
+import com.tencent.service.impl.ScanJSPayQueryResultListenerImpl;
+import com.utils.PaymentConstants;
+import com.utils.PropertiesUtil;
+
+import net.sf.json.JSONObject;
+
+/**
+ * ClassName： WechatPayServiceImpl<br>
+ * Description： 微信支付接口<br>
+ * 
+ * @author xieP
+ * @createTime 2015年8月5日
+ * @version 1.0.0
+ */
+@Service
+public class WechatPayServiceImpl implements IWechatPayService {
+	
+	@Autowired
+	private OrderPayService orderPayService;
+	
+	@Autowired
+	private ChannelLogService channelLogService;
+   /* 
+    public void refundOrder(RefundReqData refundReqData) {
+    	try {
+			WXPay.doRefundBusiness(refundReqData, resultListener);
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+    }*/
+    /**
+     * </p>统一下单</p>
+     * @return
+     * @author peiX
+     * @date 2015年8月19日
+     */
+    public UnifiedOrderPayResData unifiedOrder(UnifiedOrderPayReqData unifiedOrderPayReqData) throws ServicesException{
+		//TODO 记录请求日志
+		String payServiceResponseString;
+		try {
+			payServiceResponseString = WXPay.requestUnifiedOrderPayService(unifiedOrderPayReqData);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			throw new ServicesException(PaymentConstants.ORDER_ERROR_10011,"参数异常");
+		}
+		//将从API返回的XML数据映射到Java对象
+        UnifiedOrderPayResData unifiedOrderPayResData = (UnifiedOrderPayResData) Util.getObjectFromXML(payServiceResponseString, UnifiedOrderPayResData.class);
+        
+        if (unifiedOrderPayResData == null || unifiedOrderPayResData.getReturn_code() == null) {
+            throw new ServicesException("统一下单订单参数不合法");
+        }
+        
+        if("SUCCESS".equals(unifiedOrderPayResData.getReturn_code())) {
+        	try {
+				if (!Signature.checkIsSignValidFromResponseString(payServiceResponseString)) {
+					throw new ServicesException(PaymentConstants.ORDER_ERROR_10007,"交易订单签名验证失败");
+				}
+			} catch (Exception e) {
+				throw new ServicesException("交易订单签名验证失败"); 
+			} 
+        	
+        	if("SUCCESS".equals(unifiedOrderPayResData.getResult_code())) {
+        		String prepay_id = unifiedOrderPayResData.getPrepay_id();
+                if(prepay_id != null){
+             	   return unifiedOrderPayResData;
+                }
+                throw new ServicesException("交易未获取到微信支付订单号!");
+        	}else {
+        		 throw new ServicesException(unifiedOrderPayResData.getReturn_msg());
+        	}
+        }else {
+        	throw new ServicesException(unifiedOrderPayResData.getReturn_msg());
+        }
+    }
+
+	/**
+	 * 生成APP支付对象
+	 */
+	public AppPayReqData generateAppPayParam(UnifiedOrderPayResData unifiedOrderPayResData,String payNo)
+			throws ServicesException {
+		
+		AppPayReqData appPayReqData = new AppPayReqData(unifiedOrderPayResData.getPrepay_id(), Util.getTimeStamp());
+		//TODO 生成微信支付数据 
+		//LoggerUtils.printPayLog(appPayReqData.toMap().toString(),payNo,LoggerUtils.PayType.param);
+		
+		return appPayReqData;
+	}
+
+	@Override
+	public UnifiedOrderJSPayResData unifiedJSAPIOrder(UnifiedOrderJSPayReqData unifiedOrderJSPayReqData,String key)
+			throws ServicesException {
+		
+		//更新支付流水
+		ChannelLogCondition channelLogCondition = new ChannelLogCondition();
+		JSONObject requestObject = JSONObject.fromObject(unifiedOrderJSPayReqData);
+		channelLogCondition.setRequestParams(requestObject.toString());
+		CriteriaBuilder cb = Cnd.builder(ChannelLog.class);
+		cb.andEQ("tradeId", unifiedOrderJSPayReqData.getOut_trade_no());
+		Criteria criteria = cb.buildCriteria();
+		channelLogService.updateByCriteria(channelLogCondition,criteria);
+		String payServiceResponseString;
+		try {
+			payServiceResponseString = WXPay.requestUnifiedOrderPayService(unifiedOrderJSPayReqData);
+		} catch (Exception e1) {
+			e1.printStackTrace();
+			throw new ServicesException("统一下单订单参数不合法");
+		}
+		
+		//将从API返回的XML数据映射到Java对象
+        UnifiedOrderJSPayResData unifiedOrderJSPayResData = (UnifiedOrderJSPayResData) Util.getObjectFromXML(payServiceResponseString, UnifiedOrderJSPayResData.class);
+        
+        //更新返回参数
+        ChannelLogCondition channelCondition = new ChannelLogCondition();
+        JSONObject responseObject = JSONObject.fromObject(unifiedOrderJSPayResData);
+        channelCondition.setResponseParams(responseObject.toString());
+		channelLogService.updateByCriteria(channelCondition,criteria);
+        
+        if (unifiedOrderJSPayResData == null || unifiedOrderJSPayResData.getReturn_code() == null) {
+            throw new ServicesException("统一下单订单参数不合法");
+        }
+        
+        if("SUCCESS".equals(unifiedOrderJSPayResData.getReturn_code())) {
+        	try {
+				if (!Signature.checkJSIsSignValidFromResponseString(payServiceResponseString,key)) {
+					throw new ServicesException("统一下单返回数据签名验证失败");
+				}
+			} catch (Exception e) {
+				throw new ServicesException("统一下单返回数据签名验证异常"); 
+			} 
+        	
+        	if("SUCCESS".equals(unifiedOrderJSPayResData.getResult_code())) {
+        		String prepay_id = unifiedOrderJSPayResData.getPrepay_id();
+                if(prepay_id != null){
+             	   return unifiedOrderJSPayResData;
+                }
+                throw new ServicesException("交易未获取到微信支付订单号!");
+        	}else {
+        		 throw new ServicesException(unifiedOrderJSPayResData.getReturn_msg());
+        	}
+        }else {
+        	throw new ServicesException(unifiedOrderJSPayResData.getReturn_msg());
+        }
+	}
+
+	@Override
+	public AppJSPayReqData generateAppPayParam(UnifiedOrderJSPayResData unifiedOrderJSPayResData, String payNo,String key,String appid)
+			throws ServicesException {
+		
+		AppJSPayReqData appjsPayReqData = new AppJSPayReqData(appid,unifiedOrderJSPayResData.getPrepay_id(), Util.getTimeStamp(),key);
+		//TODO 生成微信支付数据 
+		//LoggerUtils.printPayLog(appPayReqData.toMap().toString(),payNo,LoggerUtils.PayType.param);
+		appjsPayReqData.setOrderNo(payNo);
+		return appjsPayReqData;
+	}
+
+	public AppPayReqData wxAppPayHandleFunction(String payNo, String payFee, String body, String subject,
+			String trade_type) {
+		//TODO 获取回调地址
+		UnifiedOrderPayReqData unifiedOrderPayReqData 
+		= new UnifiedOrderPayReqData(body, 
+									 subject,
+									 payNo, 
+									 Integer.valueOf(payFee),//金额写死 
+								     "http://pay.hfepay.cn/hfepay/api/gateway/notfily", 
+								     trade_type);
+		AppPayReqData appPayReqData = generateAppPayParam(unifiedOrder(unifiedOrderPayReqData),payNo);
+		return appPayReqData;
+	}
+
+	public AppJSPayReqData wxJSApiPayHandleFunction(String appid,String mch_id,String openid, String payNo, String payFee, String body,
+			String subject, String trade_type,String key) {
+		//String notfilyurl ="http://127.0.0.1.:8080/hfepay/gateway";
+		//获取配置文件信息，
+		String notify_url = PropertiesUtil.getInstance().getValue(PaymentConstants.WXPAY_JSAPI_LINK);
+		
+		UnifiedOrderJSPayReqData unifiedOrderPayReqData 
+		= new UnifiedOrderJSPayReqData(appid,mch_id,body, 
+									   subject,
+									   payNo, 
+								       Integer.valueOf(payFee), 
+								       notify_url, 
+								       trade_type,openid,key);
+		
+		AppJSPayReqData appjsPayReqData = null;
+		try {
+			appjsPayReqData = generateAppPayParam(unifiedJSAPIOrder(unifiedOrderPayReqData,key),payNo,key,appid);
+		} catch (ServicesException e) {
+			OrderPayBo orderBo = new OrderPayBo();
+			if(e.getResultCode() != null){
+				orderBo.setErrorCode(e.getResultCode().toString());
+			}else{
+				orderBo.setErrorCode(PaymentErrorEnum.SYSTEM_CHANNEL_CODE.getValue()+"");
+			}
+			if(e.getErrorMessage() != null){
+				orderBo.setErrorMsg(e.getErrorMessage().getError());
+			}else{
+				orderBo.setErrorMsg(PaymentErrorEnum.SYSTEM_CHANNEL_CODE.getDesc());
+			}
+			orderPayService.updateOrderStatus(orderBo);
+			e.printStackTrace();
+		}
+		return appjsPayReqData;
+	}
+
+	public Boolean singleTransactionQueryHandelFunction(String appid,String mchid,String key,String payNo, String transId) throws ServicesException {
+		ResultListener resultImpl = new ScanJSPayQueryResultListenerImpl();
+		Boolean bool =false;
+		try {
+			bool = WXPay.doScanJSPayQueryBusiness(appid,mchid,key,payNo,transId,resultImpl);
+		} catch (Exception e) {
+			throw new ServicesException("查询异常!");
+		}
+		return bool;
+	}
+	
+	
+    
+}

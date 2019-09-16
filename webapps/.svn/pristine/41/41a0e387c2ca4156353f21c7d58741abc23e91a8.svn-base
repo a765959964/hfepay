@@ -1,0 +1,307 @@
+package com.hfepay.scancode.controller;
+
+import java.math.BigDecimal;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseBody;
+
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.scancode.commons.BaseErrorMsg;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.commons.MerchantStatus;
+import com.hfepay.scancode.commons.WechatRedirectEnu;
+import com.hfepay.scancode.condition.MerchantBankcardCondition;
+import com.hfepay.scancode.condition.MerchantWalletCondition;
+import com.hfepay.scancode.entity.ChannelAdmin;
+import com.hfepay.scancode.entity.ChannelBase;
+import com.hfepay.scancode.entity.ChannelExpand;
+import com.hfepay.scancode.entity.MerchantBankcard;
+import com.hfepay.scancode.entity.MerchantCashier;
+import com.hfepay.scancode.entity.MerchantInfo;
+import com.hfepay.scancode.entity.MerchantQrcode;
+import com.hfepay.scancode.entity.PlatformQrcode;
+import com.hfepay.scancode.enumeration.IdentityType;
+import com.hfepay.scancode.service.channel.ChannelAdminService;
+import com.hfepay.scancode.service.operator.ChannelBaseService;
+import com.hfepay.scancode.service.operator.ChannelExpandService;
+import com.hfepay.scancode.service.operator.MerchantBankcardService;
+import com.hfepay.scancode.service.operator.MerchantCashierService;
+import com.hfepay.scancode.service.operator.MerchantInfoService;
+import com.hfepay.scancode.service.operator.MerchantQrcodeService;
+import com.hfepay.scancode.service.operator.MerchantStoreService;
+import com.hfepay.scancode.service.operator.MerchantWalletService;
+import com.hfepay.scancode.service.operator.PlatformQrcodeService;
+import com.hfepay.scancode.service.order.OrderPayService;
+
+/**
+ * 页面
+ * @author Administrator
+ *
+ */
+@Controller
+@RequestMapping("/scancode")
+public class WechatController {
+	public static final Logger log = LoggerFactory.getLogger(WechatController.class);
+	@Autowired
+	private OrderPayService orderPayService;
+	@Autowired
+	private MerchantWalletService merchantWalletService;
+	@Autowired
+	private MerchantInfoService merchantInfoService;
+	@Autowired
+	private MerchantBankcardService merchantBankcardService;
+	@Autowired
+	private ChannelAdminService channelAdminService;
+	@Autowired
+	private PlatformQrcodeService platformQrcodeService;
+	@Autowired
+	private MerchantQrcodeService merchantQrcodeService;
+	@Autowired
+	private ChannelExpandService channelExpandService;
+	@Autowired
+	private ChannelBaseService channelBaseService;
+	@Autowired
+	private MerchantCashierService merchantCashierService;	
+	@RequestMapping("/balance")
+	public String balance(ModelMap model,HttpServletRequest request){
+		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute(Constants.CURRENTUSER);
+		MerchantBankcard accounts = merchantBankcardService.findByMerchantNo(channelAdmin.getMerchantNo());
+		BigDecimal result = new BigDecimal("0");
+		Map<String,BigDecimal> walletMap = orderPayService.getDealMoney(channelAdmin.getIdentityNo(),channelAdmin.getIdentityFlag());//余额和交易金额
+		if(walletMap!=null){
+			result = walletMap.get("balance")==null?result:walletMap.get("balance");
+		}
+		request.setAttribute("balance",result);
+		accounts.setBankCard(accounts.getBankCard().substring(accounts.getBankCard().length()-4, accounts.getBankCard().length()));
+		request.setAttribute("accounts",accounts);
+		return "scancode/wechat/balance";
+	}
+	
+	@RequestMapping("/balanceSuccess")
+	public String balanceSuccess(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/balanceSuccess";
+	}
+	
+	@RequestMapping("/doWithDraw/check")
+	@ResponseBody
+	public BaseErrorMsg doWithDrawCheck(ModelMap model,HttpServletRequest request,MerchantWalletCondition merchantWalletCondition){
+		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute(Constants.CURRENTUSER);
+		merchantWalletCondition.setMerchantNo(channelAdmin.getMerchantNo());
+		BigDecimal balance = new BigDecimal("0");
+		Map<String,BigDecimal> walletMap = orderPayService.getDealMoney(channelAdmin.getIdentityNo(),channelAdmin.getIdentityFlag());//余额和交易金额
+		if(walletMap!=null){
+			balance = walletMap.get("balance")==null?balance:walletMap.get("balance");
+		}
+		int result = merchantWalletCondition.getBalance().compareTo(new BigDecimal(0));
+		if(result<=0){
+			return new BaseErrorMsg("-1","金额超过必须大于0");
+		}
+		if(balance.compareTo(merchantWalletCondition.getBalance())==-1){
+			return new BaseErrorMsg("-1","金额超过余额");
+		}
+		return new BaseErrorMsg("0","校验通过");
+	}
+	
+	@RequestMapping("/doWithDraw")
+	public String doWithDraw(ModelMap model,HttpServletRequest request,MerchantWalletCondition merchantWalletCondition){
+		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute(Constants.CURRENTUSER);
+		merchantWalletCondition.setMerchantNo(channelAdmin.getMerchantNo());
+		
+		BigDecimal balance = new BigDecimal("0");
+		Map<String,BigDecimal> walletMap = orderPayService.getDealMoney(channelAdmin.getIdentityNo(),channelAdmin.getIdentityFlag());//余额和交易金额
+		if(walletMap!=null){
+			balance = walletMap.get("balance")==null?balance:walletMap.get("balance");
+		}
+		int resultc = merchantWalletCondition.getBalance().compareTo(new BigDecimal(0));
+		if(resultc<=0){
+			request.setAttribute("errorMsg", "金额超过必须大于0");
+			return "scancode/wechat/balanceError";
+		}
+		if(balance.compareTo(merchantWalletCondition.getBalance())==-1){
+			request.setAttribute("errorMsg", "金额超过余额");
+			return "scancode/wechat/balanceError";
+		}
+		long result = merchantWalletService.updateBalanceByMerchantNo(merchantWalletCondition);
+		if(result<0){
+			request.setAttribute("errorMsg", "内部错误，请联系管理员.");
+			return "scancode/wechat/balanceError";
+		}
+		request.setAttribute("balance", merchantWalletCondition.getBalance());
+		request.setAttribute("fees", 0);
+		return "scancode/wechat/balanceSuccess";
+	}
+	
+	@RequestMapping("/my")
+	public String my(ModelMap model,HttpServletRequest request){
+		String type=request.getParameter("type");
+		log.info("this is in my function the redirect type is ================================"+type);
+		type=type==null?WechatRedirectEnu.MY.getCode():type;//默认为个人中心
+		if(WechatRedirectEnu.BILL.getCode().equals(type)){//公众号进入是交易查询
+			return "redirect:/scancode/bill";
+		}
+		
+		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute(Constants.CURRENTUSER);
+		BigDecimal balance = new BigDecimal("0");
+		BigDecimal re = new BigDecimal("0");
+		
+		Map<String,BigDecimal> walletMap = orderPayService.getDealMoney(channelAdmin.getIdentityNo(),channelAdmin.getIdentityFlag());//余额和交易金额
+		if(walletMap!=null){
+			re = walletMap.get("balance")==null?re:walletMap.get("balance");
+			balance = walletMap.get("total")==null?balance:walletMap.get("total");
+		}
+		
+		request.setAttribute("status", "1");//不完善
+		PlatformQrcode qrCodeSrc = new PlatformQrcode();
+		//商户需要检查信息完善程度
+		log.info("用户类型为：IdentityFlag="+channelAdmin.getIdentityFlag()+"  IdentityNo="+channelAdmin.getIdentityNo());
+		if(channelAdmin.getIdentityFlag().equals(IdentityType.Identity_Merchant.value())){
+			MerchantInfo info = merchantInfoService.findByMerchantNo(channelAdmin.getMerchantNo());
+			if(MerchantStatus.MERCHANT_2.getCode().equals(info.getStatus())||MerchantStatus.MERCHANT_4.getCode().equals(info.getStatus())
+					||Strings.isEmpty(info.getName())||MerchantStatus.MERCHANT_6.getCode().equals(info.getStatus())){
+				request.setAttribute("status", "0");//完善信息
+			}
+			
+			if(WechatRedirectEnu.WECHANT_IN.getCode().equals(type)){//商户入驻：新用户完善信息，老用户跳转到首页
+				if(MerchantStatus.MERCHANT_6.getCode().equals(info.getStatus())){//新用户
+					return "redirect:/scancode/apply1";
+				}else if(!MerchantStatus.MERCHANT_3.getCode().equals(info.getStatus())){//老用户,不是审核通过的
+					return "redirect:/scancode/progress";
+				}
+			}
+			else if(WechatRedirectEnu.WECHANT_MSG.getCode().equals(type))//商户信息：审核通过到首页,其余的到审核进度
+			{
+				if(!MerchantStatus.MERCHANT_3.getCode().equals(info.getStatus())){//不是审核通过的到审核进度
+					return "redirect:/scancode/progress";
+				}
+			}
+			
+			try {
+				log.info("二维码编号："+info.getQrCode());
+				qrCodeSrc = platformQrcodeService.findByQrcode(info.getQrCode());
+				log.info("二维码在try中为======："+qrCodeSrc);
+			} catch (Exception e) {
+				log.info("二维码获取失败："+e);
+				e.printStackTrace();
+			}
+		}
+		else if(channelAdmin.getIdentityFlag().equals(IdentityType.Identity_Cashier.value())){//收银员
+			MerchantCashier cashier = merchantCashierService.findByOpenId(channelAdmin.getOpenId()); 
+			MerchantQrcode code = merchantQrcodeService.findQrcodeByIdentityNo(channelAdmin.getIdentityNo());
+			if(null!=code&&cashier!=null&&cashier.getStatus().equals(Constants.RECORD_STATUS_YES)){//收银员没有被禁用
+				qrCodeSrc.setImage(code.getImage());
+				qrCodeSrc.setQrName(code.getQrName());
+			}
+		}
+		
+		
+		ChannelExpand channelExpand = channelExpandService.findByChannelNo(channelAdmin.getChannelCode());
+		ChannelBase channelBase = channelBaseService.findByChannelNo(channelAdmin.getChannelCode());
+		log.info("二维码图片为："+qrCodeSrc.getImage());
+		request.setAttribute("balance",balance );
+		request.setAttribute("todayTotal", re);
+		request.setAttribute("qrCodeSrc", qrCodeSrc.getImage());
+		request.setAttribute("qrCodeName", qrCodeSrc.getQrName());
+		request.setAttribute("type", type);//为收款的话，弹出收款二维码
+		request.setAttribute("phone", channelExpand.getPhone());
+		request.setAttribute("channelName", channelBase.getChannelName());
+		return "scancode/wechat/my";
+	}
+	
+	@RequestMapping("/password")
+	public String password(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/password";
+	}
+	
+	@RequestMapping("/set")
+	public String set(ModelMap model,HttpServletRequest request){
+		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute(Constants.CURRENTUSER);
+		MerchantInfo info = merchantInfoService.findByMerchantNo(channelAdmin.getMerchantNo());
+		request.setAttribute("status", info.getStatus());
+		return "scancode/wechat/set";
+	}
+	@RequestMapping("/sure")
+	public String sure(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/sure";
+	}
+	
+	@RequestMapping("/basic")
+	public String basic(ModelMap model,HttpServletRequest request){
+		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute(Constants.CURRENTUSER);
+		MerchantInfo info = merchantInfoService.findByMerchantNo(channelAdmin.getMerchantNo());
+		request.setAttribute("info", info);
+		return "scancode/wechat/basic";
+	}
+	
+	@RequestMapping("/settlement")
+	public String settlement(ModelMap model,HttpServletRequest request){
+		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute(Constants.CURRENTUSER);
+		MerchantBankcard merchantAccounts = merchantBankcardService.findByMerchantNo(channelAdmin.getMerchantNo());
+		request.setAttribute("info", merchantAccounts);
+		return "scancode/wechat/settlement";
+	}
+	
+	@RequestMapping("/settlement/update")
+	@ResponseBody
+	public BaseErrorMsg settlementUpdate(MerchantBankcardCondition condition,String validateCode,HttpServletRequest request){
+		boolean flag = channelAdminService.validateRedisValidateCode(condition.getMobile(), validateCode);
+		if(!flag){
+			log.info("-------------验证码错误------------");
+			return new BaseErrorMsg("验证码错误");
+		}
+		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute(Constants.CURRENTUSER);
+		condition.setMerchantNo(channelAdmin.getMerchantNo());
+		condition.setStatus("3");//设置为审核中
+		long result = merchantBankcardService.updateByMerchantNo(condition);
+		if(result>0){
+			return new BaseErrorMsg("0", "变更成功");
+		}else{
+			return new BaseErrorMsg("变更失败");
+		}
+	}
+
+	@RequestMapping("/binding")
+	public String binding(ModelMap model,HttpServletRequest request){
+		return "scancode/wechat/binding";
+	}
+	
+	@RequestMapping("/binding/mobile")
+	@ResponseBody
+	public BaseErrorMsg bindingMobile(String mobile,String validateCode,HttpServletRequest request){
+		boolean flag = channelAdminService.validateRedisValidateCode(mobile, validateCode);
+		if(!flag){
+			log.info("-------------验证码错误------------");
+			return new BaseErrorMsg("验证码错误");
+		}
+//		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute("currentUser");
+		long result = 1L;//merchantBankcardService.updateByMerchantNo(condition);
+		if(result>0){
+			return new BaseErrorMsg("0", "变更成功");
+		}else{
+			return new BaseErrorMsg("变更失败");
+		}
+	}
+	
+	@RequestMapping("/about")
+	public String about(ModelMap model,HttpServletRequest request){
+		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute("currentUser");
+		ChannelExpand channelExpand = channelExpandService.findByChannelNo(channelAdmin.getChannelCode());
+		request.setAttribute("aboutUs", channelExpand.getAboutUs());
+		return "scancode/wechat/about";
+	}
+	
+	@RequestMapping("/help")
+	public String help(ModelMap model,HttpServletRequest request){
+		ChannelAdmin channelAdmin = (ChannelAdmin)request.getSession().getAttribute("currentUser");
+		ChannelExpand channelExpand = channelExpandService.findByChannelNo(channelAdmin.getChannelCode());
+		request.setAttribute("helpInfo", channelExpand.getHelpInfo());
+		return "scancode/wechat/help";
+	}
+}

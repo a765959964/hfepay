@@ -1,0 +1,739 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.service.operator.impl;
+
+import java.util.List;
+
+import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+
+import com.hfepay.commons.base.lang.Strings;
+import com.hfepay.commons.criteria.Cnd;
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.criteria.CriteriaBuilder;
+import com.hfepay.commons.criteria.Order;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.condition.MerchantInfoCondition;
+import com.hfepay.scancode.condition.MerchantStoreCondition;
+import com.hfepay.scancode.dao.MerchantInfoDAO;
+import com.hfepay.scancode.entity.MerchantInfo;
+import com.hfepay.scancode.service.operator.MerchantInfoService;
+import com.hfepay.scancode.service.operator.MerchantStoreService;
+import com.hfepay.scancode.service.utils.StringUtils;
+
+@Service("merchantInfoService")
+public class MerchantInfoServiceImpl implements MerchantInfoService {
+	
+	@Autowired
+    private MerchantInfoDAO merchantInfoDAO;
+	
+    /**
+	 * 列表(分页)
+	 * @param merchantInfoCondition 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-20 17:39:26
+	 */
+    @Override
+	public PagingResult<MerchantInfo> findPagingResult(MerchantInfoCondition merchantInfoCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantInfo.class);
+		if(!Strings.isEmpty(merchantInfoCondition.getId())){
+			cb.andEQ("id", merchantInfoCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantInfoCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getChannelName())){
+			cb.andLike("channelName", merchantInfoCondition.getChannelName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantInfoCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAgentName())){
+			cb.andLike("agentName", merchantInfoCondition.getAgentName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantInfoCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantName())){
+			cb.andLike("merchantName", merchantInfoCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getShortName())){
+			cb.andLike("shortName", merchantInfoCondition.getShortName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getPlatformMerchantNo())){
+			cb.andEQ("platformMerchantNo", merchantInfoCondition.getPlatformMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getBusType())){
+			cb.andEQ("busType", merchantInfoCondition.getBusType());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getName())){
+			cb.andEQ("name", merchantInfoCondition.getName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdCard())){
+			cb.andEQ("idCard", merchantInfoCondition.getIdCard());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg1())){
+			cb.andEQ("idcardImg1", merchantInfoCondition.getIdcardImg1());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg2())){
+			cb.andEQ("idcardImg2", merchantInfoCondition.getIdcardImg2());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg3())){
+			cb.andEQ("idcardImg3", merchantInfoCondition.getIdcardImg3());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMobile())){
+			cb.andEQ("mobile", merchantInfoCondition.getMobile());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getPhone())){
+			cb.andEQ("phone", merchantInfoCondition.getPhone());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getEmail())){
+			cb.andEQ("email", merchantInfoCondition.getEmail());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAddress())){
+			cb.andEQ("address", merchantInfoCondition.getAddress());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantLicense())){
+			cb.andEQ("merchantLicense", merchantInfoCondition.getMerchantLicense());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantLicenseImg())){
+			cb.andEQ("merchantLicenseImg", merchantInfoCondition.getMerchantLicenseImg());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTaxNo())){
+			cb.andEQ("taxNo", merchantInfoCondition.getTaxNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTaxImg())){
+			cb.andEQ("taxImg", merchantInfoCondition.getTaxImg());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getOrgNo())){
+			cb.andEQ("orgNo", merchantInfoCondition.getOrgNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantInfoCondition.getQrCode());
+		}
+		if(null != merchantInfoCondition.getAuthenStatus()){
+			cb.andEQ("authenStatus", merchantInfoCondition.getAuthenStatus());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getStatus())){
+			cb.andEQ("status", merchantInfoCondition.getStatus());
+		}
+		if(null != merchantInfoCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantInfoCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantInfoCondition.getOperator())){
+			cb.andEQ("operator", merchantInfoCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantInfoCondition.getRemark())){
+			cb.andLike("remark", merchantInfoCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp1())){
+			cb.andEQ("temp1", merchantInfoCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp2())){
+			cb.andEQ("temp2", merchantInfoCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp3())){
+			cb.andEQ("temp3", merchantInfoCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp4())){
+			cb.andEQ("temp4", merchantInfoCondition.getTemp4());
+		}
+		cb.orderBy("createTime", Order.DESC);
+		//排序
+		if(!Strings.isEmpty(merchantInfoCondition.getOrderBy())){
+			if(merchantInfoCondition.getOrderBy().indexOf(",")>0){
+				String[] orderBys = merchantInfoCondition.getOrderBy().split(",");
+				String[] orders = merchantInfoCondition.getOrder().split(",");
+				for(int i=0; i<orderBys.length && i<orders.length; i++){
+					cb.orderBy(orderBys[i], Order.valueOf(orders[i]));
+				}
+			}else{
+				cb.orderBy(merchantInfoCondition.getOrderBy(), Order.valueOf(merchantInfoCondition.getOrder()));
+			}
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		buildCriteria.limit(Long.valueOf(merchantInfoCondition.getFirst()), Long.valueOf(merchantInfoCondition.getLast()));
+		return merchantInfoDAO.findPagingResult(buildCriteria);
+	}
+	
+	/**
+	 * 列表
+	 * @param merchantInfo 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-20 17:39:26
+	 */
+	@Override
+	public List<MerchantInfo> findAll(MerchantInfoCondition merchantInfoCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantInfo.class);
+		if(!Strings.isEmpty(merchantInfoCondition.getId())){
+			cb.andEQ("id", merchantInfoCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantInfoCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getChannelName())){
+			cb.andLike("channelName", merchantInfoCondition.getChannelName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantInfoCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAgentName())){
+			cb.andLike("agentName", merchantInfoCondition.getAgentName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantInfoCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantName())){
+			cb.andLike("merchantName", merchantInfoCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getShortName())){
+			cb.andLike("shortName", merchantInfoCondition.getShortName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getPlatformMerchantNo())){
+			cb.andEQ("platformMerchantNo", merchantInfoCondition.getPlatformMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getBusType())){
+			cb.andEQ("busType", merchantInfoCondition.getBusType());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getName())){
+			cb.andEQ("name", merchantInfoCondition.getName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdCard())){
+			cb.andEQ("idCard", merchantInfoCondition.getIdCard());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg1())){
+			cb.andEQ("idcardImg1", merchantInfoCondition.getIdcardImg1());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg2())){
+			cb.andEQ("idcardImg2", merchantInfoCondition.getIdcardImg2());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg3())){
+			cb.andEQ("idcardImg3", merchantInfoCondition.getIdcardImg3());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMobile())){
+			cb.andEQ("mobile", merchantInfoCondition.getMobile());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getPhone())){
+			cb.andEQ("phone", merchantInfoCondition.getPhone());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getEmail())){
+			cb.andEQ("email", merchantInfoCondition.getEmail());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAddress())){
+			cb.andEQ("address", merchantInfoCondition.getAddress());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantLicense())){
+			cb.andEQ("merchantLicense", merchantInfoCondition.getMerchantLicense());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantLicenseImg())){
+			cb.andEQ("merchantLicenseImg", merchantInfoCondition.getMerchantLicenseImg());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTaxNo())){
+			cb.andEQ("taxNo", merchantInfoCondition.getTaxNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTaxImg())){
+			cb.andEQ("taxImg", merchantInfoCondition.getTaxImg());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getOrgNo())){
+			cb.andEQ("orgNo", merchantInfoCondition.getOrgNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantInfoCondition.getQrCode());
+		}
+		if(null != merchantInfoCondition.getAuthenStatus()){
+			cb.andEQ("authenStatus", merchantInfoCondition.getAuthenStatus());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getStatus())){
+			cb.andEQ("status", merchantInfoCondition.getStatus());
+		}
+		if(null != merchantInfoCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantInfoCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantInfoCondition.getOperator())){
+			cb.andEQ("operator", merchantInfoCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantInfoCondition.getRemark())){
+			cb.andLike("remark", merchantInfoCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp1())){
+			cb.andEQ("temp1", merchantInfoCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp2())){
+			cb.andEQ("temp2", merchantInfoCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp3())){
+			cb.andEQ("temp3", merchantInfoCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp4())){
+			cb.andEQ("temp4", merchantInfoCondition.getTemp4());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		return merchantInfoDAO.findByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 主键查找
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-20 17:39:26
+	 */
+	@Override
+	public MerchantInfo findById(String id){
+		return merchantInfoDAO.get(id);
+	}
+	
+	/**
+	 * 新增
+	 * @param merchantInfoCondition
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-20 17:39:26
+	 */
+	@Override
+	public long insert(MerchantInfoCondition merchantInfoCondition){
+		MerchantInfo merchantInfo = new MerchantInfo();
+		BeanUtils.copyProperties(merchantInfoCondition, merchantInfo);
+		return merchantInfoDAO.insert(merchantInfo);
+	}
+
+	/**
+	 * 删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-20 17:39:26
+	 */
+	@Override
+	public long deleteById(String id){
+		return merchantInfoDAO.deleteById(id);
+	}
+	
+	/**
+	 * 条件删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-20 17:39:26
+	 */
+	@Override
+	public long deleteByCriteria(MerchantInfoCondition merchantInfoCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantInfo.class);
+		if(!Strings.isEmpty(merchantInfoCondition.getId())){
+			cb.andEQ("id", merchantInfoCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantInfoCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getChannelName())){
+			cb.andEQ("channelName", merchantInfoCondition.getChannelName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantInfoCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAgentName())){
+			cb.andEQ("agentName", merchantInfoCondition.getAgentName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantInfoCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantName())){
+			cb.andEQ("merchantName", merchantInfoCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getShortName())){
+			cb.andEQ("shortName", merchantInfoCondition.getShortName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getPlatformMerchantNo())){
+			cb.andEQ("platformMerchantNo", merchantInfoCondition.getPlatformMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getBusType())){
+			cb.andEQ("busType", merchantInfoCondition.getBusType());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getName())){
+			cb.andEQ("name", merchantInfoCondition.getName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdCard())){
+			cb.andEQ("idCard", merchantInfoCondition.getIdCard());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg1())){
+			cb.andEQ("idcardImg1", merchantInfoCondition.getIdcardImg1());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg2())){
+			cb.andEQ("idcardImg2", merchantInfoCondition.getIdcardImg2());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg3())){
+			cb.andEQ("idcardImg3", merchantInfoCondition.getIdcardImg3());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMobile())){
+			cb.andEQ("mobile", merchantInfoCondition.getMobile());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getPhone())){
+			cb.andEQ("phone", merchantInfoCondition.getPhone());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getEmail())){
+			cb.andEQ("email", merchantInfoCondition.getEmail());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAddress())){
+			cb.andEQ("address", merchantInfoCondition.getAddress());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantLicense())){
+			cb.andEQ("merchantLicense", merchantInfoCondition.getMerchantLicense());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantLicenseImg())){
+			cb.andEQ("merchantLicenseImg", merchantInfoCondition.getMerchantLicenseImg());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTaxNo())){
+			cb.andEQ("taxNo", merchantInfoCondition.getTaxNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTaxImg())){
+			cb.andEQ("taxImg", merchantInfoCondition.getTaxImg());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getOrgNo())){
+			cb.andEQ("orgNo", merchantInfoCondition.getOrgNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantInfoCondition.getQrCode());
+		}
+		if(null != merchantInfoCondition.getAuthenStatus()){
+			cb.andEQ("authenStatus", merchantInfoCondition.getAuthenStatus());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getStatus())){
+			cb.andEQ("status", merchantInfoCondition.getStatus());
+		}
+		if(null != merchantInfoCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantInfoCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantInfoCondition.getOperator())){
+			cb.andEQ("operator", merchantInfoCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantInfoCondition.getRemark())){
+			cb.andLike("remark", merchantInfoCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp1())){
+			cb.andEQ("temp1", merchantInfoCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp2())){
+			cb.andEQ("temp2", merchantInfoCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp3())){
+			cb.andEQ("temp3", merchantInfoCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp4())){
+			cb.andEQ("temp4", merchantInfoCondition.getTemp4());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		MerchantInfo merchantInfo = new MerchantInfo();
+		BeanUtils.copyProperties(merchantInfoCondition, merchantInfo);
+		return merchantInfoDAO.deleteByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 行数汇总
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-20 17:39:26
+	 */
+	@Override
+	public long countByCriteria(MerchantInfoCondition merchantInfoCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantInfo.class);
+		if(!Strings.isEmpty(merchantInfoCondition.getId())){
+			cb.andEQ("id", merchantInfoCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantInfoCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getChannelName())){
+			cb.andEQ("channelName", merchantInfoCondition.getChannelName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantInfoCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAgentName())){
+			cb.andEQ("agentName", merchantInfoCondition.getAgentName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantInfoCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantName())){
+			cb.andEQ("merchantName", merchantInfoCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getShortName())){
+			cb.andEQ("shortName", merchantInfoCondition.getShortName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getPlatformMerchantNo())){
+			cb.andEQ("platformMerchantNo", merchantInfoCondition.getPlatformMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getBusType())){
+			cb.andEQ("busType", merchantInfoCondition.getBusType());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getName())){
+			cb.andEQ("name", merchantInfoCondition.getName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdCard())){
+			cb.andEQ("idCard", merchantInfoCondition.getIdCard());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg1())){
+			cb.andEQ("idcardImg1", merchantInfoCondition.getIdcardImg1());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg2())){
+			cb.andEQ("idcardImg2", merchantInfoCondition.getIdcardImg2());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg3())){
+			cb.andEQ("idcardImg3", merchantInfoCondition.getIdcardImg3());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMobile())){
+			cb.andEQ("mobile", merchantInfoCondition.getMobile());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getPhone())){
+			cb.andEQ("phone", merchantInfoCondition.getPhone());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getEmail())){
+			cb.andEQ("email", merchantInfoCondition.getEmail());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAddress())){
+			cb.andEQ("address", merchantInfoCondition.getAddress());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantLicense())){
+			cb.andEQ("merchantLicense", merchantInfoCondition.getMerchantLicense());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantLicenseImg())){
+			cb.andEQ("merchantLicenseImg", merchantInfoCondition.getMerchantLicenseImg());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTaxNo())){
+			cb.andEQ("taxNo", merchantInfoCondition.getTaxNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTaxImg())){
+			cb.andEQ("taxImg", merchantInfoCondition.getTaxImg());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getOrgNo())){
+			cb.andEQ("orgNo", merchantInfoCondition.getOrgNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantInfoCondition.getQrCode());
+		}
+		if(null != merchantInfoCondition.getAuthenStatus()){
+			cb.andEQ("authenStatus", merchantInfoCondition.getAuthenStatus());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getStatus())){
+			cb.andEQ("status", merchantInfoCondition.getStatus());
+		}
+		if(null != merchantInfoCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantInfoCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantInfoCondition.getOperator())){
+			cb.andEQ("operator", merchantInfoCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantInfoCondition.getRemark())){
+			cb.andLike("remark", merchantInfoCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp1())){
+			cb.andEQ("temp1", merchantInfoCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp2())){
+			cb.andEQ("temp2", merchantInfoCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp3())){
+			cb.andEQ("temp3", merchantInfoCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp4())){
+			cb.andEQ("temp4", merchantInfoCondition.getTemp4());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		MerchantInfo merchantInfo = new MerchantInfo();
+		BeanUtils.copyProperties(merchantInfoCondition, merchantInfo);
+		return merchantInfoDAO.countByCriteria(buildCriteria);
+	}
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-20 17:39:26
+	 */
+	@Override
+	public long update(MerchantInfoCondition merchantInfoCondition){
+		MerchantInfo merchantInfo = new MerchantInfo();
+		BeanUtils.copyProperties(merchantInfoCondition, merchantInfo);
+		return merchantInfoDAO.update(merchantInfo);
+	}
+	
+	/**
+	 * 条件更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-20 17:39:26
+	 */
+	@Override
+	public long updateByCriteria(MerchantInfoCondition merchantInfoCondition){
+		CriteriaBuilder cb = Cnd.builder(MerchantInfo.class);
+		if(!Strings.isEmpty(merchantInfoCondition.getId())){
+			cb.andEQ("id", merchantInfoCondition.getId());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getChannelNo())){
+			cb.andEQ("channelNo", merchantInfoCondition.getChannelNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getChannelName())){
+			cb.andEQ("channelName", merchantInfoCondition.getChannelName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAgentNo())){
+			cb.andEQ("agentNo", merchantInfoCondition.getAgentNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAgentName())){
+			cb.andEQ("agentName", merchantInfoCondition.getAgentName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantNo())){
+			cb.andEQ("merchantNo", merchantInfoCondition.getMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantName())){
+			cb.andEQ("merchantName", merchantInfoCondition.getMerchantName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getShortName())){
+			cb.andEQ("shortName", merchantInfoCondition.getShortName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getPlatformMerchantNo())){
+			cb.andEQ("platformMerchantNo", merchantInfoCondition.getPlatformMerchantNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getBusType())){
+			cb.andEQ("busType", merchantInfoCondition.getBusType());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getName())){
+			cb.andEQ("name", merchantInfoCondition.getName());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdCard())){
+			cb.andEQ("idCard", merchantInfoCondition.getIdCard());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg1())){
+			cb.andEQ("idcardImg1", merchantInfoCondition.getIdcardImg1());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg2())){
+			cb.andEQ("idcardImg2", merchantInfoCondition.getIdcardImg2());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getIdcardImg3())){
+			cb.andEQ("idcardImg3", merchantInfoCondition.getIdcardImg3());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMobile())){
+			cb.andEQ("mobile", merchantInfoCondition.getMobile());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getPhone())){
+			cb.andEQ("phone", merchantInfoCondition.getPhone());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getEmail())){
+			cb.andEQ("email", merchantInfoCondition.getEmail());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getAddress())){
+			cb.andEQ("address", merchantInfoCondition.getAddress());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantLicense())){
+			cb.andEQ("merchantLicense", merchantInfoCondition.getMerchantLicense());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getMerchantLicenseImg())){
+			cb.andEQ("merchantLicenseImg", merchantInfoCondition.getMerchantLicenseImg());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTaxNo())){
+			cb.andEQ("taxNo", merchantInfoCondition.getTaxNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTaxImg())){
+			cb.andEQ("taxImg", merchantInfoCondition.getTaxImg());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getOrgNo())){
+			cb.andEQ("orgNo", merchantInfoCondition.getOrgNo());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getQrCode())){
+			cb.andEQ("qrCode", merchantInfoCondition.getQrCode());
+		}
+		if(null != merchantInfoCondition.getAuthenStatus()){
+			cb.andEQ("authenStatus", merchantInfoCondition.getAuthenStatus());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getStatus())){
+			cb.andEQ("status", merchantInfoCondition.getStatus());
+		}
+		if(null != merchantInfoCondition.getCreateTime()){
+			cb.andEQ("createTime", merchantInfoCondition.getCreateTime());
+		}
+
+		if(!Strings.isEmpty(merchantInfoCondition.getOperator())){
+			cb.andEQ("operator", merchantInfoCondition.getOperator());
+		}
+
+		if(!Strings.isEmpty(merchantInfoCondition.getRemark())){
+			cb.andLike("remark", merchantInfoCondition.getRemark());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp1())){
+			cb.andEQ("temp1", merchantInfoCondition.getTemp1());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp2())){
+			cb.andEQ("temp2", merchantInfoCondition.getTemp2());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp3())){
+			cb.andEQ("temp3", merchantInfoCondition.getTemp3());
+		}
+		if(!Strings.isEmpty(merchantInfoCondition.getTemp4())){
+			cb.andEQ("temp4", merchantInfoCondition.getTemp4());
+		}
+		Criteria buildCriteria = cb.buildCriteria();
+		MerchantInfo merchantInfo = new MerchantInfo();
+		BeanUtils.copyProperties(merchantInfoCondition, merchantInfo);
+		return merchantInfoDAO.updateByCriteria(merchantInfo,buildCriteria);
+	}
+	
+	/**
+	 * 状态更新
+	 *
+	 * @author husain
+	 * @date CreateDate : 2016-10-21 14:04:47
+	 */
+	@Override
+	public long updateStatus(String id,String status){
+		return merchantInfoDAO.updateStatus(id,status);
+	}	
+	
+	/**
+	 * @Title: findByChannelNo
+	 * @Description: 商户编码查找
+	 * @author: Ricky
+	 * @param MerchantNo
+	 * @return: MerchantInfo
+	 * @date CreateDate : 2016-10-13 15:19:03
+	 */
+	@Override
+	public MerchantInfo findByMerchantNo(String MerchantNo){
+		MerchantInfoCondition merchantInfoCondition = new MerchantInfoCondition();			
+		merchantInfoCondition.setMerchantNo(MerchantNo);		
+		List<MerchantInfo> list = this.findAll(merchantInfoCondition);
+		if(list.size() == 1){
+			MerchantInfo entity = list.get(0);
+			return entity;
+		}
+		return null;
+	}
+	/**
+	 * 
+	 * @Title: updateByMerchantNo
+	 * @Description: 商户申请录入商户信息
+	 * @param condition
+	 * @return
+	 */
+	@Override
+	public long updateByMerchantNo(MerchantInfoCondition condition) {
+		// TODO Auto-generated method stub
+		MerchantInfo merchantInfo = new MerchantInfo();
+		BeanUtils.copyProperties(condition, merchantInfo);
+		merchantInfo.setShortName(condition.getMerchantName());
+		merchantInfo.setStatus("0");
+		long result = merchantInfoDAO.updateByMerchantNo(merchantInfo);
+		return result;
+	}
+
+
+}
+

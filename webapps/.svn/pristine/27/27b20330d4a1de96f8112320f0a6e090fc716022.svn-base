@@ -1,0 +1,87 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<%
+   String path =  request.getContextPath();
+   request.setAttribute("path", path);
+%>
+<html lang="zh-cmn-Hans">
+<head>
+<title>流水查询</title>
+<meta charset="UTF-8">
+<meta http-equive="Cache-Control" content="no-cache"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/weui.min.css">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/jquery-weui.min.css">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/style.css">
+</head>
+<body ontouchstart style="position:relative">
+<div class="rztitle"><p class="rzrq">${month }</p><p class="rzjr">入账：&yen; ${total }</p></div>
+
+<div id="list" class="weui_cells weui_cells_access" style="margin-top:40px">
+	
+</div>
+
+<div class="weui-infinite-scroll">
+	<div class="infinite-preloader"></div>
+	正在加载
+</div>
+
+<div id="details" class="weui-popup-container popup-bottom">
+	<div class="weui-popup-overlay"></div>
+	<div class="weui-popup-modal" style="background:#fff">
+		<div class="toolbar">
+          <div class="toolbar-inner">
+            <a href="javascript:;" class="picker-button close-popup">关闭</a>
+            <h1 class="title">交易详情</h1>
+          </div>
+        </div>
+		<div class="weui_cells" style="margin-top:45px">
+			<div class="weui_cell">
+				<div class="weui_cell_bd weui_cell_primary"><p>付款金额</p></div>
+				<div class="weui_cell_ft orderAmt" style="font-size:24px"></div>
+			</div>
+			<!-- <div class="weui_cell">
+				<div class="weui_cell_bd weui_cell_primary"><p>手续费</p></div>
+				<div class="weui_cell_ft merchantRate"></div>
+			</div> -->
+			<div class="weui_cell">
+				<div class="weui_cell_bd weui_cell_primary"><p>交易时间</p></div>
+				<div class="weui_cell_ft updateTime"></div>
+			</div>
+			<div class="weui_cell">
+				<div class="weui_cell_bd weui_cell_primary"><p>流水号</p></div>
+				<div class="weui_cell_ft payNo"></div>
+			</div>
+			<div class="weui_cell">
+				<div class="weui_cell_bd weui_cell_primary"><p>支付方式</p></div>
+				<div class="weui_cell_ft payType"></div>
+			</div>
+			<div class="weui_cell">
+				<div class="weui_cell_bd weui_cell_primary"><p>交易状态</p></div>
+				<div class="weui_cell_ft payStatus"></div>
+			</div>
+		</div>
+		
+		<div class="weui_opr_area" style="padding-bottom:20px">
+			<p class="weui_btn_area">
+				<a href="javascript:;" class="weui_btn weui_btn_primary close-popup">关闭</a>
+			</p>
+		</div>
+
+	</div>
+	
+</div>
+	
+<script src="${path}/resources/scripts/jquery-2.1.4.js?rnd=${version}" type="text/javascript" charset="utf-8"></script>
+<script src="${path}/resources/scripts/fastclick.js?rnd=${version}" type="text/javascript" charset="utf-8"></script>
+<script src="${path}/resources/scripts/jquery-weui.min.js?rnd=${version}" type="text/javascript" charset="utf-8"></script>
+<script src="${path}/resources/scripts/wechat/bill.js?rnd=${version}" type="text/javascript" charset="utf-8"></script>
+
+<script>
+
+</script>
+	
+</body></html>

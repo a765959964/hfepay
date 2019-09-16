@@ -1,0 +1,95 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */package com.hfepay.scancode.service.order;
+
+import com.hfepay.commons.criteria.Criteria;
+import com.hfepay.commons.utils.PagingResult;
+
+import com.hfepay.scancode.entity.OrderPay;
+import com.hfepay.scancode.entity.OrderPayment;
+import com.hfepay.scancode.condition.OrderPayCondition;
+
+import java.util.List;
+
+public interface OrderPayService {
+	
+	/**
+	 * 列表(分页)
+	 * @param orderPayCondition 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	public PagingResult<OrderPay> findPagingResult(OrderPayCondition orderPayCondition);
+	
+	/**
+	 * 列表
+	 * @param orderPay 
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	public List<OrderPay> findAll(OrderPayCondition orderPayCondition);
+	
+	/**
+	 * 主键查找
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	OrderPay findById(String id);
+	
+	/**
+	 * 新增
+	 * @param orderPayCondition
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	long insert(OrderPayCondition orderPayCondition);
+
+	/**
+	 * 删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	long deleteById(String id);
+	
+	/**
+	 * 条件删除
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	long deleteByCriteria(Criteria criteria);
+	
+	/**
+	 * 行数汇总
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	long countByCriteria(Criteria criteria);
+	
+	/**
+	 * 更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	long update(OrderPayCondition orderPayCondition);
+	
+	/**
+	 * 条件更新
+	 *
+	 * @author panq
+	 * @date CreateDate : 2016-10-17 11:37:40
+	 */
+	long updateByCriteria(OrderPayCondition orderPayCondition,Criteria criteria);
+	
+	OrderPay createPayOrder(OrderPayment order,OrderPayCondition orderPayCondition);
+}
+

@@ -1,0 +1,36 @@
+$(function(){
+	$("#sureChange").click(function(){
+		var bankName = $("#bankName").val();
+		var bankCard = $("#bankCard").val();
+		var mobile = $("#mobile").val();
+		if(!bankName ||bankName==''){
+			$.toast("开户行不能为空", "cancel");
+			return;
+		}
+		if(!/^\d+$/.test(bankCard)){
+			$.toast("银行卡格式有误", "cancel");	
+			return;
+		}
+		if(!/^(13[0-9]{9})|(18[0-9]{9})|(14[0-9]{9})|(17[0-9]{9})|(15[0-9]{9})$/.test(mobile) || mobile.length != 11){
+			$.toast("手机号码格式有误", "cancel");
+			return;
+		}
+		var dataJson = {"bankName":bankName,"bankCard":bankCard,"mobile":mobile};
+		$.ajax({
+			   type: "POST",
+			   url: basePath+"/scancode/settlement/update",
+			   data:dataJson,
+			   dataType:"json",
+			   success: function(msg){
+				   var errorCode = msg.errorCode;
+				   if(errorCode=='0'){
+					   $.toast("变更成功");
+				   }
+				   else{
+					   $.toast("变更失败", "cancel");
+				   }
+				   location.reload();
+			   }
+			});
+	});
+});

@@ -1,0 +1,58 @@
+<%@ page language="java" contentType="text/html; charset=UTF-8" pageEncoding="UTF-8"%>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<%@taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core"%>
+<%@taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt"%>
+
+<%
+   String path =  request.getContextPath();
+   request.setAttribute("path", path);
+%>
+<html lang="zh-cmn-Hans">
+<head>
+<title>提现成功</title>
+<meta charset="UTF-8">
+<meta http-equive="Cache-Control" content="no-cache"/>
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=0">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/weui.min.css">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/jquery-weui.min.css">
+<link rel="stylesheet" href="${path}/resources/styles/wechat/style.css">
+</head>
+<body ontouchstart>
+
+<div class="weui_msg">
+	<div class="weui_icon_area"><i class="weui_icon_success weui_icon_msg"></i></div>
+	<div class="weui_text_area">
+		<h2 class="weui_msg_title">提现申请已受理，请稍后关注账户余额变更信息.</h2>
+	</div>
+</div>
+
+<div class="weui_cells">
+	<div class="weui_cell">
+		<div class="weui_cell_bd weui_cell_primary">
+			<p>本次提现</p>
+		</div>
+		<div class="weui_cell_ft">
+			&yen; ${balance }
+		</div>
+	</div>
+	<div class="weui_cell">
+		<div class="weui_cell_bd weui_cell_primary">
+			<p>手续费</p>
+		</div>
+		<div class="weui_cell_ft">
+			&yen; ${fees }
+		</div>
+	</div>
+</div>
+
+<div class="weui_opr_area">
+	<p class="weui_btn_area">
+		<a href="my" class="weui_btn weui_btn_primary">关闭</a>
+	</p>
+</div>
+
+<script src="${path}/resources/scripts/jquery-2.1.4.js?rnd=${version}" type="text/javascript" charset="utf-8"></script>
+<script src="${path}/resources/scripts/fastclick.js?rnd=${version}" type="text/javascript" charset="utf-8"></script>
+<script src="${path}/resources/scripts/jquery-weui.min.js?rnd=${version}" type="text/javascript" charset="utf-8"></script>
+
+</body></html>

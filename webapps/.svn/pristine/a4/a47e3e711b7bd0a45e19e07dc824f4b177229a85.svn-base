@@ -1,0 +1,29 @@
+package com.hfepay.scancode.utils;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Component;
+
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.entity.ParamsInfo;
+import com.hfepay.scancode.enumeration.ParamsType;
+import com.hfepay.scancode.service.operator.ParamsInfoService;
+
+import net.sf.json.JSONObject;
+
+@Component
+public class ParamsInfoUtil {
+	@Autowired
+	private ParamsInfoService paramsInfoService;
+	
+	public JSONObject getParamsInfoByDomain(String organNo) {
+		JSONObject paramsInfoJson = null;
+		ParamsInfo paramsInfo = paramsInfoService.findParamsKey(organNo,ParamsType.PARAMS_CHANNEL_DOMAIN_INFO.getCode());
+		if (null == paramsInfo) {
+			paramsInfo = paramsInfoService.findParamsKey(Constants.SYSTEM,ParamsType.PARAMS_SYSTEM_DOMAIN_INFO.getCode());
+			paramsInfoJson = JSONObject.fromObject(paramsInfo.getParamsValue());
+		}else {
+			paramsInfoJson = JSONObject.fromObject(paramsInfo.getParamsValue());
+		}
+		return paramsInfoJson;
+	}
+}

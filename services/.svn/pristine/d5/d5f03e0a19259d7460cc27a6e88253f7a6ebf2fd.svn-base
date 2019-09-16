@@ -1,0 +1,5 @@
+package com.hfepay.epay.api.entity.merchant;
+
+public class MerchantAppPaywayVo {
+
+}

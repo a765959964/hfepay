@@ -1,0 +1,93 @@
+/*
+ * Powered By [华付通]
+ * Web Site: http://www.huaepay.com/
+ * Since 2016 - 2016
+ */
+package com.hfepay.scancode.controller;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.servlet.http.HttpServletRequest;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.ModelMap;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.hfepay.common.web.controller.BaseController;
+import com.hfepay.commons.utils.Pager;
+import com.hfepay.commons.utils.PagingResult;
+import com.hfepay.scancode.commons.Constants;
+import com.hfepay.scancode.commons.condition.MappingDicionCondition;
+import com.hfepay.scancode.commons.condition.ProfitDetailCondition;
+import com.hfepay.scancode.commons.entity.MappingDicion;
+import com.hfepay.scancode.commons.entity.ProfitDetail;
+import com.hfepay.scancode.service.operator.MappingDicionService;
+import com.hfepay.scancode.service.order.ProfitDetailService;
+
+@Controller
+@RequestMapping("/adminManage/profitdetail")
+public class OrganProfitDetailController extends BaseController{
+	
+	@Autowired
+	private ProfitDetailService profitDetailService;
+	@Autowired
+	private MappingDicionService mappingDicionService;
+	
+	private Map<String,String> map = new HashMap<>();
+	/**
+	 * @Title: saveOrUpdateById
+	 * @Description: 查询列表
+	 * @author: Ricky
+	 * @param 
+	 * @return: String
+	 * @date CreateDate : 2016-10-13 09:50:44
+	 */
+	@RequestMapping(method= {RequestMethod.GET,RequestMethod.POST})
+	public String list(ModelMap model) {
+		map = transPayCode();
+		model.addAttribute("map", map);
+		return "admin/profitdetail/list";
+	}
+	
+	/**
+	 * @Title: listContent
+	 * @Description: 列表查询
+	 * @author: Ricky
+	 * @param ChannelBaseCondition
+	 * @return: String
+	 * @throws Exception 
+	 * @date CreateDate : 2016-10-13 09:50:44
+	 */
+	@RequestMapping(value = "/content", method= {RequestMethod.POST})
+	public String listContent(HttpServletRequest request,ModelMap model,ProfitDetailCondition profitDetailCondition) throws Exception{
+		//Map<String,String> map = transPayCode();
+		PagingResult<ProfitDetail> page = profitDetailService.findPagingResult(profitDetailCondition);
+		Pager<ProfitDetail> pager = new Pager<ProfitDetail>();
+		pager.setPageNo(profitDetailCondition.getPageNo());
+		pager.setPageSize(profitDetailCondition.getPageSize());
+		pager.setResult(page.getResult());
+		pager.setTotalCount(page.getTotalCount());
+ 		if(pager.getOrder() == null){
+			pager.setOrder("");
+		}
+		model.addAttribute("pager",pager);
+		return "admin/profitdetail/listContent";
+	}
+	
+	private Map<String,String> transPayCode(){
+		Map<String,String> map = new HashMap<String, String>();
+		MappingDicionCondition mappingDicionCondition = new MappingDicionCondition();
+		mappingDicionCondition.setKeyNo(Constants.PAYWAY_CODE);
+		List<MappingDicion> list = mappingDicionService.findAll(mappingDicionCondition);
+		for (MappingDicion mappingDicion : list) {
+			map.put(mappingDicion.getParaVal(), mappingDicion.getParaName());
+		}
+		return map;
+	}
+	
+}
+
