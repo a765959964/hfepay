@@ -5,6 +5,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * 注释
+ * @author 张帆
+ *
+ */
 @Retention(RetentionPolicy.SOURCE)
 @Target({ElementType.TYPE, ElementType.FIELD, ElementType.METHOD})
 public @interface Generated {
