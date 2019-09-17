@@ -6,6 +6,8 @@
   <version>1.0.0</version>
   <packaging>pom</packaging>
   <name>hfepay-commons-parent</name>
+  
+  <!-- 子项目模块  -->
   <modules>
   <module>hfepay-commons-base</module>
   <module>hfepay-commons-dao</module>
